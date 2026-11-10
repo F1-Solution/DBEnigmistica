@@ -50,6 +50,14 @@ public sealed class PostgresFixture : IAsyncLifetime
 
     public async Task DropDatabaseAsync(string name)
     {
+        // Se la creazione è fallita il nome è vuoto e non c'è nulla da eliminare.
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        // Svuota il pool di quel database così il DROP non trova connessioni pendenti.
+        using (var connection = new NpgsqlConnection(ConnectionStringFor(name)))
+            NpgsqlConnection.ClearPool(connection);
+
         await ExecuteAdminAsync($"DROP DATABASE IF EXISTS \"{name}\" WITH (FORCE)");
     }
 
@@ -57,8 +65,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     {
         var builder = new NpgsqlConnectionStringBuilder(_container.GetConnectionString())
         {
-            Database = database,
-            Pooling = false
+            Database = database
         };
         return builder.ConnectionString;
     }

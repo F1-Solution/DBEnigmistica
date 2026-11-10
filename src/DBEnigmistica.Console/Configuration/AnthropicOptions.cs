@@ -22,8 +22,8 @@ public sealed class AnthropicOptionsValidator : IValidateOptions<AnthropicOption
         var failures = new List<string>();
 
         if (string.IsNullOrWhiteSpace(options.ApiKey))
-            failures.Add($"Chiave API Anthropic mancante: imposta {AnthropicOptions.ApiKeyEnvironmentKey} " +
-                         "(variabile d'ambiente) oppure Anthropic:ApiKey nei user-secrets.");
+            failures.Add($"Chiave API Anthropic mancante: imposta la variabile d'ambiente {AnthropicOptions.ApiKeyEnvironmentKey} " +
+                         "oppure, in ambiente Development (come con 'dotnet run'), Anthropic:ApiKey nei user-secrets.");
 
         if (string.IsNullOrWhiteSpace(options.Model))
             failures.Add("Modello Anthropic mancante: imposta Anthropic__Model.");

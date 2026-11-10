@@ -13,6 +13,8 @@ public static class CliApp
     public const string Description =
         "DBEnigmistica - estrazione di giochi enigmistici da riviste in PDF";
 
+    private const string VerboseOptionName = "--verbose";
+
     public static async Task<int> RunAsync(
         string[] args,
         TextWriter output,
@@ -21,7 +23,9 @@ public static class CliApp
         CancellationToken cancellationToken = default)
     {
         var streams = new CliStreams(output, error);
-        var root = BuildRootCommand(streams, new CommandRunner(streams, configure));
+        // Il runner nasce prima del parsing, quindi legge --verbose direttamente dagli argomenti.
+        var verbose = args.Contains(VerboseOptionName, StringComparer.Ordinal);
+        var root = BuildRootCommand(streams, new CommandRunner(streams, configure, verbose));
 
         var invocation = new InvocationConfiguration
         {
@@ -36,6 +40,12 @@ public static class CliApp
     public static RootCommand BuildRootCommand(CliStreams streams, CommandRunner runner)
     {
         var root = new RootCommand(Description);
+
+        root.Options.Add(new Option<bool>(VerboseOptionName)
+        {
+            Description = "Mostra i dettagli completi degli errori e i log di EF Core",
+            Recursive = true
+        });
 
         root.Subcommands.Add(new ScanFolderCommand(streams));
         root.Subcommands.Add(new ScanFileCommand(streams));

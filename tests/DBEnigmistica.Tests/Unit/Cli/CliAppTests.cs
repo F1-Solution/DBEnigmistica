@@ -1,4 +1,5 @@
 using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Console.Configuration;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 
@@ -89,10 +90,66 @@ public class CliAppTests
     {
         var result = await RunAsync(args);
 
-        result.ExitCode.Should().NotBe(0);
+        result.ExitCode.Should().Be(3);
         result.Error.Should().Contain("ConnectionStrings__DefaultConnection");
         (result.Output + result.Error).Should().NotContain("Service provider not available");
         result.Error.Should().NotContain("   at ", "il messaggio non deve contenere uno stack trace");
+    }
+
+    [Fact]
+    public void MissingConnectionStringMessage_NamesEnvironmentVariableAndDevelopmentUserSecrets()
+    {
+        var result = new DatabaseOptionsValidator().Validate(null, new DatabaseOptions());
+
+        result.Failed.Should().BeTrue();
+        result.FailureMessage.Should().Contain("ConnectionStrings__DefaultConnection")
+            .And.Contain("Development")
+            .And.Contain("user-secrets");
+    }
+
+    [Fact]
+    public async Task DatabaseCommand_WithUnreachableDatabase_FailsWithSingleItalianLineAndNoSecrets()
+    {
+        const string password = "PASSWORD-SEGNAPOSTO-123";
+        var started = DateTime.UtcNow;
+
+        var result = await RunWithConnectionAsync(UnreachableConnection(password), "export-games", "-f", "csv");
+
+        // I tentativi automatici del provider Npgsql portano la durata fra 7 e 21 secondi: il limite blocca solo le attese infinite.
+        (DateTime.UtcNow - started).Should().BeLessThan(TimeSpan.FromSeconds(40));
+        result.ExitCode.Should().Be(1);
+        result.Error.Should().Contain("Database non raggiungibile");
+        result.Error.Split('\n', StringSplitOptions.RemoveEmptyEntries).Should().HaveCount(1);
+        result.Error.Split('\n').Should().NotContain(line => line.TrimStart() != line && line.TrimStart().StartsWith("at "));
+        (result.Output + result.Error).Should().NotContain(password);
+    }
+
+    [Fact]
+    public async Task DatabaseCommand_WithUnreachableDatabaseAndVerbose_ShowsDetails()
+    {
+        const string password = "PASSWORD-SEGNAPOSTO-123";
+
+        var result = await RunWithConnectionAsync(UnreachableConnection(password), "export-games", "-f", "csv", "--verbose");
+
+        result.ExitCode.Should().Be(1);
+        result.Error.Should().Contain("Database non raggiungibile");
+        result.Error.Should().Contain("   at ", "con --verbose compare lo stack trace");
+        result.Error.Should().NotContain(password);
+    }
+
+    private static string UnreachableConnection(string password) =>
+        $"Host=127.0.0.1;Port=1;Database=x;Username=utente;Password={password};Timeout=2;Command Timeout=2";
+
+    private static async Task<(int ExitCode, string Output, string Error)> RunWithConnectionAsync(
+        string connectionString,
+        params string[] args)
+    {
+        var output = new StringWriter();
+        var error = new StringWriter();
+
+        var code = await CliApp.RunAsync(args, output, error, WithSettings(("ConnectionStrings:DefaultConnection", connectionString)));
+
+        return (code, output.ToString(), error.ToString());
     }
 
     [Fact]

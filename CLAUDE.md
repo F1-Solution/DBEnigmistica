@@ -86,7 +86,7 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - .NET 10 (`net10.0`), EF Core, PostgreSQL. Soluzione `DBEnigmistica.slnx`.
 - Progetti in `src\`: Domain, Application, Infrastructure, AI, Console. Test in `tests\DBEnigmistica.Tests` (cartelle `Unit` e `Integration`).
 - Dalla fase 2: interfaccia React e TypeScript con API ASP.NET Core. Dalla fase 5: involucro desktop Tauri. Non ancora presenti.
-- Estrazione con modelli Claude con visione. Il modello è configurabile. Il default nel codice (`claude-3-5-sonnet`) è ritirato: non usarlo.
+- Estrazione con modelli Claude con visione. Il modello è configurabile. Il modello predefinito nel codice è `claude-sonnet-5-5`.
 
 **Compilare e testare** (comandi di `.github\workflows\ci.yml`)
 - `dotnet restore DBEnigmistica.slnx`
@@ -108,7 +108,7 @@ Usa sempre questi termini, con la maiuscola iniziale.
 
 ## 7. Stato attuale
 
-- Fase 0 (Fondamenta) in corso: `net10.0` e password fuori dai file tracciati sono fatti. CI e Dockerfile sono predisposti ma mai eseguiti su GitHub. Al 10/11/2026 non ci sono commit.
+- Fase 0 (Fondamenta) in corso: `net10.0` e password fuori dai file tracciati sono fatti. La CI è stata eseguita ed è verde su `main`; il Dockerfile è predisposto. I commit esistono.
 - I test non falliscono più (15 su 24 era lo stato iniziale) e la CLI `dbe` parte. Il Motore di estrazione non produce ancora risultati. Compose usa PostgreSQL 16, i test della fase 0 usano 17.
 
 ## 8. Protocollo di avanzamento
@@ -116,5 +116,5 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - Prima di eseguire una fase verifica che esistano e non siano vuoti `ROADMAP.md`, `CLAUDE.md`, `.planning\phases\<fase>\CONTEXT.md` e `.planning\phases\<fase>\PLAN.md`. Se ne manca uno, fermati ed elencalo.
 - Prima di ogni ondata leggi `PROGRESS.md` nella radice del repo. Salta le ondate con riga `STATUS:complete`. Non rieseguire mai un'ondata completa.
 - Dopo ogni ondata aggiungi una riga: `PHASE:<id> WAVE:<id> STATUS:<complete|failed> TS:<ISO-8601 UTC>`.
-- Se `PROGRESS.md` non esiste, crealo prima della prima ondata. Oggi non esiste.
+- Se `PROGRESS.md` non esiste, crealo prima della prima ondata. Oggi esiste.
 - Dopo un'interruzione (per esempio un limite di utilizzo): riporta l'ultima ondata completa e quelle restanti, poi riprendi da lì.

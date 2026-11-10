@@ -22,7 +22,8 @@ public static class CliHost
     public static IHost Build(
         HostRequirements requirements,
         CliStreams streams,
-        Action<IConfigurationBuilder>? configure)
+        Action<IConfigurationBuilder>? configure,
+        bool verbose = false)
     {
         var builder = Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings
         {
@@ -32,7 +33,7 @@ public static class CliHost
         });
 
         ConfigureConfiguration(builder, configure);
-        ConfigureLogging(builder);
+        ConfigureLogging(builder, streams, verbose);
         ConfigureServices(builder.Services, builder.Configuration, requirements, streams);
 
         return builder.Build();
@@ -58,14 +59,21 @@ public static class CliHost
         configure?.Invoke(config);
     }
 
-    private static void ConfigureLogging(HostApplicationBuilder builder)
+    // Senza --verbose gli errori sono riportati da CommandRunner in una riga; i log di EF Core e dell'host compaiono solo con --verbose.
+    private static void ConfigureLogging(HostApplicationBuilder builder, CliStreams streams, bool verbose)
     {
-        var logger = new LoggerConfiguration()
-            .MinimumLevel.Warning()
-            // Gli errori di avvio (es. configurazione non valida) sono riportati da CommandRunner senza stack trace.
-            .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Fatal)
-            .WriteTo.Console(standardErrorFromLevel: LogEventLevel.Verbose)
-            .CreateLogger();
+        var configuration = new LoggerConfiguration()
+            .MinimumLevel.Is(verbose ? LogEventLevel.Information : LogEventLevel.Warning)
+            .WriteTo.Sink(new ErrorWriterSink(streams.Error));
+
+        if (!verbose)
+        {
+            configuration
+                .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Fatal)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Fatal);
+        }
+
+        var logger = configuration.CreateLogger();
 
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(logger, dispose: true);

@@ -16,7 +16,7 @@ public sealed class DatabaseOptionsValidator : IValidateOptions<DatabaseOptions>
     public ValidateOptionsResult Validate(string? name, DatabaseOptions options) =>
         string.IsNullOrWhiteSpace(options.DefaultConnection)
             ? ValidateOptionsResult.Fail(
-                $"Stringa di connessione al database mancante: imposta {DatabaseOptions.EnvironmentKey} " +
-                "(variabile d'ambiente) oppure ConnectionStrings:DefaultConnection nei user-secrets.")
+                $"Stringa di connessione al database mancante: imposta la variabile d'ambiente {DatabaseOptions.EnvironmentKey} " +
+                "oppure, in ambiente Development (come con 'dotnet run'), ConnectionStrings:DefaultConnection nei user-secrets.")
             : ValidateOptionsResult.Success;
 }

@@ -1,15 +1,17 @@
+using System.Net.Sockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace DBEnigmistica.Console.Cli;
 
 /// <summary>
 /// Costruisce e avvia il host di un comando, risolve il gestore in uno scope per esecuzione e ne restituisce il codice d'uscita.
 /// </summary>
-public sealed class CommandRunner(CliStreams streams, Action<IConfigurationBuilder>? configure = null)
+public sealed class CommandRunner(CliStreams streams, Action<IConfigurationBuilder>? configure = null, bool verbose = false)
 {
     public async Task<int> RunAsync<THandler>(
         HostRequirements requirements,
@@ -20,7 +22,7 @@ public sealed class CommandRunner(CliStreams streams, Action<IConfigurationBuild
         IHost? host = null;
         try
         {
-            host = CliHost.Build(requirements, streams, configure);
+            host = CliHost.Build(requirements, streams, configure, verbose);
             await host.StartAsync(cancellationToken);
 
             await using var scope = host.Services.CreateAsyncScope();
@@ -34,21 +36,40 @@ public sealed class CommandRunner(CliStreams streams, Action<IConfigurationBuild
 
             return ExitCodes.Configuration;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             streams.Error.WriteLine("Operazione annullata.");
             return ExitCodes.Cancelled;
         }
         catch (Exception ex)
         {
-            host?.Services.GetService<ILogger<CommandRunner>>()?.LogError(ex, "Comando terminato con un errore");
-            streams.Error.WriteLine($"Errore: {ex.Message}");
+            if (verbose)
+                host?.Services.GetService<ILogger<CommandRunner>>()?.LogError(ex, "Comando terminato con un errore");
+
+            streams.Error.WriteLine(IsDatabaseUnreachable(ex)
+                ? $"Database non raggiungibile: {ex.GetBaseException().Message}"
+                : $"Errore: {ex.Message}");
             return ExitCodes.Error;
         }
         finally
         {
             await StopAsync(host);
         }
+    }
+
+    // Gli errori inviati dal server (PostgresException) non sono problemi di raggiungibilità.
+    private static bool IsDatabaseUnreachable(Exception ex)
+    {
+        for (var current = ex; current is not null; current = current.InnerException)
+        {
+            if (current is PostgresException)
+                return false;
+
+            if (current is NpgsqlException or SocketException)
+                return true;
+        }
+
+        return false;
     }
 
     private static async Task StopAsync(IHost? host)

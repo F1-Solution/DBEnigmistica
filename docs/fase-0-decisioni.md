@@ -49,13 +49,13 @@ Opzioni scartate come scelta unica:
 
 ## Fatti verificati
 
-- Un abbonamento Claude copre l'uso tramite le applicazioni di Anthropic e Claude Code, non le chiamate API fatte da un programma. Lo Studio, girando solo sul PC del proprietario, può far lavorare Claude Code in modalità non interattiva; questo non vale per il Sito pubblico.
-- I limiti dell'abbonamento sono gli stessi che consuma lo sviluppo del progetto: il 10 novembre 2026 un agente si è fermato per il limite delle 5 ore.
+- Un abbonamento Claude copre l'uso tramite le applicazioni di Anthropic e Claude Code, non le chiamate API fatte da un programma.- I limiti dell'abbonamento sono gli stessi che consuma lo sviluppo del progetto: il 10 novembre 2026 un agente si è fermato per il limite delle 5 ore.
 - Sudoku e giochi logici a griglia si generano con un algoritmo e si verificano automaticamente (soluzione unica garantita dal programma): non richiedono AI e il tempo di revisione è quasi nullo.
 - La fase 1b in `ROADMAP.md` stimava circa 19 ore del proprietario con due sole tipologie.
 
 ## Rischi
 
+- **Claude Code non interattivo (ipotesi da provare all'inizio della fase 1)**: lo Studio, girando solo sul PC del proprietario, potrebbe far lavorare Claude Code in modalità non interattiva con l'abbonamento; non vale per il Sito pubblico.
 - **Contesa dei limiti dell'abbonamento** tra sviluppo, creazione ed estrazione. Contromisura: generare ed estrarre in orari diversi dal lavoro degli agenti; passare alle API a consumo solo se l'ostacolo viene misurato.
 - **Condizioni d'uso**: quelle del piano Claude per l'uso non interattivo e quelle dei piani gratuiti di altri fornitori (uso dei dati per addestramento) non sono state verificate dall'agente. Spetta al proprietario verificarle; per le pagine di Riviste protette l'invio a piani gratuiti è la posizione meno prudente e va incluso nelle domande al legale.
 - **Misura indicativa**: con 5 candidati per tipologia il tempo di revisione misurato nella Prova 1 è indicativo e non conclusivo. Per crittografia, anagramma e cruciverba la soglia dei 20 minuti va confermata con la misura ripetuta prevista nella fase 6.
