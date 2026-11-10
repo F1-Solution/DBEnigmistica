@@ -154,8 +154,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          # Il progetto non copia appsettings.json nell'output di publish, ma l'applicazione lo richiede.
-          cp -n "$(dirname "$CONSOLE_PROJECT")/appsettings.json" "publish/$RID/"
           name="dbenigmistica-console-${VERSION}-${RID}"
           if [ "$RID" = "win-x64" ]; then
             (cd "publish/$RID" && zip -qr "$GITHUB_WORKSPACE/dist/$name.zip" .)

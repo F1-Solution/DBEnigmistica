@@ -42,7 +42,6 @@ La configurazione arriva da variabili d'ambiente; l'immagine non contiene segret
 docker run --rm \
   -e ConnectionStrings__DefaultConnection="..." \
   -e Anthropic__ApiKey="..." \
-  -e Ocr__TesseractDataPath=/tessdata -v ./tessdata:/tessdata:ro \
   ghcr.io/f1-solution/dbenigmistica:latest --help
 ```
 

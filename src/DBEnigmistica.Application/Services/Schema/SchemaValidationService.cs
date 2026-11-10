@@ -10,6 +10,10 @@ namespace DBEnigmistica.Application.Services.Schema;
 /// </summary>
 public class SchemaValidationService : ISchemaValidationService
 {
+    // Colonne gestite dal sistema in ogni tabella di tipologia.
+    private static readonly HashSet<string> ReservedColumnNames =
+        new(["id", "game_id"], StringComparer.OrdinalIgnoreCase);
+
     private readonly ILogger<SchemaValidationService> _logger;
     private readonly IGameTypeSchemaRepository _schemaRepository;
 
@@ -69,39 +73,43 @@ public class SchemaValidationService : ISchemaValidationService
         // Verifica nome tabella
         if (string.IsNullOrWhiteSpace(schema.TableName))
         {
-            errors.Add("Table name is required");
+            errors.Add("Nome tabella obbligatorio");
         }
         else if (!IsValidTableName(schema.TableName))
         {
-            errors.Add($"Invalid table name: {schema.TableName}. Use snake_case format");
+            errors.Add($"Nome tabella non valido: {schema.TableName}. Usare il formato snake_case");
         }
 
         // Verifica se la tabella esiste già
         if (await _schemaRepository.TableNameExistsAsync(schema.TableName))
         {
-            errors.Add($"Table name '{schema.TableName}' already exists");
+            errors.Add($"Il nome tabella '{schema.TableName}' esiste già");
         }
 
         // Verifica colonne
         if (!schema.Columns.Any())
         {
-            errors.Add("At least one column is required");
+            errors.Add("Serve almeno una colonna");
         }
 
         foreach (var column in schema.Columns)
         {
             if (string.IsNullOrWhiteSpace(column.Name))
             {
-                errors.Add("Column name cannot be empty");
+                errors.Add("Il nome della colonna non può essere vuoto");
             }
             else if (!IsValidColumnName(column.Name))
             {
-                errors.Add($"Invalid column name: {column.Name}");
+                errors.Add($"Colonna '{column.Name}': nome colonna non valido");
+            }
+            else if (ReservedColumnNames.Contains(column.Name))
+            {
+                errors.Add($"Colonna '{column.Name}': nome riservato");
             }
 
             if (string.IsNullOrWhiteSpace(column.DataType))
             {
-                errors.Add($"Data type is required for column: {column.Name}");
+                errors.Add($"Tipo di dato obbligatorio per la colonna: {column.Name}");
             }
         }
 
@@ -114,7 +122,7 @@ public class SchemaValidationService : ISchemaValidationService
 
         foreach (var duplicate in duplicateColumns)
         {
-            errors.Add($"Duplicate column name: {duplicate}");
+            errors.Add($"Colonne duplicate: {duplicate}");
         }
 
         var isValid = !errors.Any();

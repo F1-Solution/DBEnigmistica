@@ -1,6 +1,7 @@
 using System.CommandLine;
 using System.Globalization;
 using System.Text.Json;
+using DBEnigmistica.Application.Services.Export;
 using DBEnigmistica.Domain.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -155,7 +156,7 @@ public class ExportSolutionsCommand : Command
 
     private static string EscapeCsvValue(string value)
     {
-        return value.Replace("\"", "\"\"");
+        return CsvFieldFormatter.EscapeQuotes(value);
     }
 
     private class ServiceProviderBinder : System.CommandLine.Binding.BinderBase<IServiceProvider>
