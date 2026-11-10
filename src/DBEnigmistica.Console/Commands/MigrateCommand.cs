@@ -1,131 +1,96 @@
+using System.CommandLine;
+using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Console.Presentation;
 using DBEnigmistica.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.CommandLine;
-using System.CommandLine.Invocation;
+using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands;
 
 public class MigrateCommand : Command
 {
-    public MigrateCommand() : base("migrate", "Applica le migrazioni pending al database")
+    public MigrateCommand(CommandRunner runner) : base("migrate", "Applica le migrazioni pending al database")
     {
-        this.SetHandler(async (InvocationContext context) =>
-        {
-            var services = context.BindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider 
-                ?? throw new InvalidOperationException("Service provider not available");
-            
-            var logger = services.GetRequiredService<ILogger<MigrateCommand>>();
-            var dbContext = services.GetRequiredService<EnigmisticaDbContext>();
+        var yesOption = new Option<bool>("--yes", "-y") { Description = "Applica senza chiedere conferma" };
+        Options.Add(yesOption);
 
-            await ExecuteAsync(dbContext, logger, context.GetCancellationToken());
-        });
+        this.SetAction((parseResult, ct) => runner.RunAsync<MigrateHandler>(
+            HostRequirements.Database,
+            (handler, token) => handler.ExecuteAsync(parseResult.GetValue(yesOption), token),
+            ct));
+    }
+}
+
+public sealed class MigrateHandler(
+    EnigmisticaDbContext dbContext,
+    IAnsiConsole console,
+    CliStreams streams,
+    ILogger<MigrateHandler> logger)
+{
+    public async Task<int> ExecuteAsync(bool assumeYes, CancellationToken cancellationToken)
+    {
+        ConsoleBanner.Write(console, "Migrazioni database");
+
+        var pending = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
+        if (pending.Count == 0)
+        {
+            await WriteUpToDateAsync(cancellationToken);
+            return ExitCodes.Success;
+        }
+
+        console.MarkupLineInterpolated($"[yellow]Trovate {pending.Count} migrazioni da applicare:[/]");
+        foreach (var migration in pending)
+            console.MarkupLineInterpolated($"   - {migration}");
+        console.WriteLine();
+
+        if (!assumeYes)
+        {
+            var confirmed = Confirm();
+            if (confirmed is null)
+                return ExitCodes.Error;
+
+            if (confirmed == false)
+            {
+                ConsoleBanner.Warning(console, "Operazione annullata dall'utente.");
+                return ExitCodes.Success;
+            }
+        }
+
+        console.MarkupLine("Applicazione migrazioni in corso...");
+        await dbContext.Database.MigrateAsync(cancellationToken);
+
+        ConsoleBanner.Success(console, $"{pending.Count} migrazioni applicate con successo.");
+        logger.LogInformation("Applied {Count} migrations successfully", pending.Count);
+        return ExitCodes.Success;
     }
 
-    private static async Task ExecuteAsync(
-        EnigmisticaDbContext dbContext,
-        ILogger logger,
-        CancellationToken cancellationToken)
+    private async Task WriteUpToDateAsync(CancellationToken cancellationToken)
     {
-        try
+        ConsoleBanner.Success(console, "Database già aggiornato. Nessuna migrazione da applicare.");
+
+        var applied = (await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken)).ToList();
+        if (applied.Count == 0)
+            return;
+
+        console.MarkupLineInterpolated($"Migrazioni applicate: {applied.Count}");
+        console.MarkupLineInterpolated($"   Ultima: {applied[^1]}");
+    }
+
+    // Restituisce null se non c'è un terminale interattivo su cui chiedere.
+    private bool? Confirm()
+    {
+        if (!console.Profile.Capabilities.Interactive)
         {
-            System.Console.ForegroundColor = ConsoleColor.Cyan;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║          DBEnigmistica - Migrazioni Database             ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
-
-            System.Console.WriteLine("🔍 Verifica migrazioni pending...");
-            
-            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
-            var pendingList = pendingMigrations.ToList();
-
-            if (!pendingList.Any())
-            {
-                System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.WriteLine("✅ Database già aggiornato. Nessuna migrazione da applicare.");
-                System.Console.ResetColor();
-                
-                var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken);
-                var appliedList = appliedMigrations.ToList();
-                
-                if (appliedList.Any())
-                {
-                    System.Console.WriteLine();
-                    System.Console.WriteLine($"📋 Migrazioni applicate: {appliedList.Count}");
-                    System.Console.WriteLine($"   Ultima: {appliedList.Last()}");
-                }
-                
-                return;
-            }
-
-            System.Console.WriteLine();
-            System.Console.ForegroundColor = ConsoleColor.Yellow;
-            System.Console.WriteLine($"⚠️  Trovate {pendingList.Count} migrazioni da applicare:");
-            System.Console.ResetColor();
-            
-            foreach (var migration in pendingList)
-            {
-                System.Console.WriteLine($"   • {migration}");
-            }
-            
-            System.Console.WriteLine();
-            System.Console.Write("Procedere con l'applicazione? [s/N]: ");
-            
-            var response = System.Console.ReadLine()?.Trim().ToLowerInvariant();
-            
-            if (response != "s" && response != "sì" && response != "si" && response != "y" && response != "yes")
-            {
-                System.Console.WriteLine();
-                System.Console.ForegroundColor = ConsoleColor.Yellow;
-                System.Console.WriteLine("⚠️  Operazione annullata dall'utente.");
-                System.Console.ResetColor();
-                return;
-            }
-
-            System.Console.WriteLine();
-            System.Console.WriteLine("⏳ Applicazione migrazioni in corso...");
-
-            await dbContext.Database.MigrateAsync(cancellationToken);
-
-            System.Console.WriteLine();
-            System.Console.ForegroundColor = ConsoleColor.Green;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║                  ✅ SUCCESSO                               ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
-            System.Console.WriteLine($"✅ {pendingList.Count} migrazioni applicate con successo!");
-            System.Console.WriteLine();
-
-            logger.LogInformation("Applied {Count} migrations successfully", pendingList.Count);
+            streams.Error.WriteLine("Conferma non possibile senza terminale interattivo: usa --yes per applicare le migrazioni.");
+            return null;
         }
-        catch (Exception ex)
+
+        return console.Prompt(new ConfirmationPrompt("Procedere con l'applicazione?")
         {
-            System.Console.WriteLine();
-            System.Console.ForegroundColor = ConsoleColor.Red;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║                   ❌ ERRORE                                ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
-            System.Console.WriteLine($"✗ Errore durante l'applicazione delle migrazioni:");
-            System.Console.WriteLine($"  {ex.Message}");
-            System.Console.WriteLine();
-            
-            if (ex.InnerException != null)
-            {
-                System.Console.ForegroundColor = ConsoleColor.DarkGray;
-                System.Console.WriteLine("Dettagli tecnici:");
-                System.Console.WriteLine($"  {ex.InnerException.Message}");
-                System.Console.ResetColor();
-                System.Console.WriteLine();
-            }
-
-            logger.LogError(ex, "Error applying migrations");
-            Environment.Exit(1);
-        }
+            DefaultValue = false,
+            Yes = 's',
+            No = 'n'
+        });
     }
 }

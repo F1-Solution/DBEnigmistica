@@ -266,8 +266,8 @@ Annota il path della cartella `tessdata`:
 ### 4. Modelli Disponibili
 
 Il progetto è configurato per usare:
-- **claude-3-5-sonnet-20241022** (default, bilanciato costo/prestazioni)
-- Alternativi: `claude-3-opus-20240229` (più accurato), `claude-3-haiku-20240307` (economico)
+- **claude-sonnet-5-5** (default, bilanciato costo/prestazioni)
+- Altri modelli: vedi l'elenco ufficiale Anthropic; imposta `Anthropic:Model` di conseguenza
 
 ---
 
@@ -301,7 +301,7 @@ Modifica `appsettings.Development.json` con un editor:
   },
   "Anthropic": {
     "ApiKey": "sk-ant-api03-LA_TUA_API_KEY_ANTHROPIC",
-    "Model": "claude-3-5-sonnet-20241022",
+    "Model": "claude-sonnet-5-5",
     "MaxTokens": 4096
   },
   "Ocr": {
@@ -369,7 +369,7 @@ Host=prod-server.example.com;Port=5432;Database=dbenigmistica_prod;Username=app_
 ```json
 "Anthropic": {
   "ApiKey": "sk-ant-api03-...",  // La tua API key
-  "Model": "claude-3-5-sonnet-20241022",  // Modello da usare
+  "Model": "claude-sonnet-5-5",  // Modello da usare
   "MaxTokens": 4096  // Max token per risposta (1000-8000)
 }
 ```
@@ -505,7 +505,7 @@ curl https://api.anthropic.com/v1/messages \
   -H "x-api-key: $ANTHROPIC_API_KEY" \
   -H "anthropic-version: 2023-06-01" \
   -H "content-type: application/json" \
-  -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":100,"messages":[{"role":"user","content":"Hello"}]}'
+  -d '{"model":"claude-sonnet-5-5","max_tokens":100,"messages":[{"role":"user","content":"Hello"}]}'
 ```
 
 ---

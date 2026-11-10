@@ -31,7 +31,7 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - `docs\business\05-piano-commerciale.md`: vincoli commerciali, soglie G1-G6 e date. Gli altri file di `docs\business\` sono contesto.
 - `docs\design\ui\PROPOSTE-UI.md` e `docs\design\ux\PROPOSTE-UX.md`: proposte. Le scelte adottate sono in ROADMAP, fase 2 (identità Banco per Studio e Admin, Carta con le regole di Lente per Lettore e Sito). I file HTML sono anteprime.
 - `docs\CI.md`: flussi GitHub Actions, impostazioni manuali del repository, creazione dei tag.
-- `docs\ripianificazione-design.md`: decisioni dell'intervista di ripianificazione. Oggi non esiste. Se manca, non ricostruire le decisioni a memoria: segnalalo al proprietario.
+- `docs\ripianificazione-design.md`: decisioni dell'intervista di ripianificazione. Se manca, non ricostruire le decisioni a memoria: segnalalo al proprietario.
 - `docs\plan.md` e `docs\copilot_memory.md`: storici e superati. Non usarli per decidere.
 - `docs\giochi_enigmistici.md`: materiale di riferimento sui giochi, usato per il roadmap.
 
@@ -92,24 +92,24 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - `dotnet restore DBEnigmistica.slnx`
 - `dotnet build DBEnigmistica.slnx --configuration Release --no-restore`
 - `dotnet test DBEnigmistica.slnx --configuration Release --no-build`
-- I test d'integrazione (dalla fase 0) usano Testcontainers: serve Docker in esecuzione.
+- I test d'integrazione (dalla fase 0) usano Testcontainers con PostgreSQL 17: serve Docker in esecuzione. In locale: `dotnet test DBEnigmistica.slnx -c Release --nologo` con Docker attivo.
 
 **Database locale** (`docker-compose.yml`)
 - Crea `.env` nella radice copiando `.env.template` e imposta tu i valori (`.env` è ignorato da git). Variabili: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, e per pgAdmin `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`. Se una manca, Compose si ferma.
 - Avvio: `docker compose up -d postgres`.
 
 **Console**
-- Aiuto: `dotnet run --project src\DBEnigmistica.Console -- --help`. Oggi i comandi non partono: vedi stato.
+- L'eseguibile si chiama `dbe` (assembly `dbe`). Aiuto: `dotnet run --project src\DBEnigmistica.Console -- --help`. I comandi non ancora disponibili rispondono "Comando disponibile dalla fase N" con codice 2.
 - Variabili d'ambiente: `ConnectionStrings__DefaultConnection` (stringa di connessione) e `Anthropic__ApiKey` (chiave API, letta come `Anthropic:ApiKey`).
 
 **Segreti**
 - `src\DBEnigmistica.Console\appsettings.Development.json` e `.env`, se esistono, contengono segreti e sono ignorati da git. Non aprirli, non stamparli, non copiarli. Cita solo i nomi delle chiavi, mai i valori.
-- `.env.template` contiene ancora `ANTHROPIC_API_KEY` e `TESSERACT_DATA_PATH`: vanno rimossi in fase 0, perché Tesseract è eliminato.
+- `.env.template` non contiene più variabili per l'applicazione: la chiave API si imposta con `Anthropic__ApiKey`.
 
 ## 7. Stato attuale
 
 - Fase 0 (Fondamenta) in corso: `net10.0` e password fuori dai file tracciati sono fatti. CI e Dockerfile sono predisposti ma mai eseguiti su GitHub. Al 10/11/2026 non ci sono commit.
-- Oggi 15 test su 24 falliscono per difetti noti, da risanare nella fase 0. La CLI non parte ("Service provider not available"). Il Motore di estrazione non produce risultati. Compose usa PostgreSQL 16, i test della fase 0 usano 17.
+- I test non falliscono più (15 su 24 era lo stato iniziale) e la CLI `dbe` parte. Il Motore di estrazione non produce ancora risultati. Compose usa PostgreSQL 16, i test della fase 0 usano 17.
 
 ## 8. Protocollo di avanzamento
 

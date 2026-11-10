@@ -1,12 +1,11 @@
 using DBEnigmistica.Domain.AI;
 using DBEnigmistica.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
-using System.Text;
 
 namespace DBEnigmistica.Application.Services.Schema;
 
 /// <summary>
-/// Servizio per validare schemi con l'utente tramite console
+/// Servizio per validare schemi, con la revisione dell'utente delegata a <see cref="ISchemaReviewInteraction"/>.
 /// </summary>
 public class SchemaValidationService : ISchemaValidationService
 {
@@ -14,52 +13,50 @@ public class SchemaValidationService : ISchemaValidationService
     private static readonly HashSet<string> ReservedColumnNames =
         new(["id", "game_id"], StringComparer.OrdinalIgnoreCase);
 
+    private static readonly string[] ApprovalAnswers = ["s", "y", "yes", "si", "sì"];
+    private static readonly string[] ModifyAnswers = ["m", "modify", "modifica"];
+    private static readonly string[] EndEditAnswers = ["done", "fine", "exit"];
+
     private readonly ILogger<SchemaValidationService> _logger;
     private readonly IGameTypeSchemaRepository _schemaRepository;
+    private readonly ISchemaReviewInteraction? _interaction;
 
     public SchemaValidationService(
         ILogger<SchemaValidationService> logger,
-        IGameTypeSchemaRepository schemaRepository)
+        IGameTypeSchemaRepository schemaRepository,
+        ISchemaReviewInteraction? interaction = null)
     {
         _logger = logger;
         _schemaRepository = schemaRepository;
+        _interaction = interaction;
     }
 
     public async Task<(bool Approved, GameTableSchema? ModifiedSchema)> ValidateSchemaWithUserAsync(
         GameTableSchema proposedSchema,
         CancellationToken cancellationToken = default)
     {
+        var interaction = _interaction
+            ?? throw new InvalidOperationException("Nessuna interazione con l'utente disponibile per la revisione dello schema.");
+
         _logger.LogInformation("Starting user validation for schema: {TableName}", proposedSchema.TableName);
 
-        // Mostra lo schema proposto
-        DisplaySchema(proposedSchema);
+        interaction.ShowProposal(proposedSchema);
+        var response = interaction.AskApproval()?.Trim().ToLowerInvariant();
 
-        Console.WriteLine();
-        Console.WriteLine("Vuoi approvare questo schema? (s/n/m per modificare)");
-        Console.Write("> ");
-
-        var response = Console.ReadLine()?.Trim().ToLower();
-
-        switch (response)
+        if (response is not null && ApprovalAnswers.Contains(response))
         {
-            case "s":
-            case "y":
-            case "yes":
-            case "si":
-            case "sì":
-                _logger.LogInformation("Schema approved by user");
-                return (true, proposedSchema);
-
-            case "m":
-            case "modify":
-            case "modifica":
-                var modifiedSchema = await ModifySchemaInteractivelyAsync(proposedSchema, cancellationToken);
-                return (true, modifiedSchema);
-
-            default:
-                _logger.LogInformation("Schema rejected by user");
-                return (false, null);
+            _logger.LogInformation("Schema approved by user");
+            return (true, proposedSchema);
         }
+
+        if (response is not null && ModifyAnswers.Contains(response))
+        {
+            var modified = await ModifySchemaInteractivelyAsync(interaction, proposedSchema, cancellationToken);
+            return (true, modified);
+        }
+
+        _logger.LogInformation("Schema rejected by user");
+        return (false, null);
     }
 
     public async Task<(bool IsValid, List<string> Errors)> ValidateSchemaConsistencyAsync(
@@ -126,7 +123,7 @@ public class SchemaValidationService : ISchemaValidationService
         }
 
         var isValid = !errors.Any();
-        
+
         if (!isValid)
         {
             _logger.LogWarning("Schema validation failed with {ErrorCount} errors", errors.Count);
@@ -135,131 +132,101 @@ public class SchemaValidationService : ISchemaValidationService
         return (isValid, errors);
     }
 
-    private void DisplaySchema(GameTableSchema schema)
-    {
-        Console.WriteLine();
-        Console.WriteLine("═══════════════════════════════════════════════════════");
-        Console.WriteLine($"PROPOSTA SCHEMA: {schema.GameTypeName}");
-        Console.WriteLine("═══════════════════════════════════════════════════════");
-        Console.WriteLine($"Nome Tabella: {schema.TableName}");
-        
-        if (!string.IsNullOrEmpty(schema.Description))
-        {
-            Console.WriteLine($"Descrizione: {schema.Description}");
-        }
-
-        Console.WriteLine();
-        Console.WriteLine("Colonne:");
-        Console.WriteLine("─────────────────────────────────────────────────────");
-
-        foreach (var column in schema.Columns)
-        {
-            var nullable = column.IsNullable ? "NULL" : "NOT NULL";
-            var required = column.IsRequired ? " [REQUIRED]" : "";
-            
-            Console.WriteLine($"  • {column.Name,-30} {column.DataType,-15} {nullable}{required}");
-            
-            if (!string.IsNullOrEmpty(column.Description))
-            {
-                Console.WriteLine($"    └─ {column.Description}");
-            }
-        }
-
-        if (schema.Indexes.Any())
-        {
-            Console.WriteLine();
-            Console.WriteLine("Indexes: " + string.Join(", ", schema.Indexes));
-        }
-
-        Console.WriteLine("═══════════════════════════════════════════════════════");
-    }
-
-    private async Task<GameTableSchema> ModifySchemaInteractivelyAsync(
-        GameTableSchema originalSchema,
+    private Task<GameTableSchema> ModifySchemaInteractivelyAsync(
+        ISchemaReviewInteraction interaction,
+        GameTableSchema original,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting interactive schema modification");
+        interaction.ShowEditHelp();
 
-        Console.WriteLine();
-        Console.WriteLine("MODALITÀ MODIFICA SCHEMA");
-        Console.WriteLine("Comandi disponibili:");
-        Console.WriteLine("  - rename-table <nuovo_nome>");
-        Console.WriteLine("  - add-column <nome> <tipo> [nullable]");
-        Console.WriteLine("  - remove-column <nome>");
-        Console.WriteLine("  - modify-column <nome> <nuovo_tipo>");
-        Console.WriteLine("  - done (per finire)");
-        Console.WriteLine();
+        var columns = new List<ColumnSchema>(original.Columns);
+        var tableName = original.TableName;
 
-        var modifiedColumns = new List<ColumnSchema>(originalSchema.Columns);
-        var modifiedTableName = originalSchema.TableName;
-
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
-            Console.Write("Modifica> ");
-            var command = Console.ReadLine()?.Trim();
+            var line = interaction.AskEditCommand()?.Trim();
 
-            if (string.IsNullOrEmpty(command))
-                continue;
+            // Fine dell'input: si chiude la modifica con quanto fatto finora.
+            if (line is null)
+                break;
 
-            var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            
+            var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 0)
                 continue;
 
-            switch (parts[0].ToLower())
-            {
-                case "done":
-                case "fine":
-                case "exit":
-                    return new GameTableSchema
-                    {
-                        GameTypeName = originalSchema.GameTypeName,
-                        TableName = modifiedTableName,
-                        Description = originalSchema.Description,
-                        Columns = modifiedColumns,
-                        Indexes = originalSchema.Indexes
-                    };
+            if (EndEditAnswers.Contains(parts[0], StringComparer.OrdinalIgnoreCase))
+                break;
 
-                case "rename-table":
-                    if (parts.Length >= 2)
-                    {
-                        modifiedTableName = parts[1];
-                        Console.WriteLine($"✓ Tabella rinominata in: {modifiedTableName}");
-                    }
-                    break;
+            var (newName, message) = ApplyEdit(parts, columns, tableName);
+            tableName = newName;
+            interaction.ShowEditResult(message);
+        }
 
-                case "add-column":
-                    if (parts.Length >= 3)
-                    {
-                        var newColumn = new ColumnSchema
-                        {
-                            Name = parts[1],
-                            DataType = parts[2],
-                            IsNullable = parts.Length > 3 && parts[3].ToLower() == "nullable",
-                            IsRequired = false,
-                            Description = null
-                        };
-                        modifiedColumns.Add(newColumn);
-                        Console.WriteLine($"✓ Colonna aggiunta: {newColumn.Name} {newColumn.DataType}");
-                    }
-                    break;
+        cancellationToken.ThrowIfCancellationRequested();
 
-                case "remove-column":
-                    if (parts.Length >= 2)
-                    {
-                        var removed = modifiedColumns.RemoveAll(c => c.Name.Equals(parts[1], StringComparison.OrdinalIgnoreCase));
-                        Console.WriteLine(removed > 0 ? $"✓ Colonna rimossa: {parts[1]}" : $"✗ Colonna non trovata: {parts[1]}");
-                    }
-                    break;
+        return Task.FromResult(new GameTableSchema
+        {
+            GameTypeName = original.GameTypeName,
+            TableName = tableName,
+            Description = original.Description,
+            Columns = columns,
+            Indexes = original.Indexes
+        });
+    }
 
-                default:
-                    Console.WriteLine("Comando non riconosciuto");
-                    break;
-            }
+    private static (string TableName, string Message) ApplyEdit(
+        string[] parts,
+        List<ColumnSchema> columns,
+        string tableName)
+    {
+        switch (parts[0].ToLowerInvariant())
+        {
+            case "rename-table" when parts.Length >= 2:
+                return (parts[1], $"✓ Tabella rinominata in: {parts[1]}");
+
+            case "add-column" when parts.Length >= 3:
+                columns.Add(new ColumnSchema
+                {
+                    Name = parts[1],
+                    DataType = parts[2],
+                    IsNullable = parts.Length > 3 && parts[3].Equals("nullable", StringComparison.OrdinalIgnoreCase)
+                });
+                return (tableName, $"✓ Colonna aggiunta: {parts[1]} {parts[2]}");
+
+            case "remove-column" when parts.Length >= 2:
+                var removed = columns.RemoveAll(c => c.Name.Equals(parts[1], StringComparison.OrdinalIgnoreCase));
+                return (tableName, removed > 0 ? $"✓ Colonna rimossa: {parts[1]}" : $"✗ Colonna non trovata: {parts[1]}");
+
+            case "modify-column" when parts.Length >= 3:
+                return (tableName, ChangeColumnType(columns, parts[1], parts[2]));
+
+            default:
+                return (tableName, "Comando non riconosciuto");
         }
     }
 
-    private bool IsValidTableName(string tableName)
+    private static string ChangeColumnType(List<ColumnSchema> columns, string name, string newType)
+    {
+        var index = columns.FindIndex(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (index < 0)
+            return $"✗ Colonna non trovata: {name}";
+
+        var old = columns[index];
+        columns[index] = new ColumnSchema
+        {
+            Name = old.Name,
+            DataType = newType,
+            IsNullable = old.IsNullable,
+            IsRequired = old.IsRequired,
+            Description = old.Description,
+            DefaultValue = old.DefaultValue,
+            MaxLength = old.MaxLength
+        };
+        return $"✓ Colonna modificata: {name} {newType}";
+    }
+
+    private static bool IsValidTableName(string tableName)
     {
         // Verifica che il nome sia in snake_case e contenga solo caratteri validi
         return !string.IsNullOrWhiteSpace(tableName) &&
@@ -267,7 +234,7 @@ public class SchemaValidationService : ISchemaValidationService
                !char.IsDigit(tableName[0]);
     }
 
-    private bool IsValidColumnName(string columnName)
+    private static bool IsValidColumnName(string columnName)
     {
         return !string.IsNullOrWhiteSpace(columnName) &&
                columnName.All(c => char.IsLetterOrDigit(c) || c == '_') &&
