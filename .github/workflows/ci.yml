@@ -1,0 +1,170 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+# Permessi minimi: i lavori che ne servono di piu' li dichiarano da soli.
+permissions:
+  contents: read
+
+# Annulla le esecuzioni superate sullo stesso ramo (mai quelle dei tag di versione).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  SOLUTION: DBEnigmistica.slnx
+
+jobs:
+  build-test:
+    name: Build e test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache NuGet
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Ripristino
+        run: dotnet restore "$SOLUTION"
+
+      - name: Compilazione (Release)
+        run: dotnet build "$SOLUTION" --configuration Release --no-restore -consoleLoggerParameters:Summary -v:minimal
+
+      - name: Test con copertura
+        run: >
+          dotnet test "$SOLUTION" --configuration Release --no-build
+          --collect:"XPlat Code Coverage"
+          --logger "trx;LogFileName=test-results.trx"
+          --logger "console;verbosity=normal"
+          --results-directory "$RUNNER_TEMP/test-results"
+
+      - name: Riepilogo test e copertura
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import glob, os, xml.etree.ElementTree as ET
+          base = os.environ["RUNNER_TEMP"] + "/test-results"
+          print("## Risultati dei test\n")
+          trx = glob.glob(base + "/**/*.trx", recursive=True)
+          if not trx:
+              print("Nessun file dei risultati prodotto (compilazione o avvio dei test falliti).")
+          for f in trx:
+              ns = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+              root = ET.parse(f).getroot()
+              c = root.find("t:ResultSummary/t:Counters", ns)
+              print("| Totali | Superati | Falliti | Saltati |\n|---|---|---|---|")
+              print("| {} | {} | {} | {} |\n".format(c.get("total"), c.get("passed"), c.get("failed"), c.get("notExecuted")))
+              failed = [r.get("testName") for r in root.iterfind(".//t:UnitTestResult", ns) if r.get("outcome") == "Failed"]
+              if failed:
+                  print("**Test falliti**\n")
+                  for n in sorted(failed):
+                      print("- `" + n + "`")
+                  print()
+          print("## Copertura (righe)\n")
+          cov = glob.glob(base + "/**/coverage.cobertura.xml", recursive=True)
+          if not cov:
+              print("Nessun report di copertura prodotto.")
+          for f in cov:
+              r = ET.parse(f).getroot()
+              print("- Righe coperte: {:.1f}%".format(float(r.get("line-rate", 0)) * 100))
+          PY
+
+      - name: Pubblica risultati e copertura
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-results
+          path: ${{ runner.temp }}/test-results
+          if-no-files-found: warn
+          retention-days: 14
+
+  vulnerabilities:
+    name: Vulnerabilita pacchetti
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache NuGet
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Ripristino
+        run: dotnet restore "$SOLUTION"
+
+      - name: Pacchetti vulnerabili (anche transitivi)
+        shell: bash
+        run: |
+          # "dotnet list package" esce con 0 anche se trova vulnerabilita': il rapporto va letto.
+          set -o pipefail
+          dotnet list "$SOLUTION" package --vulnerable --include-transitive 2>&1 | tee "$RUNNER_TEMP/vulnerable.txt"
+          {
+            echo "## Vulnerabilita dei pacchetti"
+            echo '```'
+            cat "$RUNNER_TEMP/vulnerable.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if grep -q "has the following vulnerable packages" "$RUNNER_TEMP/vulnerable.txt"; then
+            echo "::error::Trovati pacchetti NuGet con vulnerabilita note."
+            exit 1
+          fi
+
+  secrets:
+    name: Controllo segreti
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      # Gitleaks CLI (MIT) con checksum verificato. L'azione ufficiale gitleaks-action richiede
+      # una licenza (segreto GITLEAKS_LICENSE) sui repository di organizzazione.
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - name: Checkout (storia completa)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Installa gitleaks
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/gitleaks.tar.gz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+
+      - name: Cerca segreti nella storia git
+        # --redact: i valori trovati non vengono mai stampati nei log.
+        run: '"$RUNNER_TEMP/gitleaks" git --redact --no-banner --verbose .'

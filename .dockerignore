@@ -1,0 +1,35 @@
+# Controllo di versione e CI
+.git
+.gitignore
+.gitattributes
+.github
+
+# Artefatti di build
+**/bin/
+**/obj/
+**/TestResults/
+
+# Test, documentazione e strumenti non necessari all'immagine
+tests/
+docs/
+*.md
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Segreti e configurazioni locali: la configurazione arriva da variabili d'ambiente
+.env
+.env.*
+**/appsettings.*.json
+**/appsettings.*.json.template
+!**/appsettings.json
+**/*.local.json
+**/*.user
+**/tessdata/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+.claude/
+.planning/

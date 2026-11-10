@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # Il primo gruppo che corrisponde vince: i pacchetti di test vanno prima di "Microsoft.*".
+      test-tooling:
+        patterns: ["xunit*", "Moq", "FluentAssertions", "coverlet*", "Microsoft.NET.Test.Sdk"]
+      microsoft:
+        patterns: ["Microsoft.*", "System.*", "Npgsql.*"]
+      minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      docker-base-images:
+        patterns: ["*"]

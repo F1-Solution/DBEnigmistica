@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe B - L'Archivio</title>
+<style>
+/* Wireframe a bassa fedelta: solo scala di grigi, nessuno stile grafico. */
+:root{--ink:#1a1a1a;--mid:#666;--line:#999;--soft:#ddd;--fill:#f2f2f2;--bg:#fff}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:inherit}
+.wf-top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:2px solid var(--ink);padding:8px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.wf-top strong{font-size:18px}
+.wf-layout{display:grid;grid-template-columns:250px minmax(0,1fr)}
+.wf-index{border-right:1px solid var(--line);padding:12px 16px;font-size:14px}
+.wf-index h3{font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:16px 0 4px;color:var(--mid)}
+.wf-index ol{margin:0;padding-left:20px}
+.wf-index a[aria-current="page"]{font-weight:700;text-decoration:none;border-left:3px solid var(--ink);padding-left:4px}
+.screen{display:none;padding:16px;outline:none;scroll-margin-top:96px}
+[id]{scroll-margin-top:96px}
+.screen.on{display:block}
+.screen>h2{margin:0 0 4px}
+.wf-pager{display:flex;justify-content:space-between;margin:16px 0 0;font-size:14px}
+.note{border-left:4px solid var(--mid);background:var(--fill);padding:8px 12px;font-size:14px;margin:8px 0 16px;max-width:900px}
+.frame-d{border:2px solid var(--ink);max-width:1120px;background:var(--bg);overflow-x:auto}
+.frame-m{border:2px solid var(--ink);border-radius:18px;width:360px;max-width:100%;background:var(--bg);overflow:hidden;display:inline-block;vertical-align:top;margin:0 16px 16px 0}
+.frame-label{font-size:13px;color:var(--mid);margin:0 0 4px}
+.bar{border-bottom:1px solid var(--line);padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bar.bottom{border-top:1px solid var(--line);border-bottom:0;justify-content:space-around}
+.grow{flex:1}
+.cols{display:grid;gap:12px;padding:12px}
+.side{grid-template-columns:210px minmax(0,1fr)}
+.c2{grid-template-columns:1fr 1fr}
+.c3{grid-template-columns:1fr 1fr 1fr}
+.box{border:1px solid var(--line);padding:8px 10px;margin:0 0 8px}
+.box.dash{border-style:dashed}
+.box.strong{border:2px solid var(--ink)}
+.ph{background:repeating-linear-gradient(45deg,#eee 0 8px,#ddd 8px 16px);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:#444;min-height:90px;text-align:center;padding:8px;font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ink);padding:6px 12px;min-height:36px;text-decoration:none;background:var(--bg);font-size:15px;cursor:pointer}
+.btn.pri{border-width:3px;font-weight:700}
+.btn.big{min-height:52px;width:100%;font-size:18px}
+.btn.dis{border-style:dashed;color:var(--mid)}
+.tag{display:inline-block;border:1px solid var(--mid);border-radius:10px;padding:0 7px;font-size:13px;white-space:nowrap}
+.kbd{border:1px solid var(--ink);border-radius:3px;padding:0 4px;font-family:ui-monospace,monospace;font-size:12px}
+.muted{color:var(--mid);font-size:14px}
+.small{font-size:13px}
+.big-t{font-size:20px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid var(--line);padding:5px 7px;text-align:left;font-size:14px;vertical-align:top}
+th{background:var(--fill)}
+tr.sel td{outline:2px solid var(--ink);outline-offset:-2px}
+.nav-list{list-style:none;margin:0;padding:0}
+.nav-list li{padding:5px 8px;border-bottom:1px solid var(--soft);display:flex;justify-content:space-between;gap:6px}
+.nav-list li.cur{border-left:4px solid var(--ink);font-weight:700}
+.cw{display:grid;grid-template-columns:repeat(var(--n),1fr);border:2px solid var(--ink);max-width:340px}
+.cw span{aspect-ratio:1;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.cw .k{background:#333}
+.cw .w{background:#e4e4e4}
+.cw .a{outline:3px solid var(--ink);outline-offset:-3px;background:#cfcfcf}
+.stepper{display:flex;gap:4px;flex-wrap:wrap;list-style:none;padding:0;margin:0}
+.stepper li{border:1px solid var(--line);padding:2px 8px;font-size:13px}
+.stepper li.cur{border:2px solid var(--ink);font-weight:700}
+.stepper li.done{text-decoration:line-through;color:var(--mid)}
+.field{display:block;margin:0 0 8px}
+.field>span{display:block;font-size:13px;color:var(--mid)}
+.input{border:1px solid var(--ink);min-height:36px;padding:6px 8px}
+.sheet{border-top:2px solid var(--ink);padding:12px}
+.progress{height:10px;border:1px solid var(--ink);background:linear-gradient(90deg,#888 var(--p,40%),transparent 0)}
+@media (max-width:900px){.wf-top{position:static}.screen,[id]{scroll-margin-top:0}.frame-m{margin-right:0}.wf-layout{grid-template-columns:minmax(0,1fr)}.wf-index{border-right:0;border-bottom:1px solid var(--line)}.side,.c2,.c3{grid-template-columns:minmax(0,1fr)}}
+</style>
+<body>
+<header class="wf-top">
+  <strong>Proposta B - L'Archivio</strong>
+  <span class="muted">Organizzato per oggetti: Riviste, Giochi, Tipologie, Pubblicazioni, ciascuno con elenco e scheda.</span>
+  <span class="grow"></span>
+  <span class="small">Wireframe in scala di grigi, senza stile grafico. Indice a sinistra; i pulsanti con bordo spesso portano alla schermata successiva del flusso.</span>
+</header>
+<div class="wf-layout">
+<nav class="wf-index" aria-label="Schermate">
+  <h3>Studio (desktop)</h3>
+  <ol>
+    <li><a href="#b1">Elenco Giochi</a></li>
+    <li><a href="#b2">Scheda Gioco</a></li>
+    <li><a href="#b3">Scheda Rivista</a></li>
+    <li><a href="#b4">Revisione pagina</a></li>
+    <li><a href="#b5">Scheda Tipologia (proposta)</a></li>
+    <li><a href="#b6">Ricerca a faccette</a></li>
+  </ol>
+  <h3>Admin</h3>
+  <ol start="7">
+    <li><a href="#b7">Pubblicazioni (calendario)</a></li>
+    <li><a href="#b8">Aspetto del sito e Statistiche</a></li>
+  </ol>
+  <h3>Sito pubblico (mobile)</h3>
+  <ol start="9">
+    <li><a href="#b9">Home catalogo e pagina gioco</a></li>
+    <li><a href="#b10">Archivio, piani, abbonamento</a></li>
+  </ol>
+  <h3>Stati</h3>
+  <ol start="11">
+    <li><a href="#b11">Vuoto, errore AI, lungo, conflitto, offline</a></li>
+  </ol>
+</nav>
+<main>
+
+<!-- B1 -->
+<section class="screen" id="b1" tabindex="-1" aria-labelledby="b1h">
+  <h2 id="b1h">1. Studio - Elenco Giochi</h2>
+  <p class="note">Barra laterale con gli oggetti. Ogni elenco e una tabella con filtri e selezione multipla; le azioni nascono dall'oggetto o dalla selezione. L'icona Attivita in alto raccoglie le elaborazioni in sottofondo.</p>
+  <div class="frame-d">
+    <div class="bar"><strong>DBEnigmistica Studio</strong><span class="muted">Giochi</span><span class="grow"></span><span class="input" style="min-width:220px">Cerca...</span><a class="btn" href="#b11">Attivita (2)</a></div>
+    <div class="cols side">
+      <ul class="nav-list">
+        <li class="cur">Giochi <span>1.284</span></li>
+        <li><a href="#b3">Riviste</a> <span>17</span></li>
+        <li><a href="#b5">Tipologie</a> <span>31 · 1 proposta</span></li>
+        <li><a href="#b6">Ricerca</a></li>
+      </ul>
+      <div>
+        <div class="bar" style="border:0;padding:0 0 8px"><span class="tag">Provenienza: tutte</span><span class="tag">Stato: bozza</span><span class="tag">Tipologia: tutte</span><span class="grow"></span><a class="btn">Selezione: Approva · Programma</a><a class="btn pri" href="#b2">Nuovo gioco con AI</a></div>
+        <table>
+          <thead><tr><th>[ ]</th><th>Titolo</th><th>Tipologia</th><th>Provenienza</th><th>Stato</th><th>Modificato</th></tr></thead>
+          <tbody>
+            <tr class="sel"><td>[x]</td><td><a href="#b2">Mare d'inverno 2</a></td><td>Crittografia</td><td>Originale</td><td>Bozza</td><td>oggi 21:02</td></tr>
+            <tr><td>[ ]</td><td>Mare d'inverno 3</td><td>Crittografia</td><td>Originale</td><td>Bozza</td><td>oggi 21:02</td></tr>
+            <tr><td>[ ]</td><td>p. 12, gioco 2</td><td>Cruciverba</td><td>Rivista: Enigmistica Mese 41</td><td>Da verificare</td><td>oggi 20:40</td></tr>
+            <tr><td>[ ]</td><td>Ponte</td><td>Crittografia</td><td>Originale</td><td>Pubblicato 10 nov</td><td>3 nov</td></tr>
+          </tbody>
+        </table>
+        <p class="muted small">1-50 di 1.284 · pagina successiva</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B2 -->
+<section class="screen" id="b2" tabindex="-1" aria-labelledby="b2h">
+  <h2 id="b2h">2. Studio - Scheda Gioco (bozza originale)</h2>
+  <p class="note">Una scheda con schede interne. Il contributo umano ha una scheda propria, con registro precompilato e un campo descrittivo obbligatorio prima dell'approvazione. Per i Giochi da Rivista la scheda interna Pubblicazioni non esiste.</p>
+  <div class="frame-d">
+    <div class="bar"><a href="#b1">Giochi</a> › <strong>Mare d'inverno 2</strong> <span class="tag">Bozza</span> <span class="tag">Originale</span><span class="grow"></span><a class="btn">Duplica</a><a class="btn">Salva <span class="kbd">Alt+S</span></a><a class="btn pri" href="#b7">Approva</a></div>
+    <div class="bar" role="presentation"><strong style="border-bottom:3px solid var(--ink)">Contenuto</strong><span>Prova</span><span>Contributo umano (!)</span><span>Provenienza</span><span>Pubblicazioni</span><span>Storia</span></div>
+    <div class="cols c2">
+      <div>
+        <p class="frame-label">Varianti generate</p>
+        <div class="box strong small">1 (scelta) ONDA SU ONDA → MAREA MA GRANDE</div>
+        <div class="box small">2 RIVA RIVA → ...</div>
+        <label class="field"><span>Esposto</span><div class="input">ONDA SU ONDA</div></label>
+        <label class="field"><span>Soluzione</span><div class="input">MAREA MA GRANDE</div></label>
+        <label class="field"><span>Diagramma</span><div class="input">5, 2, 6</div></label>
+      </div>
+      <div>
+        <p class="frame-label">Anteprima della scheda interna "Contributo umano"</p>
+        <div class="box">
+          <ul class="small"><li>Istruzioni scritte da te</li><li>Variante 1 di 3 scelta</li><li>2 modifiche alla soluzione e al diagramma</li><li>Prova: non ancora eseguita</li></ul>
+          <label class="field"><span>Descrivi il tuo contributo (obbligatorio per approvare)</span><div class="input" style="min-height:60px"></div></label>
+        </div>
+        <p class="frame-label">Scheda interna "Prova"</p>
+        <div class="cw" data-n="13" data-black="5,8" data-active="0"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B3 -->
+<section class="screen" id="b3" tabindex="-1" aria-labelledby="b3h">
+  <h2 id="b3h">3. Studio - Scheda Rivista</h2>
+  <p class="note">La Rivista e un oggetto intero: miniature delle pagine con lo stato di ognuna. L'estrazione e una scheda interna con il proprio registro. Le pagine gia lette si rivedono durante l'estrazione.</p>
+  <div class="frame-d">
+    <div class="bar"><a href="#b1">Riviste</a> › <strong>Enigmistica Mese n. 41 (ottobre 2026)</strong> <span class="tag">privata</span><span class="grow"></span><a class="btn">Estrai di nuovo</a><a class="btn pri" href="#b4">Rivedi dalla pagina 1</a></div>
+    <div class="bar"><strong style="border-bottom:3px solid var(--ink)">Pagine</strong><span>Giochi (62)</span><span>Metadati</span><span>Estrazione 34/96</span></div>
+    <div style="padding:12px">
+      <div class="cols" style="grid-template-columns:repeat(auto-fill,minmax(100px,1fr));padding:0">
+        <div class="ph" style="min-height:120px">p. 1<br>copertina</div>
+        <div class="ph" style="min-height:120px">p. 2<br>3 giochi · verificati</div>
+        <div class="ph" style="min-height:120px">p. 3<br>2 giochi · da verificare</div>
+        <div class="ph" style="min-height:120px">p. 4<br>1 tipologia sconosciuta</div>
+        <div class="ph" style="min-height:120px">p. 5<br>non letta (errore)</div>
+        <div class="ph" style="min-height:120px">p. 35<br>in lettura...</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B4 -->
+<section class="screen" id="b4" tabindex="-1" aria-labelledby="b4h">
+  <h2 id="b4h">4. Studio - Revisione pagina</h2>
+  <p class="note">Unita di lavoro: la pagina. Immagine con riquadri a sinistra, elenco dei Giochi della pagina a destra (alternativa da tastiera all'immagine). Si conferma Gioco per Gioco e si passa alla pagina successiva.</p>
+  <div class="frame-d">
+    <div class="bar"><a href="#b3">Enigmistica Mese n. 41</a> › Pagine › <strong>Pagina 4 di 96</strong><span class="grow"></span><a class="btn">Pagina precedente</a><a class="btn pri" href="#b4">Pagina successiva</a></div>
+    <div class="cols c2">
+      <div class="ph" style="min-height:340px">Immagine della pagina 4<br>[riquadro A: cruciverba] [riquadro B: gioco sconosciuto]</div>
+      <div>
+        <div class="box"><strong>A - Cruciverba classico</strong> <span class="tag">confermato</span></div>
+        <div class="box strong"><strong>B - Tipologia sconosciuta</strong><br><span class="small">Il sistema propone una tipologia nuova: <a href="#b5">Bifronte (proposta)</a>. Il Gioco restera in attesa finche la tipologia non e confermata.</span></div>
+        <table>
+          <thead><tr><th>Campo</th><th>Valore letto</th></tr></thead>
+          <tbody><tr><td>esposto</td><td>Il re torna</td></tr><tr><td>soluzione</td><td>ROMA / AMOR</td></tr></tbody>
+        </table>
+        <p><a class="btn">Correggi</a> <a class="btn">Non e un gioco</a> <a class="btn pri" href="#b5">Vai alla proposta di tipologia</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B5 -->
+<section class="screen" id="b5" tabindex="-1" aria-labelledby="b5h">
+  <h2 id="b5h">5. Studio - Scheda Tipologia: proposta di Schema dinamico</h2>
+  <p class="note">Le Tipologie sono un oggetto di primo livello, con versioni dello Schema e i Giochi collegati. Una proposta si conferma qui; le briciole di pane riportano alla Rivista da cui si era partiti.</p>
+  <div class="frame-d">
+    <div class="bar"><a href="#b1">Tipologie</a> › Proposte in attesa › <strong>Bifronte</strong> <span class="tag">proposta</span><span class="grow"></span><a href="#b4">Torna a: Enigmistica Mese 41, p. 4</a></div>
+    <div class="bar"><span>Schema</span><strong style="border-bottom:3px solid var(--ink)">Esempi (4)</strong><span>Giochi in attesa (4)</span><span>Versioni</span></div>
+    <div class="cols c2">
+      <div>
+        <table>
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Obblig.</th><th>Es. 1</th><th>Es. 2</th></tr></thead>
+          <tbody>
+            <tr><td>esposto</td><td>testo</td><td>si</td><td>Il re torna</td><td>Specchio</td></tr>
+            <tr><td>lettura_diritta</td><td>testo</td><td>si</td><td>ROMA</td><td>ATTO</td></tr>
+            <tr><td>lettura_inversa</td><td>testo</td><td>si</td><td>AMOR</td><td>OTTA</td></tr>
+          </tbody>
+        </table>
+        <p><a class="btn">Modifica campi</a> <a class="btn">Unisci a tipologia esistente</a></p>
+      </div>
+      <div><div class="ph" style="min-height:100px">Esempio 1 (Rivista 41, p. 4)</div><div class="ph" style="min-height:100px;margin-top:8px">Esempio 2 (Rivista 39, p. 71)</div></div>
+    </div>
+    <div class="bar bottom"><a class="btn">Rifiuta</a><span class="grow"></span><a class="btn pri" href="#b4">Conferma la tipologia (versione 1)</a></div>
+  </div>
+</section>
+
+<!-- B6 -->
+<section class="screen" id="b6" tabindex="-1" aria-labelledby="b6h">
+  <h2 id="b6h">6. Studio - Ricerca a faccette</h2>
+  <p class="note">La ricerca piu potente delle tre proposte: testo libero, faccette con conteggi, viste salvate. Dalla scheda del Gioco si gioca nella scheda interna Prova o a schermo intero.</p>
+  <div class="frame-d">
+    <div class="bar"><strong>Ricerca</strong><span class="grow"></span><span class="input" style="min-width:300px">mare</span><a class="btn">Salva come vista</a></div>
+    <div class="cols side">
+      <div class="small">
+        <strong>Tipologia</strong><br>[x] Crittografia (41)<br>[ ] Cruciverba (12)<br>[ ] Rebus (3)<br><br>
+        <strong>Provenienza</strong><br>[ ] Originale (19)<br>[ ] Rivista (37)<br><br>
+        <strong>Anno</strong><br>[x] 2025 (22)<br>[ ] 2026 (34)<br><br>
+        <strong>Stato</strong><br>[ ] Pubblicato · [ ] Verificato · [ ] Bozza
+      </div>
+      <div>
+        <p class="muted small">22 risultati · filtri: Crittografia, 2025 (togli un filtro per vedere di piu)</p>
+        <table>
+          <thead><tr><th>Gioco</th><th>Provenienza</th><th>Stato</th><th></th></tr></thead>
+          <tbody>
+            <tr class="sel"><td><a href="#b2">Onda su onda</a></td><td>Originale</td><td>Pubblicato</td><td><a class="btn pri" href="#b2">Gioca</a></td></tr>
+            <tr><td>p. 44 gioco 1</td><td>Enigmistica Mese 38</td><td>Verificato</td><td>Gioca</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B7 -->
+<section class="screen" id="b7" tabindex="-1" aria-labelledby="b7h">
+  <h2 id="b7h">7. Admin - Pubblicazioni (calendario)</h2>
+  <p class="note">Applicazione separata. La Pubblicazione e un oggetto: un giorno, un Gioco, una visibilita. Il selettore elenca solo Giochi originali approvati.</p>
+  <div class="frame-d">
+    <div class="bar"><strong>DBEnigmistica Admin</strong><span class="grow"></span><span class="muted small">Novembre 2026 · 4 giorni vuoti</span><a class="btn">Distribuisci sui giorni vuoti</a></div>
+    <div class="cols side">
+      <ul class="nav-list"><li class="cur">Pubblicazioni</li><li><a href="#b8">Sito</a></li><li>Abbonati</li><li><a href="#b8">Statistiche</a></li></ul>
+      <div>
+        <div class="cols" style="grid-template-columns:repeat(7,1fr);padding:0;gap:4px">
+          <div class="box small">lun 10<br>Ponte</div><div class="box small">mar 11<br>Neve</div><div class="box small">mer 12<br>Vento</div><div class="box small">gio 13<br>Faro</div><div class="box small">ven 14<br>Porto</div><div class="box small strong">sab 15<br><em>vuoto</em></div><div class="box small">dom 16<br><em>vuoto</em></div>
+        </div>
+        <div class="box strong" style="margin-top:12px">
+          <strong>Sabato 15 novembre - aggiungi gioco</strong>
+          <div class="input" style="margin:6px 0">Cerca tra i Giochi approvati e originali...</div>
+          <ul class="nav-list"><li class="cur">Mare d'inverno 2 · Crittografia · approvato oggi</li><li>Mare d'inverno 3 · Crittografia · approvato oggi</li></ul>
+          <p class="small">Visibilita: (o) gratuito ( ) solo abbonati · Orario: 07:00</p>
+          <a class="btn pri" href="#b9">Conferma pubblicazione</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B8 -->
+<section class="screen" id="b8" tabindex="-1" aria-labelledby="b8h">
+  <h2 id="b8h">8. Admin - Aspetto del sito e Statistiche</h2>
+  <p class="note">Due oggetti dell'Admin. L'aspetto si modifica con anteprima affiancata (desktop e telefono) e si pubblica come bozza; le statistiche hanno sempre una tabella oltre al grafico.</p>
+  <div class="frame-d">
+    <div class="cols c2">
+      <div>
+        <p class="frame-label">Sito › Aspetto</p>
+        <label class="field"><span>Nome del sito</span><div class="input">Gioco del giorno</div></label>
+        <label class="field"><span>Testo di benvenuto</span><div class="input">Un gioco nuovo ogni mattina</div></label>
+        <label class="field"><span>Tema (dal lavoro dell'UI Designer)</span><div class="input">Tema 1</div></label>
+        <label class="field"><span>Dimensione testo predefinita</span><div class="input">Grande (20 px)</div></label>
+        <a class="btn">Salva bozza</a> <a class="btn pri">Pubblica la modifica</a>
+        <div class="ph" style="min-height:120px;margin-top:8px">Anteprima: telefono e desktop</div>
+      </div>
+      <div>
+        <p class="frame-label">Statistiche</p>
+        <div class="ph" style="min-height:140px">Grafico giocatori al giorno (30 giorni)</div>
+        <table style="margin-top:8px"><thead><tr><th>Giorno</th><th>Partite</th><th>Completate</th><th>Tornano</th></tr></thead>
+          <tbody><tr><td>10 nov</td><td>412</td><td>71%</td><td>31%</td></tr><tr><td>9 nov</td><td>388</td><td>69%</td><td>29%</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B9 -->
+<section class="screen" id="b9" tabindex="-1" aria-labelledby="b9h">
+  <h2 id="b9h">9. Sito pubblico - Home catalogo, pagina gioco, Lettore (mobile)</h2>
+  <p class="note">Il Sito e un catalogo: gioco del giorno in cima, poi una fila per tipologia (in una colonna verticale quando il testo e ingrandito). Ogni gioco ha una pagina propria con istruzioni e il pulsante Gioca.</p>
+  <div class="frame-m">
+    <div class="bar"><strong>Gioco del giorno</strong><span class="grow"></span><span class="small">Accedi</span></div>
+    <div style="padding:12px">
+      <a class="box strong" style="display:block;text-decoration:none" href="#b9b"><span class="muted small">Il gioco di oggi</span><br><strong class="big-t">Crittografia "Ponte"</strong><br>Facile · circa 5 minuti</a>
+      <p><strong>Cruciverba</strong></p><div class="cols c2" style="padding:0"><div class="box small">9 nov</div><div class="box small">8 nov</div></div>
+      <p><strong>Anagrammi</strong></p><div class="cols c2" style="padding:0"><div class="box small">9 nov</div><div class="box small">8 nov</div></div>
+    </div>
+    <div class="bar bottom"><strong>Oggi</strong><span>Giochi</span><a href="#b10">Archivio</a><span>Account</span></div>
+  </div>
+  <div class="frame-m" id="b9b">
+    <div class="bar"><a href="#b9">‹ Indietro</a><strong>Crittografia "Ponte"</strong></div>
+    <div style="padding:12px">
+      <p>Come si gioca: dall'esposto ricava una frase con il diagramma indicato.</p>
+      <p class="muted">Facile · gratuito · 10 novembre 2026</p>
+      <a class="btn big pri" href="#b9c">Gioca</a>
+    </div>
+  </div>
+  <div class="frame-m" id="b9c">
+    <div class="bar"><a href="#b9b">‹</a><strong>Ponte</strong><span class="grow"></span><span class="btn">A A</span></div>
+    <div style="padding:12px">
+      <p class="big-t"><strong>Esposto:</strong> P ONTE</p>
+      <div class="cw" data-n="11" data-black="2,6" data-active="0"></div>
+      <a class="btn big pri" href="#b10" style="margin-top:8px">Verifica</a>
+      <div class="box small" style="margin-top:8px">Dopo la fine: "Crea un account per non perdere la serie" · Altri giochi gratuiti</div>
+    </div>
+  </div>
+</section>
+
+<!-- B10 -->
+<section class="screen" id="b10" tabindex="-1" aria-labelledby="b10h">
+  <h2 id="b10h">10. Sito pubblico - Archivio, piani, abbonamento (mobile)</h2>
+  <p class="note">Archivio con filtri per tipologia e mese. I giochi oltre gli ultimi 7 giorni portano alla pagina dei piani. Abbonamento in 5 passaggi, con accesso esplicito.</p>
+  <div class="frame-m">
+    <div class="bar"><strong>Archivio</strong></div>
+    <div style="padding:12px">
+      <p><span class="tag">Tutte le tipologie</span> <span class="tag">Ottobre</span></p>
+      <div class="box">Crittografia · 31 ott · <a href="#b10b">Sblocca con l'abbonamento</a></div>
+      <div class="box">Cruciverba · 30 ott · <a href="#b10b">Sblocca con l'abbonamento</a></div>
+    </div>
+    <div class="bar bottom"><a href="#b9">Oggi</a><span>Giochi</span><strong>Archivio</strong><span>Account</span></div>
+  </div>
+  <div class="frame-m" id="b10b">
+    <div class="bar"><strong>Scegli il piano</strong></div>
+    <div style="padding:12px">
+      <table><thead><tr><th></th><th>Gratis</th><th>Abbonato</th></tr></thead>
+        <tbody><tr><td>Gioco del giorno</td><td>si</td><td>si</td></tr><tr><td>Archivio completo</td><td>7 giorni</td><td>si</td></tr><tr><td>Prezzo</td><td>0</td><td>19 €/anno</td></tr></tbody></table>
+      <a class="btn big pri" href="#b10c" style="margin-top:8px">Abbonati</a>
+    </div>
+  </div>
+  <div class="frame-m" id="b10c">
+    <div class="bar"><strong>Accedi</strong> poi <strong>Paga</strong></div>
+    <div style="padding:12px">
+      <label class="field"><span>Email</span><div class="input"></div></label>
+      <a class="btn big">Mandami il link di accesso</a>
+      <p class="muted small">Dopo l'accesso: pagamento (telefono o carta), poi conferma e ritorno al gioco sbloccato.</p>
+    </div>
+  </div>
+</section>
+
+<!-- B11 -->
+<section class="screen" id="b11" tabindex="-1" aria-labelledby="b11h">
+  <h2 id="b11h">11. Stati - vuoto, errore AI, elaborazione lunga, conflitto, offline</h2>
+  <p class="note">Gli stati vivono dentro l'oggetto a cui appartengono; le elaborazioni in sottofondo hanno un pannello Attivita trasversale.</p>
+  <div class="cols c2" style="padding:0">
+    <div class="frame-d"><div class="bar"><strong>Vuoto</strong> - elenco Riviste al primo avvio</div><div style="padding:12px">
+      <p class="big-t">Ancora nessuna Rivista.</p><p>Qui troverai i numeri che importi, con le pagine e i Giochi estratti. Restano privati.</p><a class="btn pri">Importa la prima Rivista</a></div></div>
+    <div class="frame-d"><div class="bar"><strong>Errore dell'AI</strong> - scheda Gioco in bozza</div><div style="padding:12px">
+      <div class="box strong">La generazione non e riuscita: il servizio AI non ha risposto entro 60 secondi. Le tue istruzioni sono salvate.</div>
+      <a class="btn pri">Riprova</a> <a class="btn">Modifica le istruzioni</a> <a class="btn">Compila a mano</a></div></div>
+    <div class="frame-d"><div class="bar"><strong>Elaborazione lunga</strong> - pannello Attivita</div><div style="padding:12px">
+      <p><a href="#b3">Enigmistica Mese n. 41</a> · estrazione 34/96 · circa 9 min</p><div class="progress" style="--p:35%"></div>
+      <p><a href="#b1">Lotto di 5 crittografie</a> · 3/5</p><div class="progress" style="--p:60%"></div>
+      <a class="btn">Sospendi</a> <a class="btn">Annulla</a></div></div>
+    <div class="frame-d"><div class="bar"><strong>Conflitto</strong> - salvataggio di una scheda cambiata altrove</div><div style="padding:12px">
+      <p>Questo Gioco e stato modificato alle 21:14 in un'altra finestra.</p>
+      <table><thead><tr><th>Campo</th><th>La tua versione</th><th>L'altra</th></tr></thead><tbody><tr><td>soluzione</td><td>MAREA MA GRANDE</td><td>MAREA GRANDE</td></tr></tbody></table>
+      <a class="btn pri">Tieni la mia</a> <a class="btn">Tieni l'altra</a></div></div>
+    <div class="frame-m"><div class="bar"><strong>Offline</strong> - Home catalogo</div><div style="padding:12px">
+      <div class="box small" role="status">Sei senza connessione. Puoi giocare i giochi gia scaricati.</div>
+      <div class="box">Crittografia "Ponte" · <strong>Disponibile senza rete</strong></div>
+      <div class="box dash muted">Cruciverba 9 nov · serve la connessione</div></div></div>
+    <div class="frame-d"><div class="bar"><strong>Conflitto</strong> - nuova versione di uno Schema</div><div style="padding:12px">
+      <p>38 Giochi usano la versione 1 di "Bifronte".</p><a class="btn pri">Migra (anteprima dei campi mancanti)</a> <a class="btn">Lascia sulla versione 1</a></div></div>
+  </div>
+</section>
+
+</main>
+</div>
+<script>
+(function(){
+  // Disegna le griglie segnaposto a partire dagli attributi data-*.
+  document.querySelectorAll('.cw').forEach(function(g){
+    var n=+g.dataset.n, black=(g.dataset.black||'').split(',').map(Number), act=+g.dataset.active;
+    var cols=n>9?Math.min(n,13):n; var rows=n>9?1:n;
+    g.style.setProperty('--n',cols); g.setAttribute('aria-hidden','true');
+    for(var i=0;i<cols*rows;i++){var s=document.createElement('span');
+      if(black.indexOf(i)>-1)s.className='k'; else if(i===act)s.className='a';
+      else if(rows===n && Math.floor(i/n)===Math.floor(act/n))s.className='w';
+      g.appendChild(s);}
+  });
+  // Navigazione tra schermate tramite l'ancora nell'indirizzo.
+  var screens=[].slice.call(document.querySelectorAll('.screen'));
+  screens.forEach(function(s,i){
+    var p=document.createElement('p'); p.className='wf-pager';
+    p.innerHTML=(i>0?'<a href="#'+screens[i-1].id+'">&larr; Schermata precedente</a>':'<span></span>')+(i<screens.length-1?'<a href="#'+screens[i+1].id+'">Schermata successiva &rarr;</a>':'<span></span>');
+    s.appendChild(p);
+  });
+  function show(){
+    var h=location.hash.slice(1), target=document.getElementById(h), sc=target?target.closest('.screen'):null;
+    if(!sc)sc=screens[0];
+    screens.forEach(function(s){s.classList.toggle('on',s===sc);});
+    document.querySelectorAll('.wf-index a').forEach(function(a){a.setAttribute('aria-current',a.getAttribute('href')==='#'+sc.id?'page':'false');});
+    if(target&&target!==sc){target.scrollIntoView();}else{sc.focus();}
+  }
+  window.addEventListener('hashchange',show); show();
+})();
+</script>
+</body>
+</html>

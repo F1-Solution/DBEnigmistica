@@ -1,0 +1,25 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Microsoft": "Warning",
+      "Microsoft.EntityFrameworkCore": "Information"
+    }
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=dbenigmistica;Username=dbenigmistica;Password=YOUR_DB_PASSWORD_HERE"
+  },
+  "Anthropic": {
+    "ApiKey": "sk-ant-api03-YOUR_ANTHROPIC_API_KEY_HERE",
+    "Model": "claude-3-5-sonnet-20241022",
+    "MaxTokens": 4096
+  },
+  "Ocr": {
+    "TesseractDataPath": "C:/Program Files/Tesseract-OCR/tessdata",
+    "Language": "ita"
+  },
+  "Processing": {
+    "BatchSize": 5,
+    "MaxDegreeOfParallelism": 4
+  }
+}

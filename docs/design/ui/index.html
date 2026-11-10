@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proposte UI · DBEnigmistica</title>
+<meta name="description" content="Confronto tra le cinque proposte di interfaccia per DBEnigmistica.">
+<style>
+:root{--bg:#F6F5F1;--surface:#FFFFFF;--ink:#16171A;--muted:#55565C;--line:#DAD8D0;--link:#1B4FA8}
+@media (prefers-color-scheme: dark){:root{--bg:#111214;--surface:#1A1C1F;--ink:#ECECEA;--muted:#A8A9AE;--line:#2E3035;--link:#9DBBFF}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:2rem 16px 4rem}
+h1{font-size:clamp(1.8rem,5vw,2.6rem);margin:0 0 .5rem;line-height:1.15}
+.lede{color:var(--muted);max-width:44rem;margin:0 0 2rem}
+ol{list-style:none;margin:0;padding:0;display:grid;gap:1rem}
+li a{display:grid;grid-template-columns:3rem minmax(0,1fr);gap:.25rem 1rem;align-items:start;padding:1.1rem 1.25rem;background:var(--surface);border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none;min-height:44px}
+li a:hover{border-color:var(--ink)}
+li a:focus-visible{outline:3px solid var(--link);outline-offset:2px}
+.n{font-size:1.8rem;font-weight:700;line-height:1;grid-row:span 3}
+.name{font-size:1.35rem;font-weight:700;color:var(--link);text-decoration:underline;text-underline-offset:.2em}
+.char{margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem .9rem;align-items:center;color:var(--muted);font-size:.9rem}
+.sw{display:inline-flex;gap:3px}
+.sw i{width:1.1rem;height:1.1rem;border-radius:3px;border:1px solid var(--line);display:inline-block}
+.notes{margin-top:2.5rem;color:var(--muted);font-size:.95rem}
+.notes a{color:var(--link)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>DBEnigmistica · cinque proposte di interfaccia</h1>
+  <p class="lede">Ogni proposta mostra le stesse quattro schermate (Sito pubblico, Lettore, Studio, Admin), navigabili dalla barra in alto, con tema chiaro e scuro. Aprile una alla volta e prova il cruciverba: le differenze stanno nel carattere, non solo nei colori.</p>
+  <ol>
+    <li><a href="proposta-1.html"><span class="n">1</span><span class="name">Carta</span><p class="char">Editoriale da carta stampata: testata, filetti e colonne, rosso tipografico su carta avorio.</p><span class="meta"><span class="sw"><i style="background:#F4EFE4"></i><i style="background:#1A1714"></i><i style="background:#A3221A"></i><i style="background:#F0C24F"></i></span>Newsreader + Libre Franklin</span></a></li>
+    <li><a href="proposta-2.html"><span class="n">2</span><span class="name">Banco</span><p class="char">Essenziale da strumento di lavoro: tabelle, cifre monospaziate, ricerca in primo piano.</p><span class="meta"><span class="sw"><i style="background:#F4F5F7"></i><i style="background:#15181C"></i><i style="background:#1E4FD0"></i><i style="background:#FFD966"></i></span>IBM Plex Sans + IBM Plex Mono</span></a></li>
+    <li><a href="proposta-3.html"><span class="n">3</span><span class="name">Salotto</span><p class="char">Caldo e giocoso: tessere con ombre piene, terracotta, zafferano e verde petrolio.</p><span class="meta"><span class="sw"><i style="background:#FFF5E8"></i><i style="background:#2B1D14"></i><i style="background:#B83F26"></i><i style="background:#1C6A66"></i><i style="background:#F2B33D"></i></span>Fraunces + Figtree</span></a></li>
+    <li><a href="proposta-4.html"><span class="n">4</span><span class="name">Lente</span><p class="char">Classico ad alto contrasto: testo a 20 px, bordi spessi, una colonna, grandezza del testo regolabile.</p><span class="meta"><span class="sw"><i style="background:#FFFFFF"></i><i style="background:#000000"></i><i style="background:#0A3A8C"></i><i style="background:#FFD400"></i></span>Atkinson Hyperlegible</span></a></li>
+    <li><a href="proposta-5.html"><span class="n">5</span><span class="name">Tascabile</span><p class="char">Contemporaneo da app: controlli segmentati, superfici arrotondate, barra degli aiuti sempre a portata di pollice.</p><span class="meta"><span class="sw"><i style="background:#F1F0EB"></i><i style="background:#121212"></i><i style="background:#17594A"></i><i style="background:#FF6B3D"></i></span>Bricolage Grotesque + Instrument Sans</span></a></li>
+  </ol>
+  <p class="notes">Schede, palette, contrasti e raccomandazione: <a href="PROPOSTE-UI.md">PROPOSTE-UI.md</a>. I caratteri arrivano da Google Fonts: senza connessione le pagine funzionano con caratteri di sistema.</p>
+</main>
+</body>
+</html>

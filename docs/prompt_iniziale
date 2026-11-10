@@ -1,0 +1,144 @@
+Agisci come un senior software engineer specializzato in C#, OCR, analisi del layout di documenti e progettazione di database relazionali.
+
+### OBIETTIVO GENERALE
+Devi aiutarmi ad analizzare, progettare e sviluppare una **console application C# (.NET)** che:
+1. Scansioni in batch molti file PDF, dove **ogni PDF rappresenta una rivista di enigmistica**.
+2. Usi **OCR** e analisi del layout per identificare e estrarre i **giochi enigmistici** presenti nella rivista (es: cruciverba, giochi di logica, rebus, parole crociate, ecc.).
+3. Salvi i dati estratti in un **database relazionale**, con:
+   - **tabelle specifiche per ogni tipologia di gioco** (con struttura diversa a seconda del gioco),
+   - **tabelle per i metadati** delle riviste e dei giochi.
+
+### CONTESTO E COMPORTAMENTO DELL’APPLICAZIONE
+
+- Ogni **PDF = una rivista**.
+- Ogni rivista ha:
+  - **Titolo** (es. "La Settimana Enigmistica"),
+  - **Data di uscita**,
+  - **Periodicità** (mensile o settimanale, se possibile da dedurre o specificata nei dati di input),
+  - **Lista di pagine** con uno o più giochi su ciascuna.
+- L’applicazione deve:
+  1. **Caricare i PDF** da una cartella.
+  2. Applicare **OCR** alle pagine (puoi assumere l’uso di una libreria OCR come Tesseract, o suggerirne altre compatibili con .NET).
+  3. Analizzare il **layout della pagina** per individuare i singoli giochi (titolo del gioco, eventuale didascalia, griglia, testo delle definizioni, ecc.).
+  4. **Classificare il tipo di gioco** (es. cruciverba, anagrammi, logica, ecc.), anche in maniera euristica.
+  5. **Salvare i dati nel database**.
+
+### REQUISITI DI DATABASE
+
+- Il database deve contenere almeno:
+
+  1. **Tabella RIVISTA** (es. `Magazines`)
+     - Id
+     - Titolo
+     - DataPubblicazione
+     - Periodicita (es. "Settimanale", "Mensile")
+     - Eventuali altri metadati utili (es. numero, anno, ecc.)
+
+  2. **Tabella PAGINA** (es. `Pages`)
+     - Id
+     - MagazineId (FK verso `Magazines`)
+     - NumeroPagina
+     - Eventuali metadati (es. immagine della pagina, testo OCR grezzo)
+
+  3. **Tabella GIOCO GENERALE** (es. `Games`)
+     - Id
+     - PageId (FK verso `Pages`)
+     - TipoGioco (string o enum: es. "Cruciverba", "Rebus", "Logica", ecc.)
+     - TitoloGioco (se presente)
+     - PosizioneNelLayout (bounding box o coordinate approssimative, opzionale)
+     - Altri metadati generali.
+
+- Per **ogni tipologia di gioco**, voglio avere una **tabella specifica dedicata**, ad esempio:
+  - `CrosswordGames`
+  - `LogicGames`
+  - `RebusGames`
+  - ecc.
+
+  Queste tabelle avranno **colonne diverse** a seconda del tipo (es. per i cruciverba: numero di righe/colonne, definizioni orizzontali/verticali; per i rebus: testo del rebus, soluzione codificata, ecc.).
+
+- Requisito importante:
+  - Quando l’applicazione incontra **un nuovo tipo di gioco non ancora modellato**, deve:
+    1. Proporre una **nuova struttura di tabella** (o più tabelle) per rappresentarlo.
+    2. Mostrare questa proposta all’utente (in console) in modo leggibile.
+    3. Permettere all’utente di **accettare o modificare** la proposta (es. aggiungere/rinominare colonne).
+    4. Solo dopo la conferma, creare/aggiornare le tabelle nel database e salvare il gioco.
+
+- Nel file giochi_enigmistici.md trovi le descrizioni di alcuni giochi e alcuni link utili. Usa le definizioni per far creare ad un agente AI le tabelle di database relative
+
+### ASPETTI INTERATTIVI
+
+- L’applicazione è una **console app** che deve:
+  - Mostrare all’utente un riepilogo dei giochi appena riconosciuti in una rivista (tipo, posizione, pagina, ecc.).
+  - Per ogni **nuovo tipo di gioco**:
+    - Mostrare una proposta di modello di tabella (nome tabella, colonne, tipi).
+    - Chiedere conferma o modifiche.
+  - Gestire con cura input dell’utente (sì/no, modifica nome colonna, tipo colonna, ecc.).
+  - L'applicazione deve accettare parametri da riga di comando che gli consentano di:
+    - Scansionare un'intera cartella di PDF
+    - Scansionare un singolo file
+    - Accettare script da inserire nel database
+    - Accettaere file .md di istruzioni di un gioco in particolare da far analizzare ad un agente AI per creare le tabelle di database corrispondenti
+    - Accettare un stringa con la descrizione di un gioco da sottoporre ad u agente AI
+    - altri comandi che ti vengono in mente e che possano essere utili
+
+### REQUISITI TECNICI
+
+- Linguaggio: **C#**.
+- Tipo di progetto: **Console Application .NET (versione recente, es. .NET 10 con System.CommandLine)**.
+- Accesso al DB: preferibilmente tramite **Entity Framework Core**, ma puoi proporre una soluzione alternativa se più adatta.
+- Database: puoi proporre una soluzione semplice (es. **SQLite** per prototipo) ma con design facilmente migrabile verso SQL Server o altri RDBMS.
+- OCR: suggerisci librerie compatibili con .NET per:
+  - estrarre testo da PDF,
+  - se necessario, convertire PDF in immagini pagina per pagina e poi applicare OCR.
+- Agente AI: l'applicazione deve contenere le API per chiamare un agente AI (scegli tu il migliore secondo le recensioni che trovi online per poter creare tabelle di database)
+- Architettura:
+  - Separare bene:
+    - strato di accesso al file system / PDF,
+    - strato OCR,
+    - strato di analisi del layout e classificazione dei giochi,
+    - strato di persistenza dati,
+    - strato di interazione con l’utente.
+
+### COSA MI ASPETTO DALLA TUA RISPOSTA
+
+Organizza la risposta in più sezioni chiare:
+
+1. **Domande di chiarimento**: 
+   - Prima chiedimi eventuali dettagli mancanti (ad es. se ho preferenze su librerie OCR, DB, o tipologie di giochi principali da supportare).
+
+2. **Progettazione ad alto livello**:
+   - Descrivi l’architettura proposta (moduli, responsabilità, pattern principali).
+   - Descrivi il workflow principale: dal caricamento dei PDF, all’OCR, al riconoscimento giochi, fino al salvataggio nel DB.
+
+3. **Schema del database**:
+   - Proponi le tabelle iniziali (Magazines, Pages, Games, e almeno 2–3 tabelle specifiche per tipologia di gioco come esempio).
+   - Spiega come progettare la parte di **evoluzione dinamica dello schema** quando emergono nuovi tipi di gioco.
+   - Descrivi come memorizzare i metadati di:
+     - pagina (numero, riferimento rivista),
+     - rivista (titolo, data uscita, periodicità),
+     - collegamento gioco ↔ pagina ↔ rivista.
+
+4. **Design del modello ad oggetti in C#**:
+   - Proponi le classi C# corrispondenti (magari con un approccio domain-driven semplificato).
+   - Indica eventuali interfacce per astrarre OCR, analisi layout e persistenza.
+
+5. **Flow di interazione con l’utente**:
+   - Spiega nel dettaglio come gestire il caso in cui viene trovato un **nuovo tipo di gioco**:
+     - come generare automaticamente una proposta di tabella,
+     - come mostrarla in console,
+     - come recepire le modifiche dell’utente,
+     - come applicare le modifiche al DB (migrazioni dinamiche, o altra strategia).
+
+6. **Esempi di codice C#**:
+   - Fornisci esempi di:
+     - Program.cs con il main flow dell’applicazione.
+     - Classi di dominio principali (Magazine, Page, Game, ecc.).
+     - Una classe di servizio per il processamento di un PDF.
+     - Una classe di servizio per la gestione della proposta/creazione dinamica di tabelle.
+   - Il codice non deve essere perfetto o completo al 100%, ma deve dare una base solida e compilabile su cui posso continuare a iterare.
+
+7. **Suggerimenti su librerie e strumenti**:
+   - Elenca librerie OCR/PDF consigliate per .NET.
+   - Eventuali librerie per l’analisi del layout o per aiutare nella classificazione delle aree della pagina (anche solo come idee/approcci).
+
+Segui un approccio iterativo: prima dammi il design e lo schema, poi passiamo al codice passo per passo.

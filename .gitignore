@@ -1,0 +1,61 @@
+# Build artifacts
+bin/
+obj/
+*.user
+*.suo
+*.cache
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+
+# NuGet
+*.nupkg
+packages/
+
+# Tesseract data
+tessdata/
+
+# Test results
+TestResults/
+
+# Environment files - SECRET CONFIGURATION
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
+!appsettings.json
+*.local.json
+.env
+.env.local
+.env.*.local
+secrets.json
+user-secrets.json
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+temp/
+tmp/
+
+# Riviste e materiale di prova (mai nel repo)
+*.pdf
+
+# Strumenti e risultati locali
+.playwright-mcp/
+.planning/
+.claude/settings.local.json
+coverage*/
+*.cobertura.xml
+*.trx
+publish/
+artifacts/

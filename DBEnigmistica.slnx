@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DBEnigmistica.AI/DBEnigmistica.AI.csproj" />
+    <Project Path="src/DBEnigmistica.Application/DBEnigmistica.Application.csproj" />
+    <Project Path="src/DBEnigmistica.Console/DBEnigmistica.Console.csproj" />
+    <Project Path="src/DBEnigmistica.Domain/DBEnigmistica.Domain.csproj" />
+    <Project Path="src/DBEnigmistica.Infrastructure/DBEnigmistica.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DBEnigmistica.Tests/DBEnigmistica.Tests.csproj" />
+  </Folder>
+</Solution>

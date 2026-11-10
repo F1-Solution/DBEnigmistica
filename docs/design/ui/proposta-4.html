@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lente · DBEnigmistica</title>
+<meta name="description" content="Mockup di interfaccia per DBEnigmistica: classico ad alto contrasto per la leggibilità">
+<script>(function(){var t;try{t=localStorage.getItem('dbe-p4-theme')}catch(e){}if(t!=='dark'&&t!=='light'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:calc(var(--fs) * var(--scale,1));scroll-padding-top:7rem}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:1rem;line-height:1.55;min-height:100vh;transition:background-color .2s ease,color .2s ease}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--font-head);line-height:1.15;margin:0 0 .5em}
+h1{font-size:clamp(1.75rem,5vw,2.6rem)} h2{font-size:1.35rem} h3{font-size:1.1rem}
+p{margin:0 0 .8em}
+a{color:var(--link);text-underline-offset:.18em}
+svg{max-width:100%}
+.icon{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.15em}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:-1px;padding:0;border:0}
+.skip{position:absolute;left:8px;top:-80px;z-index:100;background:var(--ink);color:var(--bg);padding:.75rem 1rem;font-weight:700}
+.skip:focus{top:8px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px}
+@media(min-width:768px){.wrap{padding:0 32px}}
+.screen{display:none;padding:1.5rem 0 4rem}
+.screen.is-on{display:block}
+.screen h1:focus{outline:none;box-shadow:none}
+/* top bar */
+.topbar{position:sticky;top:0;z-index:20;background:var(--bar-bg);color:var(--bar-ink)}
+.topbar-in{max-width:1280px;margin:0 auto;padding:8px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand theme" "tabs tabs";gap:6px 12px;align-items:center}
+@media(min-width:900px){.topbar-in{grid-template-columns:auto 1fr auto;grid-template-areas:"brand tabs theme";padding:10px 32px}}
+.brand{grid-area:brand;display:flex;align-items:center;gap:.5rem;font-family:var(--font-head);font-weight:700;font-size:1.25rem;color:inherit;text-decoration:none;min-width:0}
+.brand small{font-family:var(--font-body);font-weight:400;font-size:.75rem;opacity:.8;white-space:nowrap}
+.tabs{grid-area:tabs;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+@media(min-width:900px){.tabs{display:flex;justify-content:center;gap:6px}}
+.tabs a{min-height:44px;display:flex;align-items:center;justify-content:center;padding:0 14px;color:inherit;text-decoration:none;font-weight:600;white-space:nowrap}
+.theme-btn{grid-area:theme;min-height:44px;min-width:44px;padding:0 12px;display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600;touch-action:manipulation}
+/* buttons */
+.btn{min-height:48px;padding:.4rem 1.1rem;border-radius:var(--r-btn);border:var(--bw) solid var(--line-strong);background:var(--surface);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:600;text-decoration:none;touch-action:manipulation;transition:background-color .15s ease,transform .1s ease,box-shadow .15s ease;line-height:1.2;text-align:center}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn-quiet{background:transparent;border-color:transparent;text-decoration:underline;text-underline-offset:.2em}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.kicker{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted);margin:0 0 .4rem}
+.meta{color:var(--muted)}
+.screen-head{margin-bottom:1.5rem}
+.msg{min-height:1.6em;margin:.75rem 0 0;font-weight:600}
+.msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+.mini-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;width:7.5rem;aspect-ratio:1;background:var(--line-strong);border:2px solid var(--line-strong);flex:none}
+.mini-grid span{background:var(--cell-bg)} .mini-grid span.b{background:var(--cell-black)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:.8rem 1.2rem;border-radius:var(--r);max-width:calc(100vw - 32px);z-index:50;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.toast.is-on{opacity:1}
+/* reader */
+.reader{display:grid;gap:1.5rem}
+@media(min-width:1024px){.reader{grid-template-columns:auto minmax(0,1fr);align-items:start;gap:2.5rem}}
+.board{min-width:0}
+.active-clue{display:flex;flex-wrap:wrap;gap:.25rem .6rem;align-items:baseline;padding:.7rem 1rem;background:var(--surface-2);border-left:4px solid var(--accent);margin-bottom:1rem;min-height:3.3rem;max-width:34rem}
+.ac-num{font-weight:700;white-space:nowrap}
+.cw{--cell:clamp(46px,calc((100vw - 96px) / 5),66px);display:grid;grid-template-columns:repeat(5,var(--cell));gap:var(--cw-gap,1px);width:max-content;max-width:100%;background:var(--cw-bg,var(--line-strong));border:var(--cw-border,2px solid var(--line-strong));padding:var(--cw-pad,0)}
+.cell{position:relative;width:var(--cell);height:var(--cell);background:var(--cell-bg)}
+.cell.black{background:var(--cell-black)}
+.cell input{position:absolute;inset:0;width:100%;height:100%;border:0;margin:0;padding:.35em 0 0;background:transparent;text-align:center;font-family:var(--font-grid);font-weight:700;font-size:calc(var(--cell) * .48);line-height:1;text-transform:uppercase;color:var(--ink);caret-color:transparent;cursor:pointer;border-radius:inherit;-webkit-appearance:none;appearance:none}
+.cell input:focus{outline:none}
+.cell .n{position:absolute;top:3px;left:4px;font-size:.7rem;line-height:1;font-weight:600;color:var(--muted);pointer-events:none;z-index:1;font-family:var(--font-grid)}
+.cell.in-word{background:var(--hl)}
+.cell.is-active{background:var(--hl-cell)}
+.cell.is-active:focus-within{box-shadow:inset 0 0 0 3px var(--focus)}
+.cell.err::after{content:"";position:absolute;left:18%;right:18%;bottom:12%;height:3px;background:var(--err);pointer-events:none}
+.cell.err input{color:var(--err)}
+.cell.ok input{color:var(--ok)}
+.cell.revealed::before{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 10px 10px 0;border-color:transparent var(--accent) transparent transparent;pointer-events:none}
+.tools{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+.clues{display:grid;gap:1.5rem;min-width:0}
+@media(min-width:600px){.clues{grid-template-columns:1fr 1fr}}
+.clues h2{font-size:1.1rem}
+.clues ol{list-style:none;margin:0;padding:0}
+.clue{display:flex;gap:.6rem;width:100%;text-align:left;padding:.55rem .7rem;min-height:48px;border:0;background:transparent;cursor:pointer;border-radius:var(--r);align-items:baseline}
+.clue .cn{font-weight:700;min-width:1.6em;flex:none}
+.clue.is-active{background:var(--hl)}
+.textgame{margin-top:2.5rem;max-width:44rem}
+.esposto{font-size:1.3rem;font-family:var(--font-head)}
+.tiles{display:flex;gap:.4rem;flex-wrap:wrap;margin:.5rem 0}
+.tile-l{width:2.75rem;height:2.75rem;display:grid;place-items:center;border:var(--bw) solid var(--line-strong);font-weight:700;font-family:var(--font-grid);background:var(--cell-bg);font-size:1.2rem;border-radius:var(--r-tile,var(--r))}
+.answer label{display:block;font-weight:700;margin:.8rem 0 .3rem}
+.answer-row{display:flex;gap:.5rem;flex-wrap:wrap}
+.answer input{flex:1 1 11rem;min-width:0;min-height:52px;padding:0 1rem;font-size:1.3rem;letter-spacing:.15em;text-transform:uppercase;border:var(--bw) solid var(--line-strong);border-radius:var(--r);background:var(--cell-bg);font-family:var(--font-grid)}
+.answer input[aria-invalid=true]{border-color:var(--err)}
+.answer-aux{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+/* studio */
+.panel{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r);padding:1.25rem;min-width:0}
+.studio{display:grid;gap:1.5rem}
+@media(min-width:1100px){.studio{grid-template-columns:17rem minmax(0,1fr)}}
+.studio-main{display:grid;gap:1.5rem;min-width:0}
+.motore{display:grid;gap:1.5rem;min-width:0}
+@media(min-width:1360px){.motore{grid-template-columns:minmax(0,1fr) 19rem;align-items:start}.motore .request{grid-column:1/-1}}
+.fields{display:grid;gap:1rem;margin-bottom:1rem}
+@media(min-width:600px){.fields{grid-template-columns:1fr 1fr}.fields .wide{grid-column:1/-1}}
+.lbl{display:block;font-weight:700;font-size:.9rem;margin-bottom:.3rem}
+.inp{width:100%;min-height:48px;padding:.5rem .8rem;border:var(--bw) solid var(--line-strong);border-radius:var(--r);background:var(--cell-bg);color:var(--ink)}
+textarea.inp{min-height:6rem;resize:vertical;line-height:1.5}
+.hint{font-size:.9rem;color:var(--muted);margin:.75rem 0 0}
+.draft-head{display:flex;flex-wrap:wrap;gap:.5rem 1rem;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.draft-head h2{margin:0}
+.stepper{display:flex;list-style:none;padding:0;margin:0 0 1.25rem;gap:.25rem}
+.stepper li{flex:1;padding:.5rem .25rem;text-align:center;border-bottom:4px solid var(--line);color:var(--muted);font-weight:600;font-size:.9rem}
+.stepper li.is-done{border-color:var(--accent);color:var(--ink)}
+.stepper li[aria-current=step]{font-weight:800}
+.draft-body{display:grid;gap:1rem;transition:opacity .2s ease}
+.draft[aria-busy=true] .draft-body{opacity:.35}
+.field-row{display:grid;gap:1rem}
+@media(min-width:600px){.field-row{grid-template-columns:1fr 1fr}}
+.mono{font-family:var(--font-mono,var(--font-grid));letter-spacing:.04em;font-weight:600;margin:0;padding:.6rem .8rem;background:var(--surface-2);border-radius:var(--r);overflow-wrap:anywhere}
+.checks{margin-top:1.25rem}
+.checks h3{font-size:1rem}
+.check{display:flex;gap:.7rem;align-items:flex-start;min-height:44px;padding:.35rem 0;cursor:pointer}
+.check input{width:1.35rem;height:1.35rem;accent-color:var(--accent);margin:.15rem 0 0;flex:none}
+.draft-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+.pill{display:inline-flex;align-items:center;gap:.3rem;padding:.15rem .65rem;border-radius:999px;font-size:.8rem;font-weight:700;border:1.5px solid currentColor;white-space:nowrap;line-height:1.4}
+.st-bozza{color:var(--muted)} .st-rivisto{color:var(--st-mid,var(--link))} .st-approvato,.st-pubblicato{color:var(--ok)} .st-attesa{color:var(--err)}
+.prov dl{display:grid;grid-template-columns:minmax(0,1fr);gap:.15rem;margin:0}
+.prov dt{font-weight:700;color:var(--muted);font-size:.85rem;margin-top:.6rem}
+.prov dd{margin:0;overflow-wrap:anywhere}
+.qlist{list-style:none;padding:0;margin:0 0 1.5rem;display:grid;gap:.5rem}
+.qitem{width:100%;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;padding:.75rem .9rem;border:var(--bw) solid var(--line);border-radius:var(--r);background:var(--surface);cursor:pointer;min-height:48px}
+.qitem .qt{font-weight:700}
+.qitem .qs{font-size:.85rem;color:var(--muted)}
+.qitem.is-active{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
+.searchbox{display:flex;gap:.5rem}
+.searchbox .inp{flex:1;min-width:0}
+.extract{display:grid;gap:1.25rem}
+@media(min-width:900px){.extract{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.page-img{background:#efe7d3;border:1px solid var(--line);padding:.5rem;border-radius:var(--r)}
+.page-img svg{display:block;width:100%;height:auto}
+.conf{display:flex;align-items:center;gap:.5rem;font-size:.9rem;color:var(--muted)}
+.flag{border-left:4px solid var(--err);padding:.5rem .75rem;background:var(--surface-2);font-size:.95rem}
+[hidden]{display:none!important}
+/* admin */
+.admin-head{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:flex-end;margin-bottom:1rem}
+.admin-head .screen-head{margin:0}
+.seg{display:inline-flex;border:var(--bw) solid var(--line-strong);border-radius:var(--r-btn);overflow:hidden;max-width:100%}
+.seg button{min-height:44px;padding:0 .9rem;border:0;background:transparent;cursor:pointer;font-weight:600}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:0 0 1.5rem}
+@media(min-width:900px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.kpi{min-width:0}
+.kpi-label{margin:0;color:var(--muted);font-size:.9rem}
+.kpi-val{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:700;font-variant-numeric:tabular-nums;margin:.1rem 0;font-family:var(--font-head);line-height:1.1}
+.kpi-delta{font-size:.85rem;margin:0}
+.admin-grid{display:grid;gap:1.5rem;margin-bottom:1.5rem}
+@media(min-width:1024px){.admin-grid{grid-template-columns:3fr 2fr}}
+.bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.4rem;align-items:end;height:13rem;margin:0;padding:0;list-style:none}
+.bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:.25rem;min-width:0}
+.bar i{display:block;width:100%;max-width:2.75rem;background:var(--accent);border-radius:var(--r-bar,0) var(--r-bar,0) 0 0;height:var(--h)}
+.bar b{font-size:.75rem;font-variant-numeric:tabular-nums;font-weight:700}
+.bar span{font-size:.8rem;color:var(--muted)}
+.bar.is-today i{background:var(--ink)}
+.hbars{list-style:none;margin:0;padding:0;display:grid;gap:.8rem}
+.hbars .hl{display:flex;justify-content:space-between;gap:1rem;font-size:.95rem}
+.hbars .hl b{font-variant-numeric:tabular-nums}
+.track{height:.7rem;background:var(--surface-2);border-radius:var(--r-bar,0);overflow:hidden;margin-top:.25rem}
+.track i{display:block;height:100%;width:var(--w);background:var(--accent)}
+.panel-head{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.panel-head h2{margin:0}
+.qtable{width:100%;border-collapse:collapse}
+.qtable th,.qtable td{text-align:left;padding:.75rem .5rem;border-bottom:1px solid var(--line);vertical-align:middle}
+.qtable th{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.qtable .actions{white-space:nowrap;text-align:right}
+.qtable .actions .btn{min-height:44px;padding:.3rem .8rem;font-size:.9rem}
+.qtable .gname{font-weight:700}
+@media(max-width:860px){
+ .qtable thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+ .qtable,.qtable tbody,.qtable tr,.qtable td{display:block;width:100%}
+ .qtable tr{border:var(--bw) solid var(--line);border-radius:var(--r);padding:.6rem .9rem;margin-bottom:.75rem;background:var(--surface)}
+ .qtable td{display:flex;justify-content:space-between;align-items:center;gap:1rem;border:0;padding:.3rem 0;text-align:right}
+ .qtable td::before{content:attr(data-label);font-weight:700;color:var(--muted);font-size:.85rem;text-align:left}
+ .qtable td.actions{justify-content:flex-end;flex-wrap:wrap;gap:.5rem;white-space:normal}
+ .qtable td.actions::before{content:none}
+}
+.look{display:grid;gap:1rem}
+@media(min-width:700px){.look{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.look fieldset{border:0;padding:0;margin:0;min-width:0}
+.look legend{font-weight:700;margin-bottom:.4rem;padding:0}
+.radio{display:flex;align-items:center;gap:.5rem;min-height:44px;cursor:pointer}
+.radio input{width:1.25rem;height:1.25rem;accent-color:var(--accent)}
+.sw{display:inline-block;width:1.3rem;height:1.3rem;border-radius:50%;border:1px solid var(--line-strong)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* ===== proposta: Lente ===== */
+
+:root{--fs:20px;--font-body:'Atkinson Hyperlegible',Verdana,sans-serif;--font-head:'Atkinson Hyperlegible',Verdana,sans-serif;--font-grid:'Atkinson Hyperlegible',Verdana,sans-serif;
+--r:6px;--r-btn:8px;--bw:3px;--r-bar:0px;
+--bg:#FFFFFF;--surface:#FFFFFF;--surface-2:#F1F1F1;--ink:#000000;--muted:#333333;--line:#000000;--line-strong:#000000;
+--accent:#0A3A8C;--on-accent:#FFFFFF;--link:#0A3A8C;--hl:#FFF1A6;--hl-cell:#FFD400;--cell-bg:#FFFFFF;--cell-black:#000000;
+--ok:#0B5E1E;--err:#A40000;--focus:#000000;--halo:#FFD400;--bar-bg:#FFFFFF;--bar-ink:#000000}
+:root[data-theme=dark]{--bg:#000000;--surface:#000000;--surface-2:#1C1C1C;--ink:#FFFFFF;--muted:#DADADA;--line:#FFFFFF;--line-strong:#FFFFFF;
+--accent:#FFD400;--on-accent:#000000;--link:#FFE45C;--hl:#3A3300;--hl-cell:#FFD400;--cell-bg:#000000;--cell-black:#5A5A5A;
+--ok:#7CFC8A;--err:#FF8F8F;--focus:#FFFFFF;--halo:#0A3A8C;--bar-bg:#000000;--bar-ink:#FFFFFF}
+body{line-height:1.6}
+:focus-visible{outline:4px solid var(--focus);outline-offset:2px;box-shadow:0 0 0 8px var(--halo)}
+.wrap{max-width:1040px}
+.narrow{max-width:820px}
+h1{font-size:clamp(2rem,6vw,2.8rem);font-weight:700} h2{font-size:1.6rem;font-weight:700}
+a{text-decoration-thickness:2px}
+.topbar{border-bottom:3px solid var(--line-strong)}
+.topbar-in{max-width:1040px}
+.brand{font-size:1.3rem}
+.tabs a{font-size:1rem;font-weight:700;border:3px solid transparent;border-radius:8px;text-decoration:underline;text-underline-offset:.25em}
+.tabs a[aria-current=page]{background:var(--ink);color:var(--bg);text-decoration:none}
+.theme-btn{background:var(--bg);color:var(--ink);border:3px solid var(--ink);border-radius:8px;font-size:1rem}
+.btn{min-height:56px;font-size:1.05rem;font-weight:700;padding:.5rem 1.25rem}
+.btn-quiet{border-color:var(--ink);background:transparent;text-decoration:none}
+.btn-xl{min-height:68px;font-size:1.25rem;padding:.5rem 1.75rem;width:100%}
+@media(min-width:700px){.btn-xl{width:auto}}
+.kicker{color:var(--ink);font-size:.9rem}
+.meta,.hint{color:var(--muted)}
+.l-size{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.5rem}
+.l-size-lbl{font-weight:700;margin-right:.25rem}
+.l-size button{min-width:56px;min-height:56px;border:3px solid var(--ink);border-radius:8px;background:var(--bg);color:var(--ink);font-weight:700;cursor:pointer}
+.l-size button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.l-h1{margin-bottom:1.5rem}
+.l-today{border:3px solid var(--ink);border-radius:8px;padding:1.5rem;margin-bottom:2.5rem;background:var(--hl)}
+:root[data-theme=dark] .l-today{background:var(--surface-2)}
+.l-big{font-size:1.4rem;font-weight:700}
+.l-list{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+.l-list a{display:flex;justify-content:space-between;align-items:center;gap:1rem;min-height:76px;padding:.8rem 1.1rem;border:3px solid var(--ink);border-radius:8px;color:var(--ink);text-decoration:none}
+.l-list a:hover{background:var(--hl)}
+:root[data-theme=dark] .l-list a:hover{background:var(--surface-2)}
+.l-list .icon{width:1.6em;height:1.6em;stroke-width:3}
+.l-name{display:block;font-size:1.3rem;font-weight:700;text-decoration:underline;text-underline-offset:.2em}
+.l-desc{display:block;color:var(--muted)}
+.l-sub{margin-top:2.5rem;border-top:3px solid var(--ink);padding-top:1.5rem}
+.l-help{margin-top:1.25rem;padding:1rem;background:var(--surface-2);border-radius:8px}
+/* lettore: una colonna, celle grandi */
+@media(min-width:1024px){.reader{grid-template-columns:auto minmax(0,1fr)}}
+.cw{--cell:clamp(52px,calc((100vw - 72px) / 5),84px);--cw-gap:3px;--cw-border:3px solid var(--line-strong)}
+.cell input{font-size:calc(var(--cell) * .52)}
+.cell .n{font-size:.75rem;font-weight:700;color:var(--ink)}
+.cell.is-active{box-shadow:inset 0 0 0 4px var(--ink)}
+.cell.is-active input{color:#000}
+.cell.err::after{height:5px}
+.active-clue{border:3px solid var(--ink);border-left-width:12px;border-radius:8px;font-size:1.2rem;background:var(--bg)}
+.tools{display:grid;grid-template-columns:1fr;gap:.6rem}
+@media(min-width:560px){.tools{grid-template-columns:repeat(3,auto);justify-content:start}}
+.clues{grid-template-columns:1fr!important}
+@media(min-width:1024px){.clues{grid-template-columns:1fr 1fr!important}}
+.clue{font-size:1.1rem;min-height:56px;border:3px solid transparent}
+.clue .cn{font-size:1.1rem}
+.clue.is-active{border-color:var(--ink);background:var(--hl)}
+:root[data-theme=dark] .clue.is-active{background:var(--hl)}
+.esposto{font-size:1.5rem;font-weight:700}
+.tile-l{width:3.2rem;height:3.2rem;font-size:1.5rem}
+.answer input{min-height:60px;font-size:1.5rem}
+/* studio + admin */
+@media(min-width:1100px){.studio{grid-template-columns:1fr}}
+.studio-side .qlist{grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
+@media(min-width:1360px){.motore{grid-template-columns:1fr}}
+.panel{border-width:3px;border-color:var(--ink)}
+.qitem{border-width:3px}
+.qitem.is-active{background:var(--hl);color:var(--ink)}
+:root[data-theme=dark] .qitem.is-active{background:var(--surface-2)}
+.inp{border-width:3px;min-height:56px}
+.stepper li{border-bottom-width:8px;font-size:1rem}
+.pill{border-width:2px;font-size:.9rem}
+.check input{width:1.7rem;height:1.7rem}
+.admin-grid{grid-template-columns:1fr!important}
+.kpi-val{font-size:2.4rem}
+.bar i{background:var(--ink)} .bar.is-today i{background:var(--accent)}
+:root[data-theme=dark] .bar i{background:#BDBDBD}
+.bar b{font-size:.85rem} .bar span{font-size:.9rem;color:var(--ink)}
+.track{height:1.1rem;border:2px solid var(--ink)}
+.track i{background:var(--ink)}
+:root[data-theme=dark] .track i{background:var(--accent)}
+.seg{border-width:3px}
+.seg button{min-height:52px;font-size:1rem}
+.qtable td,.qtable th{border-bottom:2px solid var(--ink)}
+@media(max-width:860px){.qtable tr{border-color:var(--ink)}}
+
+</style>
+</head>
+<body class="p-lente">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></symbol>
+<symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-pen" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-3-1-6 1-9z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+</svg>
+<a class="skip" href="#main">Vai al contenuto</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#sito">DBEnigmistica</a>
+    <nav class="tabs" aria-label="Schermate del mockup">
+      <a href="#sito" data-view="sito">Sito</a>
+      <a href="#lettore" data-view="lettore">Lettore</a>
+      <a href="#studio" data-view="studio">Studio</a>
+      <a href="#admin" data-view="admin">Admin</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Passa al tema scuro"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg><span class="theme-label">Scuro</span></button>
+  </div>
+</header>
+<main id="main" tabindex="-1">
+<section class="screen" data-screen="sito" aria-label="Sito pubblico">
+
+<div class="wrap narrow">
+  <div class="l-size" role="group" aria-label="Dimensione del testo">
+    <span class="l-size-lbl">Grandezza del testo</span>
+    <button type="button" data-size="1" aria-pressed="true">A <span class="sr">normale</span></button>
+    <button type="button" data-size="1.15" aria-pressed="false" style="font-size:1.15em">A <span class="sr">grande</span></button>
+    <button type="button" data-size="1.3" aria-pressed="false" style="font-size:1.3em">A <span class="sr">molto grande</span></button>
+  </div>
+  <h1 class="l-h1">Buongiorno.<br>Oggi è martedì 10 novembre.</h1>
+  <section class="l-today" aria-labelledby="h-l-today">
+    <h2 id="h-l-today">Il gioco di oggi</h2>
+    <p class="l-big">Un cruciverba facile, con otto definizioni.</p>
+    <p>È gratuito. Non serve registrarsi.</p>
+    <a class="btn btn-primary btn-xl" href="#lettore">Gioca il cruciverba <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+  </section>
+  <section aria-labelledby="h-l-types">
+    <h2 id="h-l-types">Scegli il tipo di gioco</h2>
+    <ul class="l-list">
+      <li><a href="#lettore"><span><span class="l-name">Parole crociate</span><span class="l-desc">Classiche, facilitate e a schema libero · 1.204 schemi</span></span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></a></li>
+      <li><a href="#lettore"><span><span class="l-name">Anagrammi</span><span class="l-desc">Le stesse lettere, un altro senso · 512 giochi</span></span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></a></li>
+      <li><a href="#lettore"><span><span class="l-name">Crittografie</span><span class="l-desc">Esposto e diagramma: il gioco più fine · 386 giochi</span></span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></a></li>
+      <li><a href="#lettore"><span><span class="l-name">Indovinelli</span><span class="l-desc">Versi leggeri con un doppio senso · 305 giochi</span></span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></a></li>
+      <li><a href="#lettore"><span><span class="l-name">Sciarade</span><span class="l-desc">Due parole che ne formano una terza · 241 giochi</span></span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></a></li>
+      <li><a href="#lettore"><span><span class="l-name">Rebus</span><span class="l-desc">Figure e lettere da leggere insieme · 198 vignette</span></span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></a></li>
+      <li><a href="#lettore"><span><span class="l-name">Ditloidi</span><span class="l-desc">Un numero e qualche iniziale · 150 giochi</span></span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></a></li>
+    </ul>
+  </section>
+  <section class="l-sub" aria-labelledby="h-l-sub">
+    <h2 id="h-l-sub">Abbonamento</h2>
+    <p>3,90 euro al mese. Tutti i giochi dell'archivio. Si disdice con un solo pulsante, quando vuoi.</p>
+    <button class="btn btn-xl" type="button" data-toast="Mockup: qui si apre la pagina di abbonamento.">Scopri l'abbonamento</button>
+    <p class="l-help">Hai bisogno di aiuto? Chiama il numero verde <strong>800 000 000</strong> (numero di esempio), dal lunedì al venerdì, 9–13.</p>
+  </section>
+</div>
+
+</section>
+<section class="screen" data-screen="lettore" aria-labelledby="h-lettore">
+
+<div class="wrap">
+  <div class="screen-head">
+    <p class="kicker">Lettore</p>
+    <h1 id="h-lettore">Cruciverba «Porto di mare»</h1>
+    <p class="meta">Gioco del giorno · facile · 5×5 · circa 4 minuti</p>
+  </div>
+  <div class="reader">
+    <div class="board">
+      <div class="active-clue" id="activeClue" aria-live="polite"><span class="ac-num">1 orizzontale</span><span class="ac-text">Lo solcano i traghetti (4)</span></div>
+      <div class="cw" id="cw" role="group" aria-label="Schema del cruciverba, 5 righe per 5 colonne. Usa le frecce per spostarti, la barra spaziatrice per cambiare direzione."></div>
+      <div class="tools">
+        <button class="btn btn-primary" type="button" id="cwCheck"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> Verifica</button>
+        <button class="btn" type="button" id="cwReveal"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bulb"/></svg> Aiuto: una lettera</button>
+        <button class="btn btn-quiet" type="button" id="cwClear"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg> Ricomincia</button>
+      </div>
+      <p class="msg" id="cwMsg" role="status"></p>
+    </div>
+    <div class="clues">
+      <div class="clue-col"><h2>Orizzontali</h2><ol id="cluesA"></ol></div>
+      <div class="clue-col"><h2>Verticali</h2><ol id="cluesD"></ol></div>
+    </div>
+  </div>
+  <article class="textgame" aria-labelledby="h-ana">
+    <p class="kicker">Anagramma · gioco breve</p>
+    <h2 id="h-ana">Dietro le quinte</h2>
+    <p class="esposto">«Un ATTORE, rimescolato, trova la sua casa.»</p>
+    <p class="meta">Diagramma: (6) · riordina tutte le lettere della parola in maiuscolo</p>
+    <div class="tiles" id="tiles" role="img" aria-label="Lettere da riordinare: A, T, T, O, R, E"></div>
+    <form id="anaForm" class="answer" novalidate>
+      <label for="anaInput">La tua soluzione</label>
+      <div class="answer-row">
+        <input id="anaInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" aria-describedby="anaMsg">
+        <button class="btn btn-primary" type="submit">Verifica</button>
+      </div>
+      <div class="answer-aux">
+        <button type="button" class="btn btn-quiet" id="anaShuffle"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shuffle"/></svg> Rimescola le lettere</button>
+        <button type="button" class="btn btn-quiet" id="anaHint"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bulb"/></svg> Aiuto: prima lettera</button>
+      </div>
+      <p class="msg" id="anaMsg" role="status"></p>
+    </form>
+  </article>
+</div>
+
+</section>
+<section class="screen" data-screen="studio" aria-labelledby="h-studio">
+
+<div class="wrap">
+  <div class="screen-head">
+    <p class="kicker">Studio · applicazione privata</p>
+    <h1 id="h-studio">Motore di creazione</h1>
+    <p class="meta">Il Motore propone, una persona rivede e approva. Nessun Gioco esce dallo Studio senza approvazione.</p>
+  </div>
+  <div class="studio">
+    <aside class="studio-side" aria-label="Giochi in lavorazione e archivio">
+      <h2>In lavorazione</h2>
+      <ul class="qlist">
+        <li><button type="button" class="qitem is-active" data-show="motore" aria-pressed="true"><span class="qt">Nuova bozza dal Motore</span><span class="qs">Sciarada · richiesta di oggi</span><span class="pill st-bozza" id="sideStatus">Bozza</span></button></li>
+        <li><button type="button" class="qitem" data-show="estratto" aria-pressed="false"><span class="qt">Anagramma da Rivista</span><span class="qs">«Enigmi d'Autunno», 1987 · p. 14</span><span class="pill st-attesa">Diritti da verificare</span></button></li>
+        <li><button type="button" class="qitem" data-show="motore" aria-pressed="false"><span class="qt">«Sette giorni»</span><span class="qs">Ditloide · rivisto ieri</span><span class="pill st-rivisto">Rivisto</span></button></li>
+      </ul>
+      <h2>Cerca nell'archivio</h2>
+      <form class="searchbox" role="search" onsubmit="return false">
+        <label class="sr" for="stSearch">Cerca nell'archivio dei Giochi</label>
+        <input class="inp" id="stSearch" type="search" placeholder="es. sciarada mare">
+        <button class="btn" type="submit" aria-label="Cerca"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></button>
+      </form>
+      <p class="hint">9.214 Giochi · 3.870 estratti da 61 Riviste</p>
+    </aside>
+
+    <div class="studio-main">
+      <div class="motore" id="viewMotore">
+        <form class="panel request" id="genForm">
+          <h2>Nuova richiesta</h2>
+          <div class="fields">
+            <div><label class="lbl" for="genType">Tipologia</label>
+              <select class="inp" id="genType"><option value="sciarada">Sciarada</option><option value="anagramma">Anagramma</option><option value="zeppa">Zeppa</option><option value="ditloide">Ditloide</option></select></div>
+            <div><label class="lbl" for="genLevel">Difficoltà</label>
+              <select class="inp" id="genLevel"><option>Facile</option><option selected>Media</option><option>Difficile</option></select></div>
+            <div class="wide"><label class="lbl" for="genTheme">Tema e indicazioni per il Motore</label>
+              <input class="inp" id="genTheme" type="text" value="Estate al mare, lessico semplice, niente parole straniere"></div>
+          </div>
+          <button class="btn btn-primary" id="genBtn" type="submit"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pen"/></svg> Genera bozza</button>
+        </form>
+
+        <article class="panel draft" id="draft" aria-busy="false" aria-labelledby="h-draft">
+          <div class="draft-head"><h2 id="h-draft">Bozza generata</h2><span class="pill st-bozza" id="statusPill">Bozza</span></div>
+          <ol class="stepper" id="stepper" aria-label="Stato del Gioco">
+            <li data-step="bozza" class="is-done" aria-current="step">Bozza</li>
+            <li data-step="rivisto">Rivisto</li>
+            <li data-step="approvato">Approvato</li>
+          </ol>
+          <div class="draft-body">
+            <div><label class="lbl" for="dTitle">Titolo</label><input class="inp" id="dTitle" type="text" value="Riparo d'estate"></div>
+            <div><label class="lbl" for="dText">Esposto</label><textarea class="inp" id="dText" rows="3">Il primo fa da scudo, il secondo scalda la spiaggia: l'intero ti salva dalla scottatura.</textarea></div>
+            <div class="field-row">
+              <div><span class="lbl">Schema</span><p class="mono" id="dSchema">PARA + SOLE = PARASOLE</p></div>
+              <div><label class="lbl" for="dSol">Soluzione</label><input class="inp" id="dSol" type="text" value="PARASOLE"></div>
+            </div>
+          </div>
+          <fieldset class="checks" style="border:0;padding:0;margin-top:1.25rem">
+            <legend class="lbl" style="font-size:1rem">Controlli di revisione</legend>
+            <label class="check"><input type="checkbox" class="rc" checked> Soluzione unica e verificata</label>
+            <label class="check"><input type="checkbox" class="rc" checked> Non somiglia a Giochi in archivio (il più vicino: 41%)</label>
+            <label class="check"><input type="checkbox" class="rc"> Linguaggio chiaro, adatto a tutto il pubblico</label>
+          </fieldset>
+          <div class="draft-actions">
+            <button class="btn" type="button" id="btnRigenera"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg> Rigenera</button>
+            <button class="btn" type="button" id="btnRivisto"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> Segna come rivisto</button>
+            <button class="btn btn-primary" type="button" id="btnApprova" disabled>Approva</button>
+          </div>
+          <p class="msg" id="draftMsg" role="status"></p>
+        </article>
+
+        <aside class="panel prov" aria-labelledby="h-prov">
+          <h2 id="h-prov"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg> Provenienza e diritti</h2>
+          <dl>
+            <dt>Origine</dt><dd>Motore di creazione · bozza 2026-1110-07</dd>
+            <dt>Assistenza AI</dt><dd>Sì: testo proposto dal modello, da rivedere</dd>
+            <dt>Revisione umana</dt><dd id="provRev">In attesa</dd>
+            <dt>Diritti</dt><dd>Opera originale · diritti di DBEnigmistica</dd>
+            <dt>Fonti consultate</dt><dd>Nessuna fonte esterna</dd>
+            <dt>Registro</dt><dd>10/11/2026 09:41 · richiesta · <span id="provLog">bozza</span></dd>
+          </dl>
+        </aside>
+      </div>
+
+      <div class="extract panel" id="viewEstratto" hidden>
+        <div>
+          <h2>Pagina della Rivista</h2>
+          <div class="page-img"><svg viewBox="0 0 300 400" role="img" aria-label="Immagine della pagina 14 della Rivista: due colonne di testo, il riquadro dell'anagramma evidenziato in basso a destra">
+<rect width="300" height="400" fill="#f6f0df"/>
+<rect x="18" y="16" width="264" height="22" fill="#2b2620"/>
+<text x="150" y="32" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#f6f0df" letter-spacing="2">PAGINA DEI SOLUTORI</text>
+<g fill="#b9ad94">
+<rect x="18" y="52" width="124" height="6"/><rect x="18" y="64" width="118" height="6"/><rect x="18" y="76" width="124" height="6"/><rect x="18" y="88" width="98" height="6"/>
+<rect x="18" y="106" width="124" height="90" fill="#d9cfb8"/>
+<rect x="18" y="206" width="124" height="6"/><rect x="18" y="218" width="110" height="6"/><rect x="18" y="230" width="124" height="6"/><rect x="18" y="242" width="86" height="6"/>
+<rect x="18" y="262" width="124" height="6"/><rect x="18" y="274" width="120" height="6"/><rect x="18" y="286" width="124" height="6"/><rect x="18" y="298" width="64" height="6"/>
+<rect x="158" y="52" width="124" height="6"/><rect x="158" y="64" width="112" height="6"/><rect x="158" y="76" width="124" height="6"/><rect x="158" y="88" width="124" height="6"/><rect x="158" y="100" width="90" height="6"/>
+<rect x="158" y="120" width="124" height="6"/><rect x="158" y="132" width="104" height="6"/><rect x="158" y="144" width="124" height="6"/><rect x="158" y="156" width="70" height="6"/>
+<rect x="158" y="176" width="124" height="6"/><rect x="158" y="188" width="118" height="6"/><rect x="158" y="200" width="96" height="6"/>
+</g>
+<rect x="156" y="226" width="128" height="110" fill="none" stroke="#c0392b" stroke-width="3" stroke-dasharray="7 4"/>
+<text x="164" y="246" font-family="Georgia,serif" font-size="11" font-weight="bold" fill="#2b2620">ANAGRAMMA (4)</text>
+<text x="164" y="266" font-family="Georgia,serif" font-size="10" font-style="italic" fill="#2b2620">La città eterna,</text>
+<text x="164" y="280" font-family="Georgia,serif" font-size="10" font-style="italic" fill="#2b2620">rimescolata, si fa</text>
+<text x="164" y="294" font-family="Georgia,serif" font-size="10" font-style="italic" fill="#2b2620">sentimento.</text>
+<text x="164" y="320" font-family="Georgia,serif" font-size="9" fill="#6d6250">(G. P., Milano)</text>
+<rect x="18" y="320" width="124" height="6" fill="#b9ad94"/><rect x="18" y="332" width="100" height="6" fill="#b9ad94"/>
+<text x="150" y="384" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="#6d6250">— 14 —</text>
+</svg></div>
+          <p class="hint">«Enigmi d'Autunno», n. 9, 1987 · pagina 14 di 64 · scansione 300 dpi</p>
+        </div>
+        <div>
+          <h2>Gioco estratto</h2>
+          <p class="conf"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-file"/></svg> Lettura automatica: affidabilità 92%</p>
+          <div class="draft-body">
+            <div><label class="lbl" for="exType">Tipologia</label><input class="inp" id="exType" type="text" value="Anagramma"></div>
+            <div><label class="lbl" for="exText">Esposto</label><textarea class="inp" id="exText" rows="2">La città eterna, rimescolata, si fa sentimento.</textarea></div>
+            <div class="field-row">
+              <div><label class="lbl" for="exDiag">Diagramma</label><input class="inp" id="exDiag" type="text" value="(4)"></div>
+              <div><label class="lbl" for="exSol">Soluzione</label><input class="inp" id="exSol" type="text" value="ROMA → AMOR"></div>
+            </div>
+            <p class="flag"><strong>Da controllare:</strong> la firma «G. P., Milano» indica un autore esterno. Diritti da verificare prima di qualsiasi pubblicazione.</p>
+          </div>
+          <div class="draft-actions">
+            <button class="btn btn-primary" type="button" data-toast="Estrazione confermata. Il Gioco resta in archivio, non pubblicabile.">Conferma estrazione</button>
+            <button class="btn" type="button" data-toast="Gioco scartato dall'estrazione.">Scarta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</section>
+<section class="screen" data-screen="admin" aria-labelledby="h-admin">
+
+<div class="wrap">
+  <div class="admin-head">
+    <div class="screen-head">
+      <p class="kicker">Admin · area riservata</p>
+      <h1 id="h-admin">Dashboard di utilizzo</h1>
+      <p class="meta">Aggiornata alle 09:40 di martedì 10 novembre 2026</p>
+    </div>
+    <div class="seg" role="group" aria-label="Periodo">
+      <button type="button" data-per="oggi" aria-pressed="true">Oggi</button>
+      <button type="button" data-per="sett" aria-pressed="false">7 giorni</button>
+      <button type="button" data-per="mese" aria-pressed="false">30 giorni</button>
+    </div>
+  </div>
+  <div class="kpis" aria-live="polite">
+    <div class="kpi panel"><p class="kpi-label">Giocatori</p><p class="kpi-val" data-kpi="0">2.418</p><p class="kpi-delta" data-kd="0">+6% rispetto a ieri</p></div>
+    <div class="kpi panel"><p class="kpi-label">Giochi completati</p><p class="kpi-val" data-kpi="1">3.905</p><p class="kpi-delta" data-kd="1">+4% rispetto a ieri</p></div>
+    <div class="kpi panel"><p class="kpi-label">Abbonati attivi</p><p class="kpi-val" data-kpi="2">612</p><p class="kpi-delta" data-kd="2">+3 oggi</p></div>
+    <div class="kpi panel"><p class="kpi-label">Da smartphone</p><p class="kpi-val" data-kpi="3">78%</p><p class="kpi-delta" data-kd="3">il 41% ha più di 65 anni</p></div>
+  </div>
+  <div class="admin-grid">
+    <section class="panel" aria-labelledby="h-chart">
+      <h2 id="h-chart">Giochi completati per giorno</h2>
+      <ol class="bars" aria-label="Ultimi sette giorni: da 2.910 mercoledì a 3.905 oggi, con un picco di 4.120 domenica">
+        <li class="bar" style="--h:66%"><b>2.910</b><i></i><span>Mer</span></li>
+        <li class="bar" style="--h:70%"><b>3.050</b><i></i><span>Gio</span></li>
+        <li class="bar" style="--h:68%"><b>2.980</b><i></i><span>Ven</span></li>
+        <li class="bar" style="--h:84%"><b>3.660</b><i></i><span>Sab</span></li>
+        <li class="bar" style="--h:94%"><b>4.120</b><i></i><span>Dom</span></li>
+        <li class="bar" style="--h:85%"><b>3.740</b><i></i><span>Lun</span></li>
+        <li class="bar is-today" style="--h:89%"><b>3.905</b><i></i><span>Oggi</span></li>
+      </ol>
+    </section>
+    <section class="panel" aria-labelledby="h-types">
+      <h2 id="h-types">Per tipologia</h2>
+      <ul class="hbars">
+        <li><div class="hl"><span>Parole crociate</span><b>52%</b></div><div class="track"><i style="--w:52%"></i></div></li>
+        <li><div class="hl"><span>Anagrammi</span><b>17%</b></div><div class="track"><i style="--w:17%"></i></div></li>
+        <li><div class="hl"><span>Crittografie</span><b>12%</b></div><div class="track"><i style="--w:12%"></i></div></li>
+        <li><div class="hl"><span>Sciarade</span><b>11%</b></div><div class="track"><i style="--w:11%"></i></div></li>
+        <li><div class="hl"><span>Rebus</span><b>8%</b></div><div class="track"><i style="--w:8%"></i></div></li>
+      </ul>
+    </section>
+  </div>
+  <section class="panel" aria-labelledby="h-queue" style="margin-bottom:1.5rem">
+    <div class="panel-head"><h2 id="h-queue">Coda di pubblicazione</h2><button class="btn btn-primary" type="button" data-toast="Scegli un Gioco approvato dallo Studio.">Programma un Gioco</button></div>
+    <table class="qtable">
+      <thead><tr><th scope="col">Uscita</th><th scope="col">Gioco</th><th scope="col">Tipologia</th><th scope="col">Accesso</th><th scope="col">Stato</th><th scope="col"><span class="sr">Azioni</span></th></tr></thead>
+      <tbody>
+        <tr><td data-label="Uscita">Oggi, 07:00</td><td data-label="Gioco" class="gname">Porto di mare</td><td data-label="Tipologia">Cruciverba</td><td data-label="Accesso">Gratuito</td><td data-label="Stato"><span class="pill st-pubblicato">Pubblicato</span></td><td class="actions"><a class="btn btn-quiet" href="#lettore">Apri</a></td></tr>
+        <tr><td data-label="Uscita">Domani, 07:00</td><td data-label="Gioco" class="gname">Riparo d'estate</td><td data-label="Tipologia">Sciarada</td><td data-label="Accesso">Gratuito</td><td data-label="Stato"><span class="pill st-rivisto">Programmato</span></td><td class="actions"><button class="btn" type="button" data-pub>Pubblica ora</button></td></tr>
+        <tr><td data-label="Uscita">Gio 12 nov</td><td data-label="Gioco" class="gname">Dietro le quinte</td><td data-label="Tipologia">Anagramma</td><td data-label="Accesso">Abbonati</td><td data-label="Stato"><span class="pill st-rivisto">Programmato</span></td><td class="actions"><button class="btn" type="button" data-pub>Pubblica ora</button></td></tr>
+        <tr><td data-label="Uscita">Ven 13 nov</td><td data-label="Gioco" class="gname">Sette giorni</td><td data-label="Tipologia">Ditloide</td><td data-label="Accesso">Abbonati</td><td data-label="Stato"><span class="pill st-attesa">Da approvare</span></td><td class="actions"><button class="btn" type="button" disabled>In attesa dello Studio</button></td></tr>
+        <tr><td data-label="Uscita">Sab 14 nov</td><td data-label="Gioco" class="gname">Motivo di famiglia</td><td data-label="Tipologia">Zeppa</td><td data-label="Accesso">Abbonati</td><td data-label="Stato"><span class="pill st-rivisto">Programmato</span></td><td class="actions"><button class="btn" type="button" data-pub>Pubblica ora</button></td></tr>
+      </tbody>
+    </table>
+    <p class="msg" id="pubMsg" role="status"></p>
+  </section>
+  <section class="panel" aria-labelledby="h-look">
+    <h2 id="h-look">Aspetto del sito</h2>
+    <div class="look">
+      <fieldset><legend>Tema predefinito</legend>
+        <label class="radio"><input type="radio" name="lk1" checked> Come il dispositivo</label>
+        <label class="radio"><input type="radio" name="lk1"> Sempre chiaro</label>
+        <label class="radio"><input type="radio" name="lk1"> Sempre scuro</label></fieldset>
+      <fieldset><legend>Testo predefinito</legend>
+        <label class="radio"><input type="radio" name="lk2"> Normale</label>
+        <label class="radio"><input type="radio" name="lk2" checked> Grande</label>
+        <label class="radio"><input type="radio" name="lk2"> Molto grande</label></fieldset>
+      <fieldset><legend>Colore di richiamo</legend>
+        <label class="radio"><input type="radio" name="lk3" checked> <span class="sw" style="background:var(--accent)"></span> Della proposta</label>
+        <label class="radio"><input type="radio" name="lk3"> <span class="sw" style="background:#1F5F8B"></span> Blu porto</label>
+        <label class="radio"><input type="radio" name="lk3"> <span class="sw" style="background:#2F6B3A"></span> Verde salvia</label></fieldset>
+    </div>
+  </section>
+</div>
+
+</section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+var THEME_KEY='dbe-p4-theme';
+
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var root=document.documentElement;
+
+/* ---------- tema ---------- */
+var tbtn=$('#themeBtn');
+function applyTheme(t){
+  root.setAttribute('data-theme',t);
+  var dark=t==='dark';
+  $('.theme-label',tbtn).textContent=dark?'Chiaro':'Scuro';
+  $('use',tbtn).setAttribute('href',dark?'#i-sun':'#i-moon');
+  tbtn.setAttribute('aria-label',dark?'Passa al tema chiaro':'Passa al tema scuro');
+  try{localStorage.setItem(THEME_KEY,t)}catch(e){}
+}
+tbtn.addEventListener('click',function(){applyTheme(root.getAttribute('data-theme')==='dark'?'light':'dark')});
+applyTheme(root.getAttribute('data-theme')||'light');
+
+/* ---------- dimensione testo (se presente) ---------- */
+$$('[data-size]').forEach(function(b){b.addEventListener('click',function(){
+  root.style.setProperty('--scale',b.getAttribute('data-size'));
+  $$('[data-size]').forEach(function(x){x.setAttribute('aria-pressed',String(x===b))});
+})});
+
+/* ---------- navigazione ---------- */
+var VIEWS=['sito','lettore','studio','admin'];
+function show(v){
+  $$('.screen').forEach(function(s){s.classList.toggle('is-on',s.getAttribute('data-screen')===v)});
+  $$('.tabs a').forEach(function(a){ if(a.getAttribute('data-view')===v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+}
+function fromHash(focus){
+  var v=(location.hash||'#sito').slice(1);
+  if(VIEWS.indexOf(v)<0){ if(!$('.screen.is-on')) show('sito'); return; }
+  show(v);
+  if(focus){ window.scrollTo(0,0); var h=$('.screen.is-on h1'); if(h){h.setAttribute('tabindex','-1'); h.focus({preventScroll:true});} }
+}
+window.addEventListener('hashchange',function(){fromHash(true)});
+fromHash(false);
+
+/* ---------- avvisi ---------- */
+var toast=$('#toast'), tt;
+function say(t){ toast.textContent=t; toast.classList.add('is-on'); clearTimeout(tt); tt=setTimeout(function(){toast.classList.remove('is-on')},3800); }
+document.addEventListener('click',function(e){ var b=e.target.closest('[data-toast]'); if(b) say(b.getAttribute('data-toast')); });
+
+/* ---------- cruciverba ---------- */
+var SOL=["MARE#","O#ORO","LUNA#","O#D#F","#CASA"], N=5;
+var CL={A:{1:"Lo solcano i traghetti",4:"Il metallo delle fedi nuziali",5:"Ha le sue fasi nel cielo notturno",7:"Dolce… quella di ognuno"},
+        D:{1:"Vi attraccano le barche",2:"Giro di guardia notturno",3:"Un lungo periodo della storia",6:"La nota che segue il mi"}};
+$$('[data-minigrid]').forEach(function(g){ SOL.join('').split('').forEach(function(ch){ var s=document.createElement('span'); if(ch==='#') s.className='b'; g.appendChild(s); }); });
+
+var cw=$('#cw');
+if(cw){
+  var isB=function(r,c){return r<0||c<0||r>=N||c>=N||SOL[r][c]==='#'};
+  var words=[], wA=[], wD=[], nums=[], inputs=[], n=0, r, c;
+  for(r=0;r<N;r++){wA[r]=[];wD[r]=[];nums[r]=[];inputs[r]=[];}
+  for(r=0;r<N;r++) for(c=0;c<N;c++){
+    if(isB(r,c)) continue;
+    var sA=isB(r,c-1)&&!isB(r,c+1), sD=isB(r-1,c)&&!isB(r+1,c), k, w;
+    if(sA||sD){n++; nums[r][c]=n;}
+    if(sA){w={dir:'A',num:n,cells:[]}; for(k=c;!isB(r,k);k++){w.cells.push([r,k]); wA[r][k]=w;} words.push(w);}
+    if(sD){w={dir:'D',num:n,cells:[]}; for(k=r;!isB(k,c);k++){w.cells.push([k,c]); wD[k][c]=w;} words.push(w);}
+  }
+  var cur={r:0,c:0,dir:'A'}, wasActive=false;
+  var wordAt=function(r,c,d){return (d==='A'?wA:wD)[r][c]};
+  var norm=function(ch){return ch.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase()};
+  var all=function(){var out=[]; inputs.forEach(function(row){row.forEach(function(i){if(i) out.push(i)})}); return out;};
+
+  for(r=0;r<N;r++) for(c=0;c<N;c++){
+    var d=document.createElement('div');
+    d.className='cell'+(isB(r,c)?' black':'');
+    if(!isB(r,c)){
+      if(nums[r][c]){var sp=document.createElement('span'); sp.className='n'; sp.textContent=nums[r][c]; sp.setAttribute('aria-hidden','true'); d.appendChild(sp);}
+      var inp=document.createElement('input');
+      inp.type='text'; inp.autocomplete='off'; inp.setAttribute('autocapitalize','characters'); inp.spellcheck=false; inp.tabIndex=-1;
+      var lab='Riga '+(r+1)+', colonna '+(c+1);
+      if(wA[r][c]) lab+=', '+wA[r][c].num+' orizzontale'; if(wD[r][c]) lab+=', '+wD[r][c].num+' verticale';
+      inp.setAttribute('aria-label',lab);
+      (function(r,c,inp){
+        inp.addEventListener('pointerdown',function(){ wasActive=(cur.r===r&&cur.c===c&&document.activeElement===inp); });
+        inp.addEventListener('focus',function(){ if(cur.r!==r||cur.c!==c) select(r,c,cur.dir,false); else render(); });
+        inp.addEventListener('click',function(){ if(wasActive) toggle(); wasActive=false; });
+        inp.addEventListener('keydown',function(e){
+          var key=e.key;
+          if(e.ctrlKey||e.metaKey||e.altKey) return;
+          if(key.length===1 && /[a-zà-ú]/i.test(key)){ e.preventDefault(); put(norm(key)); }
+          else if(key==='Backspace'){ e.preventDefault(); if(inp.value){ clearCell(r,c); } else { step(-1); clearCell(cur.r,cur.c); } }
+          else if(key==='Delete'){ e.preventDefault(); clearCell(r,c); }
+          else if(key==='ArrowRight'){ e.preventDefault(); move(0,1); }
+          else if(key==='ArrowLeft'){ e.preventDefault(); move(0,-1); }
+          else if(key==='ArrowDown'){ e.preventDefault(); move(1,0); }
+          else if(key==='ArrowUp'){ e.preventDefault(); move(-1,0); }
+          else if(key===' '){ e.preventDefault(); toggle(); }
+          else if(key==='Enter'){ e.preventDefault(); nextWord(); }
+        });
+        inp.addEventListener('input',function(){ var v=inp.value.replace(/[^a-zà-ú]/gi,''); if(!v){inp.value='';return;} put(norm(v.slice(-1))); });
+      })(r,c,inp);
+      d.appendChild(inp); inputs[r][c]=inp;
+    }
+    cw.appendChild(d);
+  }
+  function clearCell(r,c){ var i=inputs[r][c]; i.value=''; i.parentNode.classList.remove('err','ok'); i.removeAttribute('aria-invalid'); }
+  function render(){
+    $$('.cell',cw).forEach(function(x){x.classList.remove('in-word','is-active')});
+    var w=wordAt(cur.r,cur.c,cur.dir);
+    if(w) w.cells.forEach(function(p){inputs[p[0]][p[1]].parentNode.classList.add('in-word')});
+    inputs[cur.r][cur.c].parentNode.classList.add('is-active');
+    all().forEach(function(i){i.tabIndex=-1}); inputs[cur.r][cur.c].tabIndex=0;
+    $$('.clue').forEach(function(b){ var on=!!w && b.getAttribute('data-dir')===w.dir && +b.getAttribute('data-num')===w.num; b.classList.toggle('is-active',on); if(on) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current'); });
+    var ac=$('#activeClue');
+    if(w){ $('.ac-num',ac).textContent=w.num+' '+(w.dir==='A'?'orizzontale':'verticale'); $('.ac-text',ac).textContent=CL[w.dir][w.num]+' ('+w.cells.length+')'; }
+  }
+  function select(r,c,dir,focus){
+    if(!wordAt(r,c,dir)){ var o=dir==='A'?'D':'A'; if(wordAt(r,c,o)) dir=o; }
+    cur={r:r,c:c,dir:dir}; render();
+    if(focus!==false) inputs[r][c].focus();
+  }
+  function toggle(){ var o=cur.dir==='A'?'D':'A'; if(wordAt(cur.r,cur.c,o)) select(cur.r,cur.c,o); }
+  function step(delta){
+    var w=wordAt(cur.r,cur.c,cur.dir); if(!w) return;
+    var i=-1; w.cells.forEach(function(p,ix){ if(p[0]===cur.r&&p[1]===cur.c) i=ix; });
+    var j=i+delta; if(j>=0&&j<w.cells.length) select(w.cells[j][0],w.cells[j][1],cur.dir);
+  }
+  function put(ch){ var i=inputs[cur.r][cur.c]; i.value=ch; i.parentNode.classList.remove('err','ok'); i.removeAttribute('aria-invalid'); step(1); }
+  function move(dr,dc){ var r=cur.r+dr, c=cur.c+dc; while(r>=0&&c>=0&&r<N&&c<N){ if(!isB(r,c)){ select(r,c,dr?'D':'A'); return; } r+=dr; c+=dc; } }
+  function nextWord(){ var w=wordAt(cur.r,cur.c,cur.dir), i=words.indexOf(w), nx=words[(i+1)%words.length]; select(nx.cells[0][0],nx.cells[0][1],nx.dir); }
+
+  ['A','D'].forEach(function(dir){
+    var ol=$(dir==='A'?'#cluesA':'#cluesD');
+    words.filter(function(w){return w.dir===dir}).forEach(function(w){
+      var li=document.createElement('li'), b=document.createElement('button');
+      b.type='button'; b.className='clue'; b.setAttribute('data-dir',dir); b.setAttribute('data-num',w.num);
+      b.innerHTML='<span class="cn">'+w.num+'</span><span class="ct">'+CL[dir][w.num]+' <span class="sr">('+w.cells.length+' lettere)</span></span>';
+      b.addEventListener('click',function(){ select(w.cells[0][0],w.cells[0][1],dir); });
+      li.appendChild(b); ol.appendChild(li);
+    });
+  });
+
+  var msg=$('#cwMsg');
+  $('#cwCheck').addEventListener('click',function(){
+    var wrong=0, empty=0;
+    for(var r=0;r<N;r++) for(var c=0;c<N;c++){ var i=inputs[r][c]; if(!i) continue; var cell=i.parentNode; cell.classList.remove('err','ok'); i.removeAttribute('aria-invalid');
+      if(!i.value) empty++; else if(i.value!==SOL[r][c]){ wrong++; cell.classList.add('err'); i.setAttribute('aria-invalid','true'); } }
+    if(!wrong&&!empty){ all().forEach(function(i){i.parentNode.classList.add('ok')}); msg.className='msg ok'; msg.textContent='Complimenti: schema risolto senza errori.'; return; }
+    var parts=[]; if(wrong) parts.push(wrong===1?'1 lettera da rivedere (sottolineata)':wrong+' lettere da rivedere (sottolineate)'); if(empty) parts.push(empty===1?'1 casella ancora vuota':empty+' caselle ancora vuote');
+    msg.className='msg '+(wrong?'err':''); msg.textContent=parts.join(', ')+'.';
+  });
+  $('#cwReveal').addEventListener('click',function(){ var i=inputs[cur.r][cur.c]; i.value=SOL[cur.r][cur.c]; i.parentNode.classList.remove('err'); i.parentNode.classList.add('revealed'); msg.className='msg'; msg.textContent='Aiuto usato: lettera rivelata nella casella attiva.'; i.focus(); });
+  $('#cwClear').addEventListener('click',function(){ all().forEach(function(i){ i.value=''; i.removeAttribute('aria-invalid'); i.parentNode.classList.remove('err','ok','revealed'); }); msg.className='msg'; msg.textContent='Schema svuotato.'; select(0,0,'A'); });
+  select(0,0,'A',false);
+}
+
+/* ---------- anagramma ---------- */
+var tiles=$('#tiles');
+if(tiles){
+  var letters=['A','T','T','O','R','E'];
+  var drawTiles=function(arr){ tiles.innerHTML=''; arr.forEach(function(l){ var s=document.createElement('span'); s.className='tile-l'; s.textContent=l; s.setAttribute('aria-hidden','true'); tiles.appendChild(s); }); };
+  drawTiles(letters);
+  var am=$('#anaMsg'), ai=$('#anaInput');
+  $('#anaShuffle').addEventListener('click',function(){ var a=letters.slice(); for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t;} drawTiles(a); });
+  $('#anaHint').addEventListener('click',function(){ am.className='msg'; am.textContent='Aiuto: la soluzione comincia con la T.'; ai.focus(); });
+  $('#anaForm').addEventListener('submit',function(e){ e.preventDefault(); var v=norm2(ai.value);
+    if(!v){ am.className='msg err'; am.textContent='Scrivi una parola di 6 lettere prima di verificare.'; ai.setAttribute('aria-invalid','true'); ai.focus(); return; }
+    if(v==='TEATRO'){ am.className='msg ok'; am.textContent='Esatto: TEATRO. L\'attore è tornato a casa.'; ai.removeAttribute('aria-invalid'); }
+    else { am.className='msg err'; am.textContent=(v.length!==6?'Servono 6 lettere. ':'Non ancora. ')+'Pensa a dove lavora un attore.'; ai.setAttribute('aria-invalid','true'); }
+  });
+  ai.addEventListener('input',function(){ ai.removeAttribute('aria-invalid'); });
+}
+function norm2(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/gi,'').toUpperCase()}
+
+/* ---------- studio ---------- */
+var genForm=$('#genForm');
+if(genForm){
+  var SAMPLES={
+    sciarada:{t:"Riparo d'estate",x:"Il primo fa da scudo, il secondo scalda la spiaggia: l'intero ti salva dalla scottatura.",s:"PARA + SOLE = PARASOLE",o:"PARASOLE"},
+    anagramma:{t:"Dietro le quinte",x:"Un ATTORE, rimescolato, trova la sua casa.",s:"ATTORE → TEATRO",o:"TEATRO"},
+    zeppa:{t:"Motivo di famiglia",x:"Alla mia casa aggiungi una U: ecco il perché di tutto.",s:"CASA + U = CAUSA",o:"CAUSA"},
+    ditloide:{t:"Sette giorni",x:"7 G della S",s:"7 = Giorni della Settimana",o:"7 GIORNI DELLA SETTIMANA"}
+  };
+  var LABEL={bozza:'Bozza',rivisto:'Rivisto',approvato:'Approvato'}, ORDER=['bozza','rivisto','approvato'], status='bozza';
+  var dm=$('#draftMsg'), pill=$('#statusPill'), side=$('#sideStatus'), gb=$('#genBtn'), ap=$('#btnApprova');
+  var setStatus=function(s){
+    status=s; var ix=ORDER.indexOf(s);
+    [pill,side].forEach(function(p){ p.textContent=LABEL[s]; p.className='pill st-'+s; });
+    $$('#stepper li').forEach(function(li,i){ li.classList.toggle('is-done',i<=ix); if(i===ix) li.setAttribute('aria-current','step'); else li.removeAttribute('aria-current'); });
+    ap.disabled=(s!=='rivisto');
+    $('#provRev').textContent=s==='bozza'?'In attesa':(s==='rivisto'?'Rivisto dal proprietario':'Approvato dal proprietario');
+    $('#provLog').textContent=s;
+  };
+  var gen=function(){
+    var d=$('#draft'); d.setAttribute('aria-busy','true'); gb.disabled=true; gb.lastChild.textContent=' Generazione in corso…'; dm.className='msg'; dm.textContent='Il Motore sta preparando la bozza…';
+    setTimeout(function(){
+      var s=SAMPLES[$('#genType').value];
+      $('#dTitle').value=s.t; $('#dText').value=s.x; $('#dSchema').textContent=s.s; $('#dSol').value=s.o;
+      $$('.rc').forEach(function(c,i){c.checked=i<2});
+      setStatus('bozza'); d.setAttribute('aria-busy','false'); gb.disabled=false; gb.lastChild.textContent=' Genera bozza';
+      dm.className='msg'; dm.textContent='Bozza pronta: rivedila e completa i controlli.';
+    },900);
+  };
+  genForm.addEventListener('submit',function(e){e.preventDefault(); gen();});
+  $('#btnRigenera').addEventListener('click',gen);
+  $('#btnRivisto').addEventListener('click',function(){
+    var miss=$$('.rc').filter(function(c){return !c.checked});
+    if(miss.length){ dm.className='msg err'; dm.textContent='Completa i controlli di revisione prima di segnare come rivisto ('+miss.length+' mancante).'; miss[0].focus(); return; }
+    setStatus('rivisto'); dm.className='msg ok'; dm.textContent='Segnato come rivisto. Ora puoi approvarlo.';
+  });
+  ap.addEventListener('click',function(){ setStatus('approvato'); dm.className='msg ok'; dm.textContent='Approvato: il Gioco è pronto per la coda di pubblicazione.'; });
+  ['#dTitle','#dText','#dSol'].forEach(function(id){ $(id).addEventListener('input',function(){ if(status!=='bozza'){ setStatus('bozza'); dm.className='msg'; dm.textContent='Hai modificato il testo: il Gioco torna in bozza.'; } }); });
+  $$('.qitem').forEach(function(b){ b.addEventListener('click',function(){
+    $$('.qitem').forEach(function(x){x.classList.toggle('is-active',x===b); x.setAttribute('aria-pressed',String(x===b));});
+    var ex=b.getAttribute('data-show')==='estratto'; $('#viewMotore').hidden=ex; $('#viewEstratto').hidden=!ex;
+  }); });
+}
+
+/* ---------- admin ---------- */
+var PER={oggi:[['2.418','+6% rispetto a ieri'],['3.905','+4% rispetto a ieri'],['612','+3 oggi'],['78%','il 41% ha più di 65 anni']],
+         sett:[['9.870','+9% sulla settimana prima'],['24.465','+7% sulla settimana prima'],['612','+14 in 7 giorni'],['76%','il 43% ha più di 65 anni']],
+         mese:[['31.240','+12% sul mese prima'],['98.110','+10% sul mese prima'],['612','+51 in 30 giorni'],['75%','il 42% ha più di 65 anni']]};
+$$('[data-per]').forEach(function(b){ b.addEventListener('click',function(){
+  $$('[data-per]').forEach(function(x){x.setAttribute('aria-pressed',String(x===b))});
+  PER[b.getAttribute('data-per')].forEach(function(v,i){ $('[data-kpi="'+i+'"]').textContent=v[0]; $('[data-kd="'+i+'"]').textContent=v[1]; });
+}); });
+$$('[data-pub]').forEach(function(b){ b.addEventListener('click',function(){
+  var tr=b.closest('tr'), p=$('.pill',tr); p.textContent='Pubblicato'; p.className='pill st-pubblicato';
+  b.disabled=true; b.textContent='Pubblicato'; $('#pubMsg').className='msg ok'; $('#pubMsg').textContent='«'+$('.gname',tr).textContent+'» pubblicato ora.';
+}); });
+})();
+
+</script>
+</body>
+</html>

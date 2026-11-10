@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe C - I Percorsi</title>
+<style>
+/* Wireframe a bassa fedelta: solo scala di grigi, nessuno stile grafico. */
+:root{--ink:#1a1a1a;--mid:#666;--line:#999;--soft:#ddd;--fill:#f2f2f2;--bg:#fff}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+a{color:inherit}
+.wf-top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:2px solid var(--ink);padding:8px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.wf-top strong{font-size:18px}
+.wf-layout{display:grid;grid-template-columns:250px minmax(0,1fr)}
+.wf-index{border-right:1px solid var(--line);padding:12px 16px;font-size:14px}
+.wf-index h3{font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin:16px 0 4px;color:var(--mid)}
+.wf-index ol{margin:0;padding-left:20px}
+.wf-index a[aria-current="page"]{font-weight:700;text-decoration:none;border-left:3px solid var(--ink);padding-left:4px}
+.screen{display:none;padding:16px;outline:none;scroll-margin-top:96px}
+[id]{scroll-margin-top:96px}
+.screen.on{display:block}
+.screen>h2{margin:0 0 4px}
+.wf-pager{display:flex;justify-content:space-between;margin:16px 0 0;font-size:14px}
+.note{border-left:4px solid var(--mid);background:var(--fill);padding:8px 12px;font-size:14px;margin:8px 0 16px;max-width:900px}
+.frame-d{border:2px solid var(--ink);max-width:1120px;background:var(--bg);overflow-x:auto}
+.frame-m{border:2px solid var(--ink);border-radius:18px;width:360px;max-width:100%;background:var(--bg);overflow:hidden;display:inline-block;vertical-align:top;margin:0 16px 16px 0}
+.frame-label{font-size:13px;color:var(--mid);margin:0 0 4px}
+.bar{border-bottom:1px solid var(--line);padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bar.bottom{border-top:1px solid var(--line);border-bottom:0;justify-content:space-around}
+.grow{flex:1}
+.cols{display:grid;gap:12px;padding:12px}
+.side{grid-template-columns:210px minmax(0,1fr)}
+.c2{grid-template-columns:1fr 1fr}
+.c3{grid-template-columns:1fr 1fr 1fr}
+.box{border:1px solid var(--line);padding:8px 10px;margin:0 0 8px}
+.box.dash{border-style:dashed}
+.box.strong{border:2px solid var(--ink)}
+.ph{background:repeating-linear-gradient(45deg,#eee 0 8px,#ddd 8px 16px);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:#444;min-height:90px;text-align:center;padding:8px;font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ink);padding:6px 12px;min-height:36px;text-decoration:none;background:var(--bg);font-size:15px;cursor:pointer}
+.btn.pri{border-width:3px;font-weight:700}
+.btn.big{min-height:52px;width:100%;font-size:18px}
+.btn.dis{border-style:dashed;color:var(--mid)}
+.tag{display:inline-block;border:1px solid var(--mid);border-radius:10px;padding:0 7px;font-size:13px;white-space:nowrap}
+.kbd{border:1px solid var(--ink);border-radius:3px;padding:0 4px;font-family:ui-monospace,monospace;font-size:12px}
+.muted{color:var(--mid);font-size:14px}
+.small{font-size:13px}
+.big-t{font-size:20px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid var(--line);padding:5px 7px;text-align:left;font-size:14px;vertical-align:top}
+th{background:var(--fill)}
+tr.sel td{outline:2px solid var(--ink);outline-offset:-2px}
+.nav-list{list-style:none;margin:0;padding:0}
+.nav-list li{padding:5px 8px;border-bottom:1px solid var(--soft);display:flex;justify-content:space-between;gap:6px}
+.nav-list li.cur{border-left:4px solid var(--ink);font-weight:700}
+.cw{display:grid;grid-template-columns:repeat(var(--n),1fr);border:2px solid var(--ink);max-width:340px}
+.cw span{aspect-ratio:1;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.cw .k{background:#333}
+.cw .w{background:#e4e4e4}
+.cw .a{outline:3px solid var(--ink);outline-offset:-3px;background:#cfcfcf}
+.stepper{display:flex;gap:4px;flex-wrap:wrap;list-style:none;padding:0;margin:0}
+.stepper li{border:1px solid var(--line);padding:2px 8px;font-size:13px}
+.stepper li.cur{border:2px solid var(--ink);font-weight:700}
+.stepper li.done{text-decoration:line-through;color:var(--mid)}
+.field{display:block;margin:0 0 8px}
+.field>span{display:block;font-size:13px;color:var(--mid)}
+.input{border:1px solid var(--ink);min-height:36px;padding:6px 8px}
+.sheet{border-top:2px solid var(--ink);padding:12px}
+.progress{height:10px;border:1px solid var(--ink);background:linear-gradient(90deg,#888 var(--p,40%),transparent 0)}
+@media (max-width:900px){.wf-top{position:static}.screen,[id]{scroll-margin-top:0}.frame-m{margin-right:0}.wf-layout{grid-template-columns:minmax(0,1fr)}.wf-index{border-right:0;border-bottom:1px solid var(--line)}.side,.c2,.c3{grid-template-columns:minmax(0,1fr)}}
+</style>
+<body>
+<header class="wf-top">
+  <strong>Proposta C - I Percorsi</strong>
+  <span class="muted">Procedure guidate passo passo: Crea, Acquisisci, Pubblica, Cerca e gioca; sul Sito, Gioca oggi.</span>
+  <span class="grow"></span>
+  <span class="small">Wireframe in scala di grigi, senza stile grafico. Indice a sinistra; i pulsanti con bordo spesso portano alla schermata successiva del flusso.</span>
+</header>
+<div class="wf-layout">
+<nav class="wf-index" aria-label="Schermate">
+  <h3>Studio (desktop)</h3>
+  <ol>
+    <li><a href="#c1">Home "Che cosa vuoi fare?"</a></li>
+    <li><a href="#c2">Crea, passo 2: scegli</a></li>
+    <li><a href="#c3">Crea, passo 5: contributo</a></li>
+    <li><a href="#c4">Acquisisci, passi 3 e 4</a></li>
+    <li><a href="#c5">Acquisisci, passo 5: tipologia nuova</a></li>
+    <li><a href="#c6">Cerca e gioca</a></li>
+  </ol>
+  <h3>Admin</h3>
+  <ol start="7">
+    <li><a href="#c7">Home Admin e percorso Pubblica</a></li>
+  </ol>
+  <h3>Sito pubblico (mobile)</h3>
+  <ol start="8">
+    <li><a href="#c8">Gioca oggi</a></li>
+    <li><a href="#c9">Abbonamento</a></li>
+  </ol>
+  <h3>Stati</h3>
+  <ol start="10">
+    <li><a href="#c10">Vuoto, errore AI, lungo, conflitto, offline</a></li>
+  </ol>
+</nav>
+<main>
+
+<!-- C1 -->
+<section class="screen" id="c1" tabindex="-1" aria-labelledby="c1h">
+  <h2 id="c1h">1. Studio - Home "Che cosa vuoi fare?"</h2>
+  <p class="note">Tre scelte grandi, poi i percorsi da riprendere e le elaborazioni in corso. Gli strumenti (Tipologie, Impostazioni) sono secondari. Dentro un percorso questa Home sparisce.</p>
+  <div class="frame-d">
+    <div class="bar"><strong>DBEnigmistica Studio</strong><span class="grow"></span><span class="input" style="min-width:240px">Cerca un gioco...</span><span class="small">Strumenti ▾</span></div>
+    <div style="padding:16px">
+      <p class="big-t">Che cosa vuoi fare?</p>
+      <div class="cols c3" style="padding:0">
+        <a class="box strong" style="display:block;text-decoration:none;min-height:110px" href="#c2"><strong class="big-t">Crea giochi</strong><br>Con l'aiuto dell'AI. Rivedi, prova, approva.</a>
+        <a class="box strong" style="display:block;text-decoration:none;min-height:110px" href="#c4"><strong class="big-t">Acquisisci una Rivista</strong><br>Dal PDF ai Giochi, nel tuo archivio privato.</a>
+        <a class="box strong" style="display:block;text-decoration:none;min-height:110px" href="#c6"><strong class="big-t">Cerca e gioca</strong><br>Trova un Gioco e giocalo.</a>
+      </div>
+      <p><strong>Da riprendere</strong></p>
+      <div class="box">Acquisisci "Enigmistica Mese n. 41" · fermo al passo 4 di 6 (pagina 38) · <a class="btn pri" href="#c4">Riprendi</a></div>
+      <div class="box">Crea "Mare d'inverno" · fermo al passo 3 di 6 · <a class="btn" href="#c3">Riprendi</a></div>
+      <p><strong>In corso</strong></p>
+      <div class="box">Lettura di "Enigmistica Mese n. 42" · 61/96 pagine <div class="progress" style="--p:63%"></div></div>
+      <p class="muted small">Calendario del Sito: coperto fino al 14 novembre · 3 giorni da coprire</p>
+    </div>
+  </div>
+</section>
+
+<!-- C2 -->
+<section class="screen" id="c2" tabindex="-1" aria-labelledby="c2h">
+  <h2 id="c2h">2. Studio - Crea giochi, passo 2 di 6: scegli una proposta</h2>
+  <p class="note">Indicatore dei passi in alto, sempre Indietro e Salva ed esci. Le tre proposte sono affiancate e giocabili in anteprima. Il passo 1 (tipologia, tema, istruzioni) e gia compilato.</p>
+  <div class="frame-d">
+    <div class="bar"><strong>Crea giochi</strong><span class="grow"></span><a class="btn" href="#c1">Salva ed esci <span class="kbd">Esc</span></a></div>
+    <div class="bar"><ol class="stepper"><li class="done">1 Tipologia e tema</li><li class="cur" aria-current="step">2 Scegli una proposta</li><li>3 Rifinisci</li><li>4 Provalo</li><li>5 Il tuo contributo</li><li>6 Riepilogo</li></ol></div>
+    <div style="padding:12px">
+      <h3 style="margin:0 0 8px">Passo 2 di 6: quale proposta ti piace di piu?</h3>
+      <div class="cols c3" style="padding:0">
+        <div class="box strong"><strong>Proposta 1</strong><br>ONDA SU ONDA<br>→ MAREA MA GRANDE (5, 2, 6)<br><a class="btn pri" href="#c3">Scelgo questa</a></div>
+        <div class="box"><strong>Proposta 2</strong><br>RIVA RIVA<br>→ ...<br><a class="btn">Scelgo questa</a></div>
+        <div class="box"><strong>Proposta 3</strong><br>SALE E VENTO<br>→ ...<br><a class="btn">Scelgo questa</a></div>
+      </div>
+      <p><a class="btn">Nessuna: generane altre 3</a> <a class="btn">Scrivo io da zero</a></p>
+    </div>
+    <div class="bar bottom"><a class="btn" href="#c1">Indietro</a><span class="grow"></span><span class="muted small">Il tuo lavoro e salvato a ogni passo</span></div>
+  </div>
+</section>
+
+<!-- C3 -->
+<section class="screen" id="c3" tabindex="-1" aria-labelledby="c3h">
+  <h2 id="c3h">3. Studio - Crea giochi, passo 5 di 6: il tuo contributo</h2>
+  <p class="note">Il passo che documenta il contributo umano: registro precompilato dalle azioni dei passi 1-4, una frase scritta e una conferma esplicita. Il passo 6 mostra il riepilogo e propone di programmare subito la pubblicazione.</p>
+  <div class="frame-d">
+    <div class="bar"><strong>Crea giochi</strong> - "Mare d'inverno"<span class="grow"></span><a class="btn" href="#c1">Salva ed esci</a></div>
+    <div class="bar"><ol class="stepper"><li class="done">1 Tipologia e tema</li><li class="done">2 Scegli</li><li class="done">3 Rifinisci</li><li class="done">4 Provalo</li><li class="cur" aria-current="step">5 Il tuo contributo</li><li>6 Riepilogo</li></ol></div>
+    <div class="cols c2">
+      <div>
+        <h3 style="margin:0 0 8px">Passo 5 di 6: che cosa hai fatto tu</h3>
+        <ul>
+          <li>Hai scritto le istruzioni (112 parole)</li>
+          <li>Hai scelto la proposta 1 di 3</li>
+          <li>Hai modificato soluzione e diagramma (2 modifiche, vedi confronto)</li>
+          <li>Hai risolto il gioco in 1:40</li>
+        </ul>
+        <label class="field"><span>In una frase, il tuo contributo</span><div class="input" style="min-height:60px">Ho scelto il tema, riscritto la soluzione per renderla corretta e verificato il diagramma.</div></label>
+        <p>[x] Confermo che questo registro descrive il mio contributo a questo Gioco.</p>
+      </div>
+      <div>
+        <p class="frame-label">Passo 6 (anteprima): Riepilogo</p>
+        <div class="box"><strong>Mare d'inverno</strong> · crittografia · facile<br>Contributo umano: confermato<br><br><a class="btn pri" href="#c7">Approva e programma la pubblicazione</a><br><br><a class="btn">Approva soltanto</a> <a class="btn" href="#c2">Crea un altro con le stesse impostazioni</a></div>
+      </div>
+    </div>
+    <div class="bar bottom"><a class="btn">Indietro</a><span class="grow"></span><a class="btn pri" href="#c3">Avanti: riepilogo</a></div>
+  </div>
+</section>
+
+<!-- C4 -->
+<section class="screen" id="c4" tabindex="-1" aria-labelledby="c4h">
+  <h2 id="c4h">4. Studio - Acquisisci una Rivista, passi 3 e 4</h2>
+  <p class="note">Passo 3: la lettura lavora in sottofondo e invita a chiudere. Passo 4: revisione pagina per pagina; le pagine con tutti i Giochi sicuri offrono "Conferma tutta la pagina"; le pagine senza giochi si saltano da sole.</p>
+  <div class="frame-d">
+    <div class="bar"><strong>Acquisisci una Rivista</strong> - Enigmistica Mese n. 41 <span class="tag">privata</span><span class="grow"></span><a class="btn" href="#c1">Salva ed esci</a></div>
+    <div class="bar"><ol class="stepper"><li class="done">1 Carica il PDF</li><li class="done">2 Controlla i dati</li><li class="done">3 Lettura</li><li class="cur" aria-current="step">4 Rivedi le pagine</li><li>5 Nuove tipologie</li><li>6 Riepilogo</li></ol></div>
+    <div class="box dash small" style="margin:8px 12px">Passo 3 (gia superato): "Sto leggendo la Rivista: 96 pagine, circa 15 minuti. Puoi chiudere, ti avviso io." · <span class="btn dis">Salva ed esci</span> · <span class="btn dis">Comincia con le pagine pronte</span></div>
+    <div class="cols c2">
+      <div class="ph" style="min-height:300px">Pagina 38 di 96<br>[riquadro 1] [riquadro 2]</div>
+      <div>
+        <h3 style="margin:0 0 8px">Passo 4 di 6: pagina 38 <span class="muted small">(41 pagine con giochi su 96 · ne mancano 18)</span></h3>
+        <div class="box"><strong>Gioco 1 - Cruciverba classico</strong> · tutto sicuro · <a class="btn">Conferma</a> <a class="btn">Correggi</a></div>
+        <div class="box strong"><strong>Gioco 2 - Anagramma</strong> · 1 campo incerto<br><span class="small">soluzione letta: "<u>CAIVIO</u>" (incerto)</span><br><a class="btn">Conferma</a> <a class="btn pri">Correggi</a></div>
+        <p><a class="btn">Conferma tutta la pagina</a> <a class="btn">Non e un gioco</a></p>
+      </div>
+    </div>
+    <div class="bar bottom"><a class="btn">Pagina precedente</a><span class="grow"></span><a class="btn pri" href="#c5">Pagina successiva (alla fine: passo 5)</a></div>
+  </div>
+</section>
+
+<!-- C5 -->
+<section class="screen" id="c5" tabindex="-1" aria-labelledby="c5h">
+  <h2 id="c5h">5. Studio - Acquisisci, passo 5 di 6: una tipologia nuova</h2>
+  <p class="note">Lo Schema dinamico spiegato con una procedura in 3 tappe: guarda gli esempi, controlla i campi, conferma. E il punto in cui chi non conosce il concetto di schema lo impara facendo.</p>
+  <div class="frame-d">
+    <div class="bar"><strong>Acquisisci una Rivista</strong><span class="grow"></span><a class="btn" href="#c1">Salva ed esci</a></div>
+    <div class="bar"><ol class="stepper"><li class="done">1-4</li><li class="cur" aria-current="step">5 Nuove tipologie</li><li>6 Riepilogo</li></ol><span class="grow"></span><span class="small">Tappa 2 di 3: Guarda gli esempi · <strong>Controlla i campi</strong> · Conferma</span></div>
+    <div class="cols c2">
+      <div>
+        <h3 style="margin:0 0 8px">Ho trovato un gioco che non conosco: lo chiamerei "Bifronte"</h3>
+        <p class="small">Per salvarlo devo sapere quali informazioni ha. Ti propongo queste. Controllale sugli esempi a destra.</p>
+        <table>
+          <thead><tr><th>Informazione</th><th>Che cos'e</th><th>Es. 1</th></tr></thead>
+          <tbody>
+            <tr><td>Esposto</td><td>il testo del gioco</td><td>Il re torna</td></tr>
+            <tr><td>Lettura diritta</td><td>la parola letta da sinistra</td><td>ROMA</td></tr>
+            <tr><td>Lettura inversa</td><td>la parola letta da destra</td><td>AMOR</td></tr>
+          </tbody>
+        </table>
+        <p><a class="btn">Aggiungi un'informazione</a> <a class="btn">Rinomina</a> <a class="btn">E una tipologia che esiste gia</a></p>
+      </div>
+      <div><div class="ph" style="min-height:110px">Esempio 1 (p. 4)</div><div class="ph" style="min-height:110px;margin-top:8px">Esempio 2 (p. 33)</div></div>
+    </div>
+    <div class="bar bottom"><a class="btn">Indietro</a><a class="btn">Rimanda</a><span class="grow"></span><a class="btn pri" href="#c7">Avanti: conferma la tipologia</a></div>
+  </div>
+</section>
+
+<!-- C6 -->
+<section class="screen" id="c6" tabindex="-1" aria-labelledby="c6h">
+  <h2 id="c6h">6. Studio - Cerca e gioca</h2>
+  <p class="note">Passo 1 con testo libero e tre domande facoltative; passo 2 risultati con anteprima; passo 3 il Lettore a schermo intero con "Torna ai risultati".</p>
+  <div class="frame-d">
+    <div class="bar"><strong>Cerca e gioca</strong><span class="grow"></span><a class="btn" href="#c1">Esci</a></div>
+    <div class="bar"><ol class="stepper"><li class="done">1 Che cosa cerchi</li><li class="cur" aria-current="step">2 Scegli</li><li>3 Gioca</li></ol></div>
+    <div class="cols c2">
+      <div>
+        <div class="box small"><strong>Cerchi:</strong> "mare" · Tipologia: crittografia · Da: tutte (originali e Riviste) · Periodo: 2025 · <a href="#c6">cambia</a></div>
+        <div class="box strong"><strong>Onda su onda</strong> · originale · pubblicato il 3 nov <a class="btn pri" href="#c6b">Gioca</a></div>
+        <div class="box"><strong>Enigmistica Mese 38, p. 44</strong> · privato <a class="btn">Gioca</a></div>
+      </div>
+      <div id="c6b">
+        <p class="frame-label">Passo 3: Gioca</p>
+        <div class="cw" data-n="13" data-black="5,8" data-active="3"></div>
+        <p><a class="btn">Verifica</a> <a class="btn">Aiuto</a> <a class="btn">Modalita elenco</a> <a class="btn" href="#c6">Torna ai risultati</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- C7 -->
+<section class="screen" id="c7" tabindex="-1" aria-labelledby="c7h">
+  <h2 id="c7h">7. Admin - Home e percorso "Pubblica giochi"</h2>
+  <p class="note">L'Admin ha tre scelte; la dashboard e l'unica vista non procedurale. Il percorso Pubblica si apre anche alla fine di Crea giochi, con il Gioco gia scelto (si parte dal passo 2).</p>
+  <div class="frame-d">
+    <div class="cols c2">
+      <div>
+        <p class="frame-label">Home Admin</p>
+        <div class="box strong small">3 giorni senza gioco la prossima settimana.</div>
+        <div class="box strong"><strong>Pubblica giochi</strong></div>
+        <div class="box"><strong>Cambia l'aspetto del sito</strong></div>
+        <div class="box"><strong>Guarda come va</strong> (dashboard di utilizzo)</div>
+      </div>
+      <div>
+        <p class="frame-label">Pubblica giochi</p>
+        <ol class="stepper"><li class="done">1 Scegli i giochi</li><li class="cur" aria-current="step">2 Scegli i giorni</li><li>3 Anteprima</li><li>4 Conferma</li></ol>
+        <h3 style="margin:8px 0">Quando esce "Mare d'inverno"?</h3>
+        <div class="cols" style="grid-template-columns:repeat(4,1fr);padding:0;gap:4px">
+          <div class="box small dash">gio 13<br>occupato</div><div class="box small dash">ven 14<br>occupato</div><div class="box small strong">sab 15<br>libero (proposto)</div><div class="box small">dom 16<br>libero</div>
+        </div>
+        <p class="small">Visibilita: (o) gratuito ( ) abbonati</p>
+        <div class="ph" style="min-height:90px">Passo 3: anteprima sul telefono, come la vedra il giocatore</div>
+        <p><a class="btn">Indietro</a> <a class="btn pri" href="#c8">Conferma: esce sabato 15 alle 7</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- C8 -->
+<section class="screen" id="c8" tabindex="-1" aria-labelledby="c8h">
+  <h2 id="c8h">8. Sito pubblico - Gioca oggi (mobile)</h2>
+  <p class="note">Nessuna barra di navigazione: un solo percorso, un solo pulsante principale per schermata, testo base 20 px. "Come si gioca" compare solo la prima volta. Il menu Altro (in alto a destra) contiene Archivio, Abbonamento, Aiuto.</p>
+  <div class="frame-m">
+    <div class="bar"><strong>Gioco del giorno</strong><span class="grow"></span><span class="small">Altro</span></div>
+    <div style="padding:16px">
+      <p class="big-t">Lunedi 10 novembre</p>
+      <p class="big-t"><strong>Il gioco di oggi: una crittografia.</strong><br>Circa 5 minuti.</p>
+      <a class="btn big pri" href="#c8b">Gioca</a>
+      <p class="muted">Preferisci giocare con un elenco di parole invece della griglia? <u>Scegli qui</u></p>
+    </div>
+  </div>
+  <div class="frame-m" id="c8b">
+    <div class="bar"><strong>Come si gioca</strong> <span class="muted small">solo la prima volta</span></div>
+    <div style="padding:16px">
+      <p class="big-t">Leggi l'esposto. Trova la frase. Il diagramma dice quante lettere ha ogni parola.</p>
+      <div class="ph">Esempio illustrato</div>
+      <a class="btn big pri" href="#c8c" style="margin-top:12px">Ho capito</a>
+      <p><a href="#c8c">Salta</a></p>
+    </div>
+  </div>
+  <div class="frame-m" id="c8c">
+    <div class="bar"><strong>Crittografia</strong><span class="grow"></span><span class="btn">A A</span></div>
+    <div style="padding:16px">
+      <p class="big-t"><strong>Esposto:</strong> P ONTE</p>
+      <p class="muted">Diagramma: 1, 4, 5</p>
+      <div class="cw" data-n="10" data-black="1,6" data-active="0"></div>
+      <a class="btn big pri" href="#c8d" style="margin-top:12px">Verifica</a>
+      <p class="muted">Aiuto: una lettera · una parola</p>
+    </div>
+  </div>
+  <div class="frame-m" id="c8d">
+    <div class="bar"><strong>Fatto!</strong></div>
+    <div style="padding:16px">
+      <p class="big-t">Bravo, l'hai risolta in 6 minuti.</p>
+      <p class="big-t">Vuoi che te lo ricordiamo domani?</p>
+      <a class="btn big pri" href="#c9">Si, ricordamelo</a>
+      <p><a class="btn big" href="#c8">No, grazie</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- C9 -->
+<section class="screen" id="c9" tabindex="-1" aria-labelledby="c9h">
+  <h2 id="c9h">9. Sito pubblico - Promemoria e abbonamento (mobile)</h2>
+  <p class="note">Il promemoria si sceglie a parole. L'offerta di abbonamento arriva dopo 3-7 giorni di gioco, al momento della fine, ed e rinviabile con un tocco. Riepilogo finale in linguaggio comune.</p>
+  <div class="frame-m">
+    <div class="bar"><strong>Come vuoi il promemoria?</strong></div>
+    <div style="padding:16px">
+      <a class="btn big pri">Per email, ogni mattina</a>
+      <label class="field" style="margin-top:8px"><span>La tua email</span><div class="input"></div></label>
+      <a class="btn big">Con un'icona sul telefono (ti mostro come)</a>
+    </div>
+  </div>
+  <div class="frame-m" id="c9b">
+    <div class="bar"><strong>Fatto!</strong> <span class="muted small">giorno 5</span></div>
+    <div style="padding:16px">
+      <p class="big-t">5 giorni di fila.</p>
+      <div class="box strong"><p class="big-t">Ti piace? Con l'abbonamento hai tutti i giochi passati e 2 giochi in piu al giorno.</p></div>
+      <a class="btn big pri" href="#c9c">Scopri l'abbonamento</a>
+      <p><a class="btn big">Non ora</a></p>
+    </div>
+  </div>
+  <div class="frame-m" id="c9c">
+    <div class="bar"><strong>L'abbonamento</strong> <span class="muted small">1 di 3</span></div>
+    <div style="padding:16px">
+      <p class="big-t">19 € per un anno intero.</p>
+      <p>Puoi disdire quando vuoi, da questa pagina.</p>
+      <a class="btn big pri" href="#c9d">Continua al pagamento</a>
+    </div>
+  </div>
+  <div class="frame-m" id="c9d">
+    <div class="bar"><strong>Fatto</strong> <span class="muted small">3 di 3</span></div>
+    <div style="padding:16px">
+      <p class="big-t">Hai pagato 19 € per un anno.</p>
+      <p>Il rinnovo e il 10 novembre 2027. Ti scriveremo una settimana prima.</p>
+      <a class="btn big pri" href="#c8">Torna al gioco</a>
+    </div>
+  </div>
+</section>
+
+<!-- C10 -->
+<section class="screen" id="c10" tabindex="-1" aria-labelledby="c10h">
+  <h2 id="c10h">10. Stati - vuoto, errore AI, elaborazione lunga, conflitto, offline</h2>
+  <p class="note">Ogni errore dentro un percorso offre almeno un'uscita che non perde il lavoro: riprova, torna indietro, fai a mano, salva ed esci.</p>
+  <div class="cols c2" style="padding:0">
+    <div class="frame-d"><div class="bar"><strong>Vuoto</strong> - primo avvio dello Studio</div><div style="padding:12px">
+      <p class="big-t">Che cosa vuoi fare?</p><p>[Crea giochi] [Acquisisci una Rivista] [Cerca e gioca]</p>
+      <div class="box strong">Prima volta? <a class="btn pri">Prova con un esempio</a> (una Rivista dimostrativa e un Gioco gia pronto)</div></div></div>
+    <div class="frame-d"><div class="bar"><strong>Errore dell'AI</strong> - Crea, passo 2</div><div style="padding:12px">
+      <div class="box strong">Non sono riuscito a generare proposte: il servizio AI ha superato il limite di spesa del mese.</div>
+      <a class="btn">Riprova</a> <a class="btn">Torna al passo 1</a> <a class="btn pri">Scrivilo a mano</a></div></div>
+    <div class="frame-d"><div class="bar"><strong>Elaborazione lunga</strong> - Acquisisci, passo 3</div><div style="padding:12px">
+      <p>Sto leggendo la Rivista: 61 di 96 pagine, circa 6 minuti.</p><div class="progress" style="--p:63%"></div>
+      <p>Puoi chiudere: ti avviso io quando ho finito. Lo trovi in Home, sotto "In corso".</p>
+      <a class="btn pri" href="#c1">Salva ed esci</a> <a class="btn" href="#c4">Comincia con le pagine pronte</a></div></div>
+    <div class="frame-d"><div class="bar"><strong>Conflitto</strong> - ripresa di un percorso</div><div style="padding:12px">
+      <p>Da quando hai lasciato questo percorso: la tipologia "Bifronte" e stata confermata in un altro percorso. Il passo 5 e gia completato.</p>
+      <a class="btn pri">Va bene, continua</a></div></div>
+    <div class="frame-m"><div class="bar"><strong>Offline</strong> - Gioca oggi</div><div style="padding:16px">
+      <div class="box" role="status">Sei senza connessione. Puoi giocare lo stesso: salvo tutto su questo telefono.</div>
+      <div class="cw" data-n="10" data-black="1,6" data-active="2"></div>
+      <p class="small">Il promemoria che hai chiesto partira quando torna la connessione.</p></div></div>
+    <div class="frame-d"><div class="bar"><strong>Abbandono a meta</strong> - chiusura della finestra</div><div style="padding:12px">
+      <p>Nessuna domanda alla chiusura: il percorso e gia salvato e ricompare in Home sotto "Da riprendere".</p>
+      <p class="muted small">Dopo 30 giorni: "Vuoi archiviare questo percorso?" (mai cancellato senza chiedere)</p></div></div>
+  </div>
+</section>
+
+</main>
+</div>
+<script>
+(function(){
+  // Disegna le griglie segnaposto a partire dagli attributi data-*.
+  document.querySelectorAll('.cw').forEach(function(g){
+    var n=+g.dataset.n, black=(g.dataset.black||'').split(',').map(Number), act=+g.dataset.active;
+    var cols=n>9?Math.min(n,13):n; var rows=n>9?1:n;
+    g.style.setProperty('--n',cols); g.setAttribute('aria-hidden','true');
+    for(var i=0;i<cols*rows;i++){var s=document.createElement('span');
+      if(black.indexOf(i)>-1)s.className='k'; else if(i===act)s.className='a';
+      else if(rows===n && Math.floor(i/n)===Math.floor(act/n))s.className='w';
+      g.appendChild(s);}
+  });
+  // Navigazione tra schermate tramite l'ancora nell'indirizzo.
+  var screens=[].slice.call(document.querySelectorAll('.screen'));
+  screens.forEach(function(s,i){
+    var p=document.createElement('p'); p.className='wf-pager';
+    p.innerHTML=(i>0?'<a href="#'+screens[i-1].id+'">&larr; Schermata precedente</a>':'<span></span>')+(i<screens.length-1?'<a href="#'+screens[i+1].id+'">Schermata successiva &rarr;</a>':'<span></span>');
+    s.appendChild(p);
+  });
+  function show(){
+    var h=location.hash.slice(1), target=document.getElementById(h), sc=target?target.closest('.screen'):null;
+    if(!sc)sc=screens[0];
+    screens.forEach(function(s){s.classList.toggle('on',s===sc);});
+    document.querySelectorAll('.wf-index a').forEach(function(a){a.setAttribute('aria-current',a.getAttribute('href')==='#'+sc.id?'page':'false');});
+    if(target&&target!==sc){target.scrollIntoView();}else{sc.focus();}
+  }
+  window.addEventListener('hashchange',show); show();
+})();
+</script>
+</body>
+</html>
