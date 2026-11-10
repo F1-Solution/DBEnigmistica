@@ -1,28 +1,17 @@
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using DBEnigmistica.Console.Cli;
 
 namespace DBEnigmistica.Console.Commands;
 
 public class AnalyzeGameTextCommand : Command
 {
-    public AnalyzeGameTextCommand() : base("analyze-game-text", "Analizza un nuovo tipo di gioco da descrizione testuale e crea lo schema")
+    public AnalyzeGameTextCommand(CliStreams streams)
+        : base("analyze-game-text", "Analisi di una nuova Tipologia da descrizione testuale (disponibile dalla fase 4)")
     {
-        var descriptionArgument = new Argument<string>(
-            name: "description",
-            description: "Descrizione testuale del tipo di gioco");
-
-        var nameOption = new Option<string?>(
-            aliases: new[] { "--name", "-n" },
-            description: "Nome del tipo di gioco (opzionale)");
-
-        AddArgument(descriptionArgument);
-        AddOption(nameOption);
+        Arguments.Add(new Argument<string>("description") { Description = "Descrizione testuale della Tipologia", Arity = ArgumentArity.ZeroOrOne });
+        Options.Add(new Option<string?>("--name", "-n") { Description = "Nome del tipo di gioco (opzionale)" });
 
         // Le nuove tipologie arrivano in fase 4, senza DDL a runtime.
-        this.SetHandler((InvocationContext context) =>
-        {
-            System.Console.Error.WriteLine("Comando disponibile dalla fase 4");
-            context.ExitCode = 2;
-        });
+        this.SetNotAvailable(streams, 4);
     }
 }

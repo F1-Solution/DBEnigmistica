@@ -1,91 +1,57 @@
-using DBEnigmistica.Application.Services.Export;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using DBEnigmistica.Application.Services.Export;
+using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Console.Presentation;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands;
 
 public class ExportStatsCommand : Command
 {
-    public ExportStatsCommand() : base("export-stats", "Esporta statistiche riviste in JSON")
+    public ExportStatsCommand(CommandRunner runner) : base("export-stats", "Esporta statistiche riviste in JSON")
     {
-        var outputOption = new Option<string>(
-            aliases: new[] { "--output", "-o" },
-            getDefaultValue: () => "magazine-stats.json",
-            description: "Percorso file di output");
-
-        var prettyOption = new Option<bool>(
-            aliases: new[] { "--pretty", "-p" },
-            getDefaultValue: () => true,
-            description: "Formattazione JSON leggibile");
-
-        AddOption(outputOption);
-        AddOption(prettyOption);
-
-        this.SetHandler(async (InvocationContext context) =>
+        var outputOption = new Option<string>("--output", "-o")
         {
-            var output = context.ParseResult.GetValueForOption(outputOption)!;
-            var pretty = context.ParseResult.GetValueForOption(prettyOption);
+            Description = "Percorso file di output",
+            DefaultValueFactory = _ => "magazine-stats.json"
+        };
+        var prettyOption = new Option<bool>("--pretty", "-p")
+        {
+            Description = "Formattazione JSON leggibile",
+            DefaultValueFactory = _ => true
+        };
 
-            var services = context.BindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider
-                ?? throw new InvalidOperationException("Service provider not available");
+        Options.Add(outputOption);
+        Options.Add(prettyOption);
 
-            var logger = services.GetRequiredService<ILogger<ExportStatsCommand>>();
-            var exportService = services.GetRequiredService<DataExportService>();
-
-            await ExecuteAsync(output, pretty, exportService, logger, context.GetCancellationToken());
-        });
+        this.SetAction((parseResult, ct) => runner.RunAsync<ExportStatsHandler>(
+            HostRequirements.Database,
+            (handler, token) => handler.ExecuteAsync(
+                parseResult.GetRequiredValue(outputOption),
+                parseResult.GetValue(prettyOption),
+                token),
+            ct));
     }
+}
 
-    private static async Task ExecuteAsync(
-        string outputPath,
-        bool prettyPrint,
-        DataExportService exportService,
-        ILogger logger,
-        CancellationToken cancellationToken)
+public sealed class ExportStatsHandler(
+    DataExportService exportService,
+    IAnsiConsole console,
+    ILogger<ExportStatsHandler> logger)
+{
+    public async Task<int> ExecuteAsync(string outputPath, bool prettyPrint, CancellationToken cancellationToken)
     {
-        try
-        {
-            System.Console.ForegroundColor = ConsoleColor.Cyan;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║        DBEnigmistica - Export Statistiche                 ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
+        ConsoleBanner.Write(console, "Export statistiche");
+        console.MarkupLineInterpolated($"Output: {outputPath}");
 
-            System.Console.WriteLine($"💾 Output: {outputPath}");
-            System.Console.WriteLine();
+        var content = await exportService.ExportMagazineStatsAsJsonAsync(prettyPrint, cancellationToken);
+        await exportService.SaveToFileAsync(content, outputPath, cancellationToken);
 
-            System.Console.Write("⏳ Generazione statistiche...");
+        ConsoleBanner.Success(console, $"Statistiche esportate: {Path.GetFullPath(outputPath)}");
+        console.MarkupLineInterpolated($"Dimensione: {new FileInfo(outputPath).Length:N0} byte");
 
-            var content = await exportService.ExportMagazineStatsAsJsonAsync(prettyPrint, cancellationToken);
-            await exportService.SaveToFileAsync(content, outputPath, cancellationToken);
-
-            System.Console.WriteLine(" ✓");
-            System.Console.WriteLine();
-
-            var fileInfo = new FileInfo(outputPath);
-            System.Console.ForegroundColor = ConsoleColor.Green;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║                  ✅ SUCCESSO                               ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
-            System.Console.WriteLine($"✅ Statistiche esportate: {Path.GetFullPath(outputPath)}");
-            System.Console.WriteLine($"📦 Dimensione: {fileInfo.Length:N0} bytes");
-            System.Console.WriteLine();
-
-            logger.LogInformation("Exported magazine statistics to: {Path}", outputPath);
-        }
-        catch (Exception ex)
-        {
-            System.Console.WriteLine();
-            System.Console.ForegroundColor = ConsoleColor.Red;
-            System.Console.WriteLine($"✗ Errore durante l'export: {ex.Message}");
-            System.Console.ResetColor();
-            logger.LogError(ex, "Error exporting statistics");
-            Environment.Exit(1);
-        }
+        logger.LogInformation("Exported magazine statistics to: {Path}", outputPath);
+        return ExitCodes.Success;
     }
 }

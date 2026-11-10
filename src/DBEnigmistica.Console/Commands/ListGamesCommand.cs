@@ -1,144 +1,108 @@
-using DBEnigmistica.Domain.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.Text.Json;
+using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Console.Presentation;
+using DBEnigmistica.Domain.Entities;
+using DBEnigmistica.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands;
 
 public class ListGamesCommand : Command
 {
-    public ListGamesCommand() : base("list-games", "Lista tutte le tipologie di giochi nel database")
+    public ListGamesCommand(CommandRunner runner) : base("list-games", "Lista tutte le tipologie di giochi nel database")
     {
-        var detailsOption = new Option<bool>(
-            aliases: new[] { "--details", "-d" },
-            description: "Mostra dettagli completi degli schemi");
+        var detailsOption = new Option<bool>("--details", "-d") { Description = "Mostra dettagli completi degli schemi" };
+        Options.Add(detailsOption);
 
-        AddOption(detailsOption);
+        this.SetAction((parseResult, ct) => runner.RunAsync<ListGamesHandler>(
+            HostRequirements.Database,
+            (handler, token) => handler.ExecuteAsync(parseResult.GetValue(detailsOption), token),
+            ct));
+    }
+}
 
-        this.SetHandler(async (InvocationContext context) =>
+public sealed class ListGamesHandler(
+    IGameTypeSchemaRepository schemaRepository,
+    IAnsiConsole console,
+    ILogger<ListGamesHandler> logger)
+{
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    public async Task<int> ExecuteAsync(bool showDetails, CancellationToken cancellationToken)
+    {
+        ConsoleBanner.Write(console, "Tipologie di giochi");
+
+        var schemas = (await schemaRepository.GetAllAsync()).OrderBy(s => s.CreatedDate).ToList();
+        if (schemas.Count == 0)
         {
-            var showDetails = context.ParseResult.GetValueForOption(detailsOption);
+            ConsoleBanner.Warning(console, "Nessuna tipologia di gioco trovata nel database.");
+            return ExitCodes.Success;
+        }
 
-            var services = context.BindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider 
-                ?? throw new InvalidOperationException("Service provider not available");
-            
-            var logger = services.GetRequiredService<ILogger<ListGamesCommand>>();
-            var schemaRepository = services.GetRequiredService<IGameTypeSchemaRepository>();
+        console.MarkupLineInterpolated($"Trovate {schemas.Count} tipologie di giochi:");
+        console.WriteLine();
 
-            await ExecuteAsync(showDetails, schemaRepository, logger, context.GetCancellationToken());
-        });
+        foreach (var schema in schemas)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            WriteSchema(schema, showDetails);
+        }
+
+        logger.LogInformation("Listed {Count} game type schemas", schemas.Count);
+        return ExitCodes.Success;
     }
 
-    private static async Task ExecuteAsync(
-        bool showDetails,
-        IGameTypeSchemaRepository schemaRepository,
-        ILogger logger,
-        CancellationToken cancellationToken)
+    private void WriteSchema(GameTypeSchema schema, bool showDetails)
     {
+        var validation = schema.IsUserValidated ? "" : " [yellow][[non validato]][/]";
+        console.MarkupLine($"[green]{Markup.Escape(schema.GameTypeName)}[/]{validation}");
+        console.MarkupLineInterpolated($"   Tabella: {schema.TableName}");
+        console.MarkupLineInterpolated($"   Creata: {schema.CreatedDate:dd/MM/yyyy HH:mm}");
+
+        if (!string.IsNullOrEmpty(schema.Description))
+            console.MarkupLineInterpolated($"   Descrizione: {schema.Description}");
+
+        if (showDetails)
+            WriteColumns(schema.SchemaJson);
+
+        console.WriteLine();
+    }
+
+    private void WriteColumns(string schemaJson)
+    {
+        SchemaDetails? details;
         try
         {
-            System.Console.ForegroundColor = ConsoleColor.Cyan;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║         DBEnigmistica - Tipologie di Giochi              ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
-
-            var schemas = await schemaRepository.GetAllAsync();
-            var schemaList = schemas.ToList();
-
-            if (!schemaList.Any())
-            {
-                System.Console.ForegroundColor = ConsoleColor.Yellow;
-                System.Console.WriteLine("⚠️  Nessuna tipologia di gioco trovata nel database.");
-                System.Console.ResetColor();
-                System.Console.WriteLine();
-                System.Console.WriteLine("Suggerimento: Usa 'analyze-game' o 'analyze-game-text' per creare nuovi tipi.");
-                return;
-            }
-
-            System.Console.WriteLine($"📊 Trovate {schemaList.Count} tipologie di giochi:");
-            System.Console.WriteLine();
-
-            foreach (var schema in schemaList.OrderBy(s => s.CreatedDate))
-            {
-                System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.Write("🎮 ");
-                System.Console.ResetColor();
-                System.Console.Write($"{schema.GameTypeName}");
-                
-                if (!schema.IsUserValidated)
-                {
-                    System.Console.ForegroundColor = ConsoleColor.Yellow;
-                    System.Console.Write(" [non validato]");
-                    System.Console.ResetColor();
-                }
-                System.Console.WriteLine();
-
-                System.Console.WriteLine($"   📋 Tabella: {schema.TableName}");
-                System.Console.WriteLine($"   📅 Creata: {schema.CreatedDate:dd/MM/yyyy HH:mm}");
-
-                if (!string.IsNullOrEmpty(schema.Description))
-                {
-                    System.Console.WriteLine($"   📝 Descrizione: {schema.Description}");
-                }
-
-                if (showDetails)
-                {
-                    // Parse schema JSON to show columns
-                    try
-                    {
-                        var schemaJson = System.Text.Json.JsonSerializer.Deserialize<SchemaDetails>(schema.SchemaJson);
-                        if (schemaJson?.Columns != null && schemaJson.Columns.Any())
-                        {
-                            System.Console.WriteLine($"   🔢 Colonne ({schemaJson.Columns.Count}):");
-                            foreach (var column in schemaJson.Columns)
-                            {
-                                var required = column.IsRequired ? "[obbligatorio]" : "[opzionale]";
-                                System.Console.WriteLine($"      • {column.ColumnName} ({column.DataType}) {required}");
-                                if (!string.IsNullOrEmpty(column.Description))
-                                {
-                                    System.Console.ForegroundColor = ConsoleColor.DarkGray;
-                                    System.Console.WriteLine($"        {column.Description}");
-                                    System.Console.ResetColor();
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Console.ForegroundColor = ConsoleColor.Red;
-                        System.Console.WriteLine($"   ⚠️  Errore nel parsing dello schema: {ex.Message}");
-                        System.Console.ResetColor();
-                    }
-                }
-
-                System.Console.WriteLine();
-            }
-
-            logger.LogInformation("Listed {Count} game type schemas", schemaList.Count);
+            details = JsonSerializer.Deserialize<SchemaDetails>(schemaJson, JsonOptions);
         }
-        catch (Exception ex)
+        catch (JsonException ex)
         {
-            System.Console.WriteLine();
-            System.Console.ForegroundColor = ConsoleColor.Red;
-            System.Console.WriteLine($"✗ Errore: {ex.Message}");
-            System.Console.ResetColor();
-            logger.LogError(ex, "Error listing game types");
-            Environment.Exit(1);
+            logger.LogWarning(ex, "Schema JSON non valido");
+            console.MarkupLineInterpolated($"[red]   Errore nel parsing dello schema: {ex.Message}[/]");
+            return;
+        }
+
+        if (details?.Columns is not { Count: > 0 })
+            return;
+
+        console.MarkupLineInterpolated($"   Colonne ({details.Columns.Count}):");
+        foreach (var column in details.Columns)
+        {
+            var required = column.IsRequired ? "obbligatorio" : "opzionale";
+            console.MarkupLineInterpolated($"      - {column.ColumnName} ({column.DataType}) [[{required}]]");
+            if (!string.IsNullOrEmpty(column.Description))
+                console.MarkupLineInterpolated($"[grey]        {column.Description}[/]");
         }
     }
 
-    // Helper class for deserializing schema JSON
-    private class SchemaDetails
+    private sealed class SchemaDetails
     {
-        public string TableName { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public List<ColumnDetails> Columns { get; set; } = new();
+        public List<ColumnDetails> Columns { get; set; } = [];
     }
 
-    private class ColumnDetails
+    private sealed class ColumnDetails
     {
         public string ColumnName { get; set; } = string.Empty;
         public string DataType { get; set; } = string.Empty;

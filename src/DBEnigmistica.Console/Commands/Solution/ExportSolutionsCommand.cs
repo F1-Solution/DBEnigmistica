@@ -2,111 +2,96 @@ using System.CommandLine;
 using System.Globalization;
 using System.Text.Json;
 using DBEnigmistica.Application.Services.Export;
+using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Console.Presentation;
+using DBEnigmistica.Domain.Entities;
 using DBEnigmistica.Domain.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
+using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands.Solution;
 
 public class ExportSolutionsCommand : Command
 {
-    public ExportSolutionsCommand() : base("export-solutions", "Esporta soluzioni in JSON o CSV")
+    public ExportSolutionsCommand(CommandRunner runner) : base("export-solutions", "Esporta soluzioni in JSON o CSV")
     {
-        var outputOption = new Option<string>(
-            "--output",
-            "Percorso file di output (obbligatorio)"
-        ) { IsRequired = true };
-
-        var formatOption = new Option<string>(
-            "--format",
-            getDefaultValue: () => "json",
-            "Formato di esportazione: json o csv (default: json)"
-        );
-
-        var verifiedOnlyOption = new Option<bool>(
-            "--verified-only",
-            getDefaultValue: () => false,
-            "Esporta solo soluzioni verificate (default: false)"
-        );
-
-        var magazineIdOption = new Option<int?>(
-            "--magazine-id",
-            "ID della rivista da filtrare (opzionale)"
-        );
-
-        AddOption(outputOption);
-        AddOption(formatOption);
-        AddOption(verifiedOnlyOption);
-        AddOption(magazineIdOption);
-
-        this.SetHandler(async (outputPath, format, verifiedOnly, magazineId, sp) =>
+        var outputOption = new Option<string>("--output") { Description = "Percorso file di output (obbligatorio)", Required = true };
+        var formatOption = new Option<string>("--format")
         {
-            var repository = sp.GetRequiredService<IGameSolutionRepository>();
+            Description = "Formato di esportazione: json o csv (default: json)",
+            DefaultValueFactory = _ => "json"
+        };
+        var verifiedOnlyOption = new Option<bool>("--verified-only") { Description = "Esporta solo soluzioni verificate (default: false)" };
+        var magazineIdOption = new Option<int?>("--magazine-id") { Description = "ID della rivista da filtrare (opzionale)" };
 
-            try
-            {
-                System.Console.WriteLine($"\n📤 Esportazione soluzioni...");
-                
-                // Validate format
-                if (format.ToLower() != "json" && format.ToLower() != "csv")
-                {
-                    throw new InvalidOperationException("Formato non supportato. Usare 'json' o 'csv'.");
-                }
+        Options.Add(outputOption);
+        Options.Add(formatOption);
+        Options.Add(verifiedOnlyOption);
+        Options.Add(magazineIdOption);
 
-                // Get solutions
-                var solutionsList = verifiedOnly
-                    ? (await repository.GetVerifiedSolutionsAsync(magazineId)).ToList()
-                    : (await repository.GetAllAsync()).ToList();
+        this.SetAction((parseResult, ct) => runner.RunAsync<ExportSolutionsHandler>(
+            HostRequirements.Database,
+            (handler, token) => handler.ExecuteAsync(
+                parseResult.GetRequiredValue(outputOption),
+                parseResult.GetRequiredValue(formatOption),
+                parseResult.GetValue(verifiedOnlyOption),
+                parseResult.GetValue(magazineIdOption),
+                token),
+            ct));
+    }
+}
 
-                if (magazineId.HasValue && !verifiedOnly)
-                {
-                    // Filter by magazine - need to check associated game pages
-                    solutionsList = solutionsList
-                        .Where(s => s.Game?.Page?.MagazineId == magazineId.Value)
-                        .ToList();
-                }
+public sealed class ExportSolutionsHandler(IGameSolutionRepository repository, IAnsiConsole console, CliStreams streams)
+{
+    public async Task<int> ExecuteAsync(
+        string outputPath,
+        string format,
+        bool verifiedOnly,
+        int? magazineId,
+        CancellationToken cancellationToken)
+    {
+        format = format.ToLowerInvariant();
+        if (format is not ("json" or "csv"))
+        {
+            streams.Error.WriteLine("Formato non supportato: usa 'json' o 'csv'.");
+            return ExitCodes.Error;
+        }
 
-                System.Console.WriteLine();
+        var solutions = await LoadAsync(verifiedOnly, magazineId);
+        if (solutions.Count == 0)
+        {
+            ConsoleBanner.Warning(console, "Nessuna soluzione trovata con i criteri specificati.");
+            return ExitCodes.Success;
+        }
 
-                if (!solutionsList.Any())
-                {
-                    System.Console.ForegroundColor = ConsoleColor.Yellow;
-                    System.Console.WriteLine("⚠ Nessuna soluzione trovata con i criteri specificati.");
-                    System.Console.ResetColor();
-                    return;
-                }
+        if (format == "json")
+            await ExportToJsonAsync(solutions, outputPath, cancellationToken);
+        else
+            await ExportToCsvAsync(solutions, outputPath, cancellationToken);
 
-                if (format.ToLower() == "json")
-                {
-                    await ExportToJsonAsync(solutionsList, outputPath);
-                }
-                else if (format.ToLower() == "csv")
-                {
-                    await ExportToCsvAsync(solutionsList, outputPath);
-                }
-
-                System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.WriteLine($"✓ Esportate {solutionsList.Count} soluzioni");
-                System.Console.WriteLine($"✓ File salvato: {outputPath}");
-                System.Console.ResetColor();
-            }
-            catch (Exception ex)
-            {
-                System.Console.ForegroundColor = ConsoleColor.Red;
-                System.Console.WriteLine($"✗ Errore: {ex.Message}");
-                System.Console.ResetColor();
-            }
-        }, outputOption, formatOption, verifiedOnlyOption, magazineIdOption, 
-           new ServiceProviderBinder());
+        ConsoleBanner.Success(console, $"Esportate {solutions.Count} soluzioni");
+        ConsoleBanner.Success(console, $"File salvato: {outputPath}");
+        return ExitCodes.Success;
     }
 
-    private static async Task ExportToJsonAsync(List<DBEnigmistica.Domain.Entities.GameSolution> solutions, string outputPath)
+    private async Task<List<GameSolution>> LoadAsync(bool verifiedOnly, int? magazineId)
     {
-        var exportData = solutions.Select(s => new
+        if (verifiedOnly)
+            return (await repository.GetVerifiedSolutionsAsync(magazineId)).ToList();
+
+        var all = (await repository.GetAllAsync()).ToList();
+        return magazineId.HasValue
+            ? all.Where(s => s.Game?.Page?.MagazineId == magazineId.Value).ToList()
+            : all;
+    }
+
+    private static async Task ExportToJsonAsync(List<GameSolution> solutions, string outputPath, CancellationToken cancellationToken)
+    {
+        var data = solutions.Select(s => new
         {
             s.Id,
-            GameId = s.GameId,
+            s.GameId,
             s.SolutionText,
-            SolutionPageId = s.SolutionPageId,
+            s.SolutionPageId,
             SolutionType = s.SolutionType.ToString(),
             s.ConfidenceScore,
             s.IsVerified,
@@ -117,54 +102,33 @@ public class ExportSolutionsCommand : Command
             s.Notes
         }).ToList();
 
-        var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions 
-        { 
-            WriteIndented = true 
-        });
-        
-        await System.IO.File.WriteAllTextAsync(outputPath, json);
+        var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(outputPath, json, cancellationToken);
     }
 
-    private static async Task ExportToCsvAsync(List<DBEnigmistica.Domain.Entities.GameSolution> solutions, string outputPath)
+    private static async Task ExportToCsvAsync(List<GameSolution> solutions, string outputPath, CancellationToken cancellationToken)
     {
-        using var writer = new StreamWriter(outputPath);
-        
-        // Write header
+        await using var writer = new StreamWriter(outputPath);
+        await writer.WriteLineAsync(CsvFieldFormatter.SeparatorDirective);
         await writer.WriteLineAsync("ID,GameID,SolutionText,SolutionPageID,SolutionType,ConfidenceScore,IsVerified,PositionX,PositionY,ExtractedDate,VerifiedDate,Notes");
 
-        // Write data
-        foreach (var solution in solutions)
+        foreach (var s in solutions)
         {
-            var line = $"\"{solution.Id}\"," +
-                       $"\"{solution.GameId}\"," +
-                       $"\"{EscapeCsvValue(solution.SolutionText)}\"," +
-                       $"\"{solution.SolutionPageId}\"," +
-                       $"\"{solution.SolutionType}\"," +
-                       $"\"{solution.ConfidenceScore?.ToString(CultureInfo.InvariantCulture) ?? ""}\"," +
-                       $"\"{solution.IsVerified}\"," +
-                       $"\"{solution.PositionX}\"," +
-                       $"\"{solution.PositionY}\"," +
-                       $"\"{solution.ExtractedDate:O}\"," +
-                       $"\"{solution.VerifiedDate?.ToString("O") ?? ""}\"," +
-                       $"\"{EscapeCsvValue(solution.Notes ?? "")}\"";
-            
+            cancellationToken.ThrowIfCancellationRequested();
+            var line = $"{CsvFieldFormatter.Number(s.Id)}," +
+                       $"{CsvFieldFormatter.Number(s.GameId)}," +
+                       $"{CsvFieldFormatter.Format(s.SolutionText)}," +
+                       $"{CsvFieldFormatter.Number(s.SolutionPageId)}," +
+                       $"{CsvFieldFormatter.Format(s.SolutionType.ToString())}," +
+                       $"{CsvFieldFormatter.Number(s.ConfidenceScore)}," +
+                       $"{s.IsVerified}," +
+                       $"{CsvFieldFormatter.Number(s.PositionX)}," +
+                       $"{CsvFieldFormatter.Number(s.PositionY)}," +
+                       $"{CsvFieldFormatter.Date(s.ExtractedDate)}," +
+                       $"{CsvFieldFormatter.Date(s.VerifiedDate)}," +
+                       $"{CsvFieldFormatter.Format(s.Notes)}";
+
             await writer.WriteLineAsync(line);
-        }
-
-        await writer.FlushAsync();
-    }
-
-    private static string EscapeCsvValue(string value)
-    {
-        return CsvFieldFormatter.EscapeQuotes(value);
-    }
-
-    private class ServiceProviderBinder : System.CommandLine.Binding.BinderBase<IServiceProvider>
-    {
-        protected override IServiceProvider GetBoundValue(System.CommandLine.Binding.BindingContext bindingContext)
-        {
-            return bindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider 
-                ?? throw new InvalidOperationException("Service provider not found");
         }
     }
 }

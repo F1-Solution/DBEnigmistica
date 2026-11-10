@@ -1,100 +1,68 @@
 using System.CommandLine;
-using DBEnigmistica.Domain.Entities;
+using DBEnigmistica.Application.Services.Solutions;
+using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Console.Presentation;
 using DBEnigmistica.Domain.Enums;
-using DBEnigmistica.Domain.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
+using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands.Solution;
 
 public class LinkSolutionCommand : Command
 {
-    public LinkSolutionCommand() : base("link-solution", "Associa una soluzione a un gioco")
+    public LinkSolutionCommand(CommandRunner runner) : base("link-solution", "Associa una soluzione a un gioco")
     {
-        var gameIdOption = new Option<int>(
-            "--game-id",
-            "ID del gioco a cui associare la soluzione"
-        ) { IsRequired = true };
-
-        var solutionOption = new Option<string>(
-            "--solution",
-            "Testo della soluzione"
-        ) { IsRequired = true };
-
-        var pageIdOption = new Option<int?>(
-            "--page-id",
-            "ID della pagina contenente la soluzione (opzionale)"
-        );
-
-        var solutionTypeOption = new Option<SolutionType>(
-            "--type",
-            getDefaultValue: () => SolutionType.InSameIssue,
-            "Tipo di soluzione: InSamePage, InSameIssue, InNextIssue, External"
-        );
-
-        AddOption(gameIdOption);
-        AddOption(solutionOption);
-        AddOption(pageIdOption);
-        AddOption(solutionTypeOption);
-
-        this.SetHandler(async (gameId, solution, pageId, solutionType, sp) =>
+        var gameIdOption = new Option<int>("--game-id") { Description = "ID del gioco a cui associare la soluzione", Required = true };
+        var solutionOption = new Option<string>("--solution") { Description = "Testo della soluzione", Required = true };
+        var pageIdOption = new Option<int?>("--page-id") { Description = "ID della pagina contenente la soluzione (opzionale)" };
+        var typeOption = new Option<SolutionType>("--type")
         {
-            var gameRepository = sp.GetRequiredService<IGameRepository>();
-            var solutionRepository = sp.GetRequiredService<IGameSolutionRepository>();
+            Description = "Tipo di soluzione: InSamePage, InSameIssue, InNextIssue, External",
+            DefaultValueFactory = _ => SolutionType.InSameIssue
+        };
 
-            try
-            {
-                System.Console.WriteLine($"\n🔗 Associazione soluzione al gioco #{gameId}...");
+        Options.Add(gameIdOption);
+        Options.Add(solutionOption);
+        Options.Add(pageIdOption);
+        Options.Add(typeOption);
 
-                var game = await gameRepository.GetByIdAsync(gameId)
-                    ?? throw new ArgumentException($"Gioco {gameId} non trovato");
-
-                game.Solution = solution;
-                game.SolutionPageId = pageId;
-                game.HasSolution = true;
-
-                // Collegamento manuale: la soluzione nasce già verificata.
-                var gameSolution = new GameSolution
-                {
-                    GameId = gameId,
-                    SolutionText = solution,
-                    SolutionPageId = pageId,
-                    SolutionType = solutionType,
-                    IsVerified = true,
-                    ExtractedDate = DateTime.UtcNow,
-                    VerifiedDate = DateTime.UtcNow
-                };
-
-                await solutionRepository.AddAsync(gameSolution);
-                await solutionRepository.SaveChangesAsync();
-                var solutionId = gameSolution.Id;
-
-                System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.WriteLine($"✓ Soluzione associata con successo! (ID: {solutionId})");
-                System.Console.ResetColor();
-                System.Console.WriteLine($"  Gioco: #{gameId}");
-                System.Console.WriteLine($"  Soluzione: {solution}");
-                System.Console.WriteLine($"  Tipo: {solutionType}");
-                if (pageId.HasValue)
-                {
-                    System.Console.WriteLine($"  Pagina: #{pageId}");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Console.ForegroundColor = ConsoleColor.Red;
-                System.Console.WriteLine($"✗ Errore: {ex.Message}");
-                System.Console.ResetColor();
-            }
-        }, gameIdOption, solutionOption, pageIdOption, solutionTypeOption, 
-           new ServiceProviderBinder());
+        this.SetAction((parseResult, ct) => runner.RunAsync<LinkSolutionHandler>(
+            HostRequirements.Database,
+            (handler, token) => handler.ExecuteAsync(
+                parseResult.GetRequiredValue(gameIdOption),
+                parseResult.GetRequiredValue(solutionOption),
+                parseResult.GetValue(pageIdOption),
+                parseResult.GetRequiredValue(typeOption),
+                token),
+            ct));
     }
+}
 
-    private class ServiceProviderBinder : System.CommandLine.Binding.BinderBase<IServiceProvider>
+public sealed class LinkSolutionHandler(IGameSolutionService solutionService, IAnsiConsole console, CliStreams streams)
+{
+    public async Task<int> ExecuteAsync(
+        int gameId,
+        string solution,
+        int? pageId,
+        SolutionType solutionType,
+        CancellationToken cancellationToken)
     {
-        protected override IServiceProvider GetBoundValue(System.CommandLine.Binding.BindingContext bindingContext)
+        try
         {
-            return bindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider 
-                ?? throw new InvalidOperationException("Service provider not found");
+            var linked = await solutionService.LinkAsync(gameId, solution, pageId, solutionType, cancellationToken);
+
+            ConsoleBanner.Success(console, $"Soluzione associata con successo (ID: {linked.Id})");
+            console.MarkupLineInterpolated($"  Gioco: #{gameId}");
+            console.MarkupLineInterpolated($"  Soluzione: {solution}");
+            console.MarkupLineInterpolated($"  Tipo: {solutionType}");
+            if (pageId.HasValue)
+                console.MarkupLineInterpolated($"  Pagina: #{pageId}");
+
+            return ExitCodes.Success;
+        }
+        catch (KeyNotFoundException ex)
+        {
+            streams.Error.WriteLine($"Errore: {ex.Message}");
+            return ExitCodes.Error;
         }
     }
 }

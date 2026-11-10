@@ -26,7 +26,7 @@ public class ClaudeApiClient
         var apiKey = configuration["Anthropic:ApiKey"] 
             ?? throw new InvalidOperationException("Anthropic API key not configured");
         
-        _model = configuration["Anthropic:Model"] ?? "claude-3-5-sonnet-20241022";
+        _model = configuration["Anthropic:Model"] ?? "claude-sonnet-5-5";
         _maxTokens = int.Parse(configuration["Anthropic:MaxTokens"] ?? "4096");
 
         _client = new AnthropicClient(new APIAuthentication(apiKey));

@@ -98,24 +98,24 @@ public class DataExportService
 
         var csv = new StringBuilder();
         
-        // Header
+        csv.AppendLine(CsvFieldFormatter.SeparatorDirective);
         csv.AppendLine("Id,GameType,Title,Description,Difficulty,PositionX,PositionY,Width,Height,Confidence,ExtractedDate,PageId");
 
         // Rows
         foreach (var game in games)
         {
-            csv.AppendLine($"{game.Id}," +
+            csv.AppendLine($"{CsvFieldFormatter.Number(game.Id)}," +
                           $"{EscapeCsvField(game.GameType.ToString())}," +
                           $"{EscapeCsvField(game.Title)}," +
                           $"{EscapeCsvField(game.Description)}," +
                           $"{EscapeCsvField(game.Difficulty)}," +
-                          $"{game.PositionX}," +
-                          $"{game.PositionY}," +
-                          $"{game.BoundingBoxWidth}," +
-                          $"{game.BoundingBoxHeight}," +
-                          $"{game.ClassificationConfidence}," +
-                          $"{game.ExtractedDate:yyyy-MM-dd HH:mm:ss}," +
-                          $"{game.PageId}");
+                          $"{CsvFieldFormatter.Number(game.PositionX)}," +
+                          $"{CsvFieldFormatter.Number(game.PositionY)}," +
+                          $"{CsvFieldFormatter.Number(game.BoundingBoxWidth)}," +
+                          $"{CsvFieldFormatter.Number(game.BoundingBoxHeight)}," +
+                          $"{CsvFieldFormatter.Number(game.ClassificationConfidence)}," +
+                          $"{CsvFieldFormatter.Date(game.ExtractedDate)}," +
+                          $"{CsvFieldFormatter.Number(game.PageId)}");
         }
 
         _logger.LogInformation("Exported {Count} games to CSV", games.Count());

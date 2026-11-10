@@ -14,7 +14,7 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Moq" />
     <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\DBEnigmistica.Application\DBEnigmistica.Application.csproj" />
     <ProjectReference Include="..\..\src\DBEnigmistica.Infrastructure\DBEnigmistica.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\DBEnigmistica.AI\DBEnigmistica.AI.csproj" />
+    <ProjectReference Include="..\..\src\DBEnigmistica.Console\DBEnigmistica.Console.csproj" />
   </ItemGroup>
 
 </Project>

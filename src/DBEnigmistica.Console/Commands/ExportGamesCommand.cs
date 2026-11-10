@@ -1,129 +1,84 @@
-using DBEnigmistica.Application.Services.Export;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using DBEnigmistica.Application.Services.Export;
+using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Console.Presentation;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands;
 
 public class ExportGamesCommand : Command
 {
-    public ExportGamesCommand() : base("export-games", "Esporta giochi estratti in JSON o CSV")
+    public ExportGamesCommand(CommandRunner runner) : base("export-games", "Esporta giochi estratti in JSON o CSV")
     {
-        var formatOption = new Option<string>(
-            aliases: new[] { "--format", "-f" },
-            getDefaultValue: () => "json",
-            description: "Formato export: json o csv");
-
-        var outputOption = new Option<string>(
-            aliases: new[] { "--output", "-o" },
-            description: "Percorso file di output (default: games.[format])");
-
-        var magazineOption = new Option<int?>(
-            aliases: new[] { "--magazine", "-m" },
-            description: "Filtra per ID rivista (opzionale)");
-
-        var prettyOption = new Option<bool>(
-            aliases: new[] { "--pretty", "-p" },
-            getDefaultValue: () => true,
-            description: "Formattazione JSON leggibile (solo per JSON)");
-
-        AddOption(formatOption);
-        AddOption(outputOption);
-        AddOption(magazineOption);
-        AddOption(prettyOption);
-
-        this.SetHandler(async (InvocationContext context) =>
+        var formatOption = new Option<string>("--format", "-f")
         {
-            var format = context.ParseResult.GetValueForOption(formatOption)!;
-            var output = context.ParseResult.GetValueForOption(outputOption);
-            var magazineId = context.ParseResult.GetValueForOption(magazineOption);
-            var pretty = context.ParseResult.GetValueForOption(prettyOption);
+            Description = "Formato export: json o csv",
+            DefaultValueFactory = _ => "json"
+        };
+        var outputOption = new Option<string?>("--output", "-o") { Description = "Percorso file di output (default: games.[format])" };
+        var magazineOption = new Option<int?>("--magazine", "-m") { Description = "Filtra per ID rivista (opzionale)" };
+        var prettyOption = new Option<bool>("--pretty", "-p")
+        {
+            Description = "Formattazione JSON leggibile (solo per JSON)",
+            DefaultValueFactory = _ => true
+        };
 
-            var services = context.BindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider
-                ?? throw new InvalidOperationException("Service provider not available");
+        Options.Add(formatOption);
+        Options.Add(outputOption);
+        Options.Add(magazineOption);
+        Options.Add(prettyOption);
 
-            var logger = services.GetRequiredService<ILogger<ExportGamesCommand>>();
-            var exportService = services.GetRequiredService<DataExportService>();
-
-            await ExecuteAsync(format, output, magazineId, pretty, exportService, logger, context.GetCancellationToken());
-        });
+        this.SetAction((parseResult, ct) => runner.RunAsync<ExportGamesHandler>(
+            HostRequirements.Database,
+            (handler, token) => handler.ExecuteAsync(
+                parseResult.GetRequiredValue(formatOption),
+                parseResult.GetValue(outputOption),
+                parseResult.GetValue(magazineOption),
+                parseResult.GetValue(prettyOption),
+                token),
+            ct));
     }
+}
 
-    private static async Task ExecuteAsync(
+public sealed class ExportGamesHandler(
+    DataExportService exportService,
+    IAnsiConsole console,
+    CliStreams streams,
+    ILogger<ExportGamesHandler> logger)
+{
+    public async Task<int> ExecuteAsync(
         string format,
         string? outputPath,
         int? magazineId,
         bool prettyPrint,
-        DataExportService exportService,
-        ILogger logger,
         CancellationToken cancellationToken)
     {
-        try
+        ConsoleBanner.Write(console, "Export giochi");
+
+        format = format.ToLowerInvariant();
+        if (format is not ("json" or "csv"))
         {
-            System.Console.ForegroundColor = ConsoleColor.Cyan;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║           DBEnigmistica - Export Giochi                   ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
-
-            format = format.ToLowerInvariant();
-            if (format != "json" && format != "csv")
-            {
-                System.Console.ForegroundColor = ConsoleColor.Red;
-                System.Console.WriteLine("✗ Formato non valido. Usa 'json' o 'csv'");
-                System.Console.ResetColor();
-                Environment.Exit(1);
-                return;
-            }
-
-            outputPath ??= $"games.{format}";
-
-            System.Console.WriteLine($"📊 Formato: {format.ToUpper()}");
-            if (magazineId.HasValue)
-                System.Console.WriteLine($"📚 Rivista ID: {magazineId}");
-            System.Console.WriteLine($"💾 Output: {outputPath}");
-            System.Console.WriteLine();
-
-            System.Console.Write("⏳ Esportazione in corso...");
-
-            string content;
-            if (format == "json")
-            {
-                content = await exportService.ExportGamesAsJsonAsync(magazineId, prettyPrint, cancellationToken);
-            }
-            else
-            {
-                content = await exportService.ExportGamesAsCsvAsync(magazineId, cancellationToken);
-            }
-
-            await exportService.SaveToFileAsync(content, outputPath, cancellationToken);
-
-            System.Console.WriteLine(" ✓");
-            System.Console.WriteLine();
-
-            var fileInfo = new FileInfo(outputPath);
-            System.Console.ForegroundColor = ConsoleColor.Green;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║                  ✅ SUCCESSO                               ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
-            System.Console.WriteLine($"✅ Export completato: {Path.GetFullPath(outputPath)}");
-            System.Console.WriteLine($"📦 Dimensione: {fileInfo.Length:N0} bytes");
-            System.Console.WriteLine();
-
-            logger.LogInformation("Exported games to {Format} format: {Path}", format, outputPath);
+            streams.Error.WriteLine("Formato non valido: usa 'json' o 'csv'.");
+            return ExitCodes.Error;
         }
-        catch (Exception ex)
-        {
-            System.Console.WriteLine();
-            System.Console.ForegroundColor = ConsoleColor.Red;
-            System.Console.WriteLine($"✗ Errore durante l'export: {ex.Message}");
-            System.Console.ResetColor();
-            logger.LogError(ex, "Error exporting games");
-            Environment.Exit(1);
-        }
+
+        outputPath ??= $"games.{format}";
+        console.MarkupLineInterpolated($"Formato: {format.ToUpperInvariant()}");
+        if (magazineId.HasValue)
+            console.MarkupLineInterpolated($"Rivista ID: {magazineId}");
+        console.MarkupLineInterpolated($"Output: {outputPath}");
+
+        var content = format == "json"
+            ? await exportService.ExportGamesAsJsonAsync(magazineId, prettyPrint, cancellationToken)
+            : await exportService.ExportGamesAsCsvAsync(magazineId, cancellationToken);
+
+        await exportService.SaveToFileAsync(content, outputPath, cancellationToken);
+
+        ConsoleBanner.Success(console, $"Export completato: {Path.GetFullPath(outputPath)}");
+        console.MarkupLineInterpolated($"Dimensione: {new FileInfo(outputPath).Length:N0} byte");
+
+        logger.LogInformation("Exported games to {Format} format: {Path}", format, outputPath);
+        return ExitCodes.Success;
     }
 }

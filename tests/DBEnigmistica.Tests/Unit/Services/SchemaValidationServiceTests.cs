@@ -173,4 +173,77 @@ public class SchemaValidationServiceTests
         isValid.Should().BeFalse();
         errors.Should().Contain(e => e.Contains("riservato"));
     }
+
+    [Theory]
+    [InlineData("id")]
+    [InlineData("ID")]
+    [InlineData("game_id")]
+    public async Task ValidateSchemaConsistency_ReservedColumnNames_AreRejectedCaseInsensitively(string columnName)
+    {
+        var schema = NewSchema(new ColumnSchema { Name = columnName, DataType = "INTEGER", IsRequired = true });
+
+        var (isValid, errors) = await _service.ValidateSchemaConsistencyAsync(schema);
+
+        isValid.Should().BeFalse();
+        errors.Should().ContainSingle().Which.Should().Be($"Colonna '{columnName}': nome riservato");
+    }
+
+    [Fact]
+    public async Task ValidateSchemaConsistency_ExistingTableName_ReturnsFalseWithMessage()
+    {
+        _repositoryMock.Setup(r => r.TableNameExistsAsync("test_game")).ReturnsAsync(true);
+        var schema = NewSchema(new ColumnSchema { Name = "title", DataType = "TEXT" });
+
+        var (isValid, errors) = await _service.ValidateSchemaConsistencyAsync(schema);
+
+        isValid.Should().BeFalse();
+        errors.Should().ContainSingle().Which.Should().Be("Il nome tabella 'test_game' esiste già");
+    }
+
+    [Fact]
+    public async Task ValidateSchemaConsistency_EmptyTableName_FixesMessage()
+    {
+        var schema = new GameTableSchema
+        {
+            TableName = "",
+            GameTypeName = "TestGame",
+            Description = "Test",
+            Columns = [new ColumnSchema { Name = "title", DataType = "TEXT" }]
+        };
+
+        var (isValid, errors) = await _service.ValidateSchemaConsistencyAsync(schema);
+
+        isValid.Should().BeFalse();
+        errors.Should().ContainSingle().Which.Should().Be("Nome tabella obbligatorio");
+    }
+
+    [Fact]
+    public async Task ValidateSchemaConsistency_EmptyColumnName_FixesMessage()
+    {
+        var schema = NewSchema(new ColumnSchema { Name = "", DataType = "TEXT" });
+
+        var (isValid, errors) = await _service.ValidateSchemaConsistencyAsync(schema);
+
+        isValid.Should().BeFalse();
+        errors.Should().Contain("Il nome della colonna non può essere vuoto");
+    }
+
+    [Fact]
+    public async Task ValidateSchemaConsistency_MissingDataType_FixesMessage()
+    {
+        var schema = NewSchema(new ColumnSchema { Name = "title", DataType = "" });
+
+        var (isValid, errors) = await _service.ValidateSchemaConsistencyAsync(schema);
+
+        isValid.Should().BeFalse();
+        errors.Should().ContainSingle().Which.Should().Be("Tipo di dato obbligatorio per la colonna: title");
+    }
+
+    private static GameTableSchema NewSchema(params ColumnSchema[] columns) => new()
+    {
+        TableName = "test_game",
+        GameTypeName = "TestGame",
+        Description = "Test",
+        Columns = columns.ToList()
+    };
 }

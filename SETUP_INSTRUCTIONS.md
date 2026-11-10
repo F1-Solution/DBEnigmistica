@@ -266,56 +266,18 @@ Annota il path della cartella `tessdata`:
 ### 4. Modelli Disponibili
 
 Il progetto è configurato per usare:
-- **claude-3-5-sonnet-20241022** (default, bilanciato costo/prestazioni)
-- Alternativi: `claude-3-opus-20240229` (più accurato), `claude-3-haiku-20240307` (economico)
+- **claude-sonnet-5-5** (default, bilanciato costo/prestazioni)
+- Altri modelli: vedi l'elenco ufficiale Anthropic; imposta `Anthropic:Model` di conseguenza
 
 ---
 
 ## ⚙️ Configurazione Applicazione
 
-### Metodo 1: File appsettings.Development.json (Semplice)
+Le strade che funzionano sono due: la variabile d'ambiente (sempre) e gli user-secrets (solo in ambiente `Development`). Il file `appsettings.Development.json` non viene letto.
 
-```bash
-cd src/DBEnigmistica.Console
+### Metodo 1: User Secrets (sviluppo, ambiente Development)
 
-# Copia il template
-copy appsettings.Development.json.template appsettings.Development.json
-
-# Su Linux/macOS
-# cp appsettings.Development.json.template appsettings.Development.json
-```
-
-Modifica `appsettings.Development.json` con un editor:
-
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Debug",
-      "Microsoft": "Warning",
-      "Microsoft.EntityFrameworkCore": "Information"
-    }
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=dbenigmistica;Username=dbenigmistica;Password=LA_TUA_PASSWORD_POSTGRES"
-  },
-  "Anthropic": {
-    "ApiKey": "sk-ant-api03-LA_TUA_API_KEY_ANTHROPIC",
-    "Model": "claude-3-5-sonnet-20241022",
-    "MaxTokens": 4096
-  },
-  "Ocr": {
-    "TesseractDataPath": "C:/Program Files/Tesseract-OCR/tessdata",
-    "Language": "ita"
-  },
-  "Processing": {
-    "BatchSize": 5,
-    "MaxDegreeOfParallelism": 4
-  }
-}
-```
-
-### Metodo 2: User Secrets (Raccomandato per Sviluppo)
+Gli user-secrets si leggono solo se `DOTNET_ENVIRONMENT=Development`. Con `dotnet run --project src\DBEnigmistica.Console` (o dalla cartella del progetto) il profilo in `Properties\launchSettings.json` imposta già quell'ambiente. Con l'eseguibile compilato (`dbe`) imposta tu `DOTNET_ENVIRONMENT=Development`, oppure usa il metodo 2.
 
 ```bash
 cd src/DBEnigmistica.Console
@@ -329,14 +291,11 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Po
 # Configura Anthropic API key
 dotnet user-secrets set "Anthropic:ApiKey" "sk-ant-api03-LA_TUA_API_KEY"
 
-# Configura Tesseract path (opzionale, usa default se non specificato)
-dotnet user-secrets set "Ocr:TesseractDataPath" "C:/Program Files/Tesseract-OCR/tessdata"
-
 # Visualizza tutti i secrets configurati
 dotnet user-secrets list
 ```
 
-### Metodo 3: Variabili d'Ambiente (Produzione/CI/CD)
+### Metodo 2: Variabili d'Ambiente (sempre valido: eseguibile, produzione, CI/CD)
 
 ```bash
 # Windows PowerShell
@@ -369,31 +328,8 @@ Host=prod-server.example.com;Port=5432;Database=dbenigmistica_prod;Username=app_
 ```json
 "Anthropic": {
   "ApiKey": "sk-ant-api03-...",  // La tua API key
-  "Model": "claude-3-5-sonnet-20241022",  // Modello da usare
+  "Model": "claude-sonnet-5-5",  // Modello da usare (predefinito in appsettings.json)
   "MaxTokens": 4096  // Max token per risposta (1000-8000)
-}
-```
-
-#### OCR Configuration
-
-```json
-"Ocr": {
-  "TesseractDataPath": "C:/Program Files/Tesseract-OCR/tessdata",  // Path tessdata
-  "Language": "ita"  // Codice lingua (ita=italiano, eng=inglese)
-}
-```
-
-**Path comuni:**
-- Windows: `C:/Program Files/Tesseract-OCR/tessdata`
-- Linux: `/usr/share/tesseract-ocr/4.00/tessdata`
-- macOS: `/usr/local/share/tessdata` o `/opt/homebrew/share/tessdata`
-
-#### Processing Configuration
-
-```json
-"Processing": {
-  "BatchSize": 5,  // N. pagine elaborate in parallelo (5-10)
-  "MaxDegreeOfParallelism": 4  // Thread paralleli (2-8, dipende da CPU)
 }
 ```
 
@@ -505,7 +441,7 @@ curl https://api.anthropic.com/v1/messages \
   -H "x-api-key: $ANTHROPIC_API_KEY" \
   -H "anthropic-version: 2023-06-01" \
   -H "content-type: application/json" \
-  -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":100,"messages":[{"role":"user","content":"Hello"}]}'
+  -d '{"model":"claude-sonnet-5-5","max_tokens":100,"messages":[{"role":"user","content":"Hello"}]}'
 ```
 
 ---

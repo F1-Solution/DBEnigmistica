@@ -10,14 +10,17 @@ Test e pubblicazione avvengono solo tramite GitHub Actions. Nessun segreto aggiu
 - **Build e test**: ripristino, compilazione in Release (gli avvisi restano visibili), test con copertura. Risultati e copertura sono nel riepilogo del lavoro e nell'artefatto `test-results` (14 giorni).
 - **Vulnerabilita pacchetti**: `dotnet list package --vulnerable --include-transitive`; il lavoro fallisce se trova qualcosa.
 - **Controllo segreti**: gitleaks sull'intera storia git, con valori oscurati nei log. Si usa il programma da riga di comando (verificato con checksum) perche' l'azione ufficiale richiede una licenza a pagamento nei repository di organizzazione.
-- **Stato noto**: i test falliscono (15 su 24) e vanno risanati nella fase 0 di `ROADMAP.md`; nulla e' mascherato. Il controllo vulnerabilita non segnala pacchetti.
+- **Build immagine Docker** (lavoro "Build immagine Docker"): costruisce `Dockerfile` senza pubblicarlo, per accorgersi subito se l'immagine non si compila.
+- **Test d'integrazione**: usano PostgreSQL 17 con Testcontainers e richiedono Docker in esecuzione, anche in locale; sui runner ubuntu basta il Docker gia' presente.
+- **Eseguibile**: l'applicazione console si chiama `dbe` (`dbe.exe` su Windows, `dbe.dll` nell'immagine); `dbe --version` stampa la versione del tag.
+- **Stato noto**: tutti i test passano; nulla e' mascherato. Il controllo vulnerabilita non segnala pacchetti.
 
 ### Publish (`.github/workflows/publish.yml`)
 
 - **Quando**: push di un tag `vX.Y.Z` (anche `vX.Y.Z-rc1`) oppure avvio manuale da *Actions > Publish > Run workflow*.
 - **Passi**: esegue prima CI per intero; solo se e' verde procede.
 - **Immagine**: costruisce `Dockerfile` e la pubblica su `ghcr.io/f1-solution/dbenigmistica` con i tag `X.Y.Z`, `sha-<7 caratteri>` e `latest`. `latest` non va alle versioni con suffisso (prerelease) ne' agli avvii manuali da rami diversi da `main`. Un avvio manuale produce la versione `0.0.0-manual.<sha>`.
-- **Release** (solo da tag): crea la GitHub Release con note generate automaticamente e gli eseguibili console autonomi `dbenigmistica-console-X.Y.Z-win-x64.zip` e `...-linux-x64.tar.gz`. Le versioni con suffisso sono marcate come prerelease.
+- **Release** (solo da tag): crea la GitHub Release con note generate automaticamente e gli eseguibili console autonomi `dbenigmistica-console-X.Y.Z-win-x64.zip` e `...-linux-x64.tar.gz` (dentro l'archivio l'eseguibile e' `dbe.exe` o `dbe`, con `appsettings.json`). Le versioni con suffisso sono marcate come prerelease.
 
 ### Dependabot (`.github/dependabot.yml`)
 
@@ -50,7 +53,7 @@ Per scaricarla serve un account con accesso al pacchetto (`docker login ghcr.io`
 ## Impostazioni da fare a mano su GitHub
 
 1. **Permessi dei flussi** (*Settings > Actions > General > Workflow permissions*): lasciare "Read repository contents and packages permissions"; i flussi dichiarano da soli i permessi in piu' (`packages: write`, `contents: write`). Se l'organizzazione limita le azioni consentite (*Allowed actions*), consentire `actions/*` e `docker/*` (le azioni sono fissate per SHA).
-2. **Protezione del ramo `main`** (*Settings > Branches* oppure *Rules > Rulesets*): richiedere la pull request, richiedere i controlli di stato **Build e test**, **Vulnerabilita pacchetti** e **Controllo segreti** (compaiono nell'elenco dopo la prima esecuzione) con ramo aggiornato, vietare il push diretto e i force push. Rendere obbligatorio un controllo solo dopo che e' diventato verde, altrimenti blocca anche le correzioni. Nei repository privati di un'organizzazione serve un piano GitHub che supporti la protezione dei rami.
+2. **Protezione del ramo `main`** (*Settings > Branches* oppure *Rules > Rulesets*): richiedere la pull request, richiedere i controlli di stato **Build e test**, **Vulnerabilita pacchetti**, **Controllo segreti** e **Build immagine Docker** (compaiono nell'elenco dopo la prima esecuzione) con ramo aggiornato, vietare il push diretto e i force push. Rendere obbligatorio un controllo solo dopo che e' diventato verde, altrimenti blocca anche le correzioni. Nei repository privati di un'organizzazione serve un piano GitHub che supporti la protezione dei rami.
 3. **Protezione dei tag** (*Rules > Rulesets > New tag ruleset*, destinazione `v*`): limitare chi puo' creare tag di versione, perche' un tag avvia la pubblicazione.
 4. **Pacchetto GHCR**: dopo la prima pubblicazione aprire *Packages > dbenigmistica > Package settings*. Verificare che la visibilita' sia **Private** e che il pacchetto risulti collegato al repository (lo fa l'etichetta `org.opencontainers.image.source`); in caso contrario usare *Connect repository*. Per far scaricare l'immagine ad altri, aggiungere persone, team o il repository in *Manage access*. Se un'organizzazione impedisce la creazione di pacchetti da flussi, abilitarla in *Organization settings > Packages*.
 5. **Dependabot** (*Settings > Advanced Security*): attivare Dependabot alerts e security updates (gli aggiornamenti pianificati partono gia' dal file di configurazione).

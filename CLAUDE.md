@@ -31,7 +31,7 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - `docs\business\05-piano-commerciale.md`: vincoli commerciali, soglie G1-G6 e date. Gli altri file di `docs\business\` sono contesto.
 - `docs\design\ui\PROPOSTE-UI.md` e `docs\design\ux\PROPOSTE-UX.md`: proposte. Le scelte adottate sono in ROADMAP, fase 2 (identità Banco per Studio e Admin, Carta con le regole di Lente per Lettore e Sito). I file HTML sono anteprime.
 - `docs\CI.md`: flussi GitHub Actions, impostazioni manuali del repository, creazione dei tag.
-- `docs\ripianificazione-design.md`: decisioni dell'intervista di ripianificazione. Oggi non esiste. Se manca, non ricostruire le decisioni a memoria: segnalalo al proprietario.
+- `docs\ripianificazione-design.md`: decisioni dell'intervista di ripianificazione. Se manca, non ricostruire le decisioni a memoria: segnalalo al proprietario.
 - `docs\plan.md` e `docs\copilot_memory.md`: storici e superati. Non usarli per decidere.
 - `docs\giochi_enigmistici.md`: materiale di riferimento sui giochi, usato per il roadmap.
 
@@ -86,35 +86,35 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - .NET 10 (`net10.0`), EF Core, PostgreSQL. Soluzione `DBEnigmistica.slnx`.
 - Progetti in `src\`: Domain, Application, Infrastructure, AI, Console. Test in `tests\DBEnigmistica.Tests` (cartelle `Unit` e `Integration`).
 - Dalla fase 2: interfaccia React e TypeScript con API ASP.NET Core. Dalla fase 5: involucro desktop Tauri. Non ancora presenti.
-- Estrazione con modelli Claude con visione. Il modello è configurabile. Il default nel codice (`claude-3-5-sonnet`) è ritirato: non usarlo.
+- Estrazione con modelli Claude con visione. Il modello è configurabile. Il modello predefinito nel codice è `claude-sonnet-5-5`.
 
 **Compilare e testare** (comandi di `.github\workflows\ci.yml`)
 - `dotnet restore DBEnigmistica.slnx`
 - `dotnet build DBEnigmistica.slnx --configuration Release --no-restore`
 - `dotnet test DBEnigmistica.slnx --configuration Release --no-build`
-- I test d'integrazione (dalla fase 0) usano Testcontainers: serve Docker in esecuzione.
+- I test d'integrazione (dalla fase 0) usano Testcontainers con PostgreSQL 17: serve Docker in esecuzione. In locale: `dotnet test DBEnigmistica.slnx -c Release --nologo` con Docker attivo.
 
 **Database locale** (`docker-compose.yml`)
 - Crea `.env` nella radice copiando `.env.template` e imposta tu i valori (`.env` è ignorato da git). Variabili: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, e per pgAdmin `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`. Se una manca, Compose si ferma.
 - Avvio: `docker compose up -d postgres`.
 
 **Console**
-- Aiuto: `dotnet run --project src\DBEnigmistica.Console -- --help`. Oggi i comandi non partono: vedi stato.
+- L'eseguibile si chiama `dbe` (assembly `dbe`). Aiuto: `dotnet run --project src\DBEnigmistica.Console -- --help`. I comandi non ancora disponibili rispondono "Comando disponibile dalla fase N" con codice 2.
 - Variabili d'ambiente: `ConnectionStrings__DefaultConnection` (stringa di connessione) e `Anthropic__ApiKey` (chiave API, letta come `Anthropic:ApiKey`).
 
 **Segreti**
 - `src\DBEnigmistica.Console\appsettings.Development.json` e `.env`, se esistono, contengono segreti e sono ignorati da git. Non aprirli, non stamparli, non copiarli. Cita solo i nomi delle chiavi, mai i valori.
-- `.env.template` contiene ancora `ANTHROPIC_API_KEY` e `TESSERACT_DATA_PATH`: vanno rimossi in fase 0, perché Tesseract è eliminato.
+- `.env.template` non contiene più variabili per l'applicazione: la chiave API si imposta con `Anthropic__ApiKey`.
 
 ## 7. Stato attuale
 
-- Fase 0 (Fondamenta) in corso: `net10.0` e password fuori dai file tracciati sono fatti. CI e Dockerfile sono predisposti ma mai eseguiti su GitHub. Al 10/11/2026 non ci sono commit.
-- Oggi 15 test su 24 falliscono per difetti noti, da risanare nella fase 0. La CLI non parte ("Service provider not available"). Il Motore di estrazione non produce risultati. Compose usa PostgreSQL 16, i test della fase 0 usano 17.
+- Fase 0 (Fondamenta) in corso: `net10.0` e password fuori dai file tracciati sono fatti. La CI è stata eseguita ed è verde su `main`; il Dockerfile è predisposto. I commit esistono.
+- I test non falliscono più (15 su 24 era lo stato iniziale) e la CLI `dbe` parte. Il Motore di estrazione non produce ancora risultati. Compose usa PostgreSQL 16, i test della fase 0 usano 17.
 
 ## 8. Protocollo di avanzamento
 
 - Prima di eseguire una fase verifica che esistano e non siano vuoti `ROADMAP.md`, `CLAUDE.md`, `.planning\phases\<fase>\CONTEXT.md` e `.planning\phases\<fase>\PLAN.md`. Se ne manca uno, fermati ed elencalo.
 - Prima di ogni ondata leggi `PROGRESS.md` nella radice del repo. Salta le ondate con riga `STATUS:complete`. Non rieseguire mai un'ondata completa.
 - Dopo ogni ondata aggiungi una riga: `PHASE:<id> WAVE:<id> STATUS:<complete|failed> TS:<ISO-8601 UTC>`.
-- Se `PROGRESS.md` non esiste, crealo prima della prima ondata. Oggi non esiste.
+- Se `PROGRESS.md` non esiste, crealo prima della prima ondata. Oggi esiste.
 - Dopo un'interruzione (per esempio un limite di utilizzo): riporta l'ultima ondata completa e quelle restanti, poi riprendi da lì.

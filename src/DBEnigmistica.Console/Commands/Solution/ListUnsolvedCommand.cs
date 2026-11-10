@@ -1,124 +1,85 @@
 using System.CommandLine;
 using System.Text.Json;
+using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Console.Presentation;
 using DBEnigmistica.Domain.Enums;
 using DBEnigmistica.Domain.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
+using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands.Solution;
 
 public class ListUnsolvedCommand : Command
 {
-    public ListUnsolvedCommand() : base("list-unsolved", "Elenca i giochi senza soluzione")
+    public ListUnsolvedCommand(CommandRunner runner) : base("list-unsolved", "Elenca i giochi senza soluzione")
     {
-        var magazineIdOption = new Option<int?>(
-            "--magazine-id",
-            "ID della rivista da filtrare (opzionale)"
-        );
+        var magazineIdOption = new Option<int?>("--magazine-id") { Description = "ID della rivista da filtrare (opzionale)" };
+        var gameTypeOption = new Option<GameType?>("--game-type") { Description = "Tipo di gioco da filtrare (opzionale)" };
+        var exportOption = new Option<string?>("--export") { Description = "Percorso file per esportare in JSON (opzionale)" };
 
-        var gameTypeOption = new Option<GameType?>(
-            "--game-type",
-            "Tipo di gioco da filtrare (opzionale)"
-        );
+        Options.Add(magazineIdOption);
+        Options.Add(gameTypeOption);
+        Options.Add(exportOption);
 
-        var exportOption = new Option<string?>(
-            "--export",
-            "Percorso file per esportare in JSON (opzionale)"
-        );
+        this.SetAction((parseResult, ct) => runner.RunAsync<ListUnsolvedHandler>(
+            HostRequirements.Database,
+            (handler, token) => handler.ExecuteAsync(
+                parseResult.GetValue(magazineIdOption),
+                parseResult.GetValue(gameTypeOption),
+                parseResult.GetValue(exportOption),
+                token),
+            ct));
+    }
+}
 
-        AddOption(magazineIdOption);
-        AddOption(gameTypeOption);
-        AddOption(exportOption);
+public sealed class ListUnsolvedHandler(IGameSolutionRepository repository, IAnsiConsole console)
+{
+    public async Task<int> ExecuteAsync(
+        int? magazineId,
+        GameType? gameType,
+        string? exportPath,
+        CancellationToken cancellationToken)
+    {
+        var games = (await repository.GetUnsolvedGamesAsync(magazineId))
+            .Where(g => gameType is null || g.GameType == gameType)
+            .ToList();
 
-        this.SetHandler(async (magazineId, gameType, exportPath, sp) =>
+        if (games.Count == 0)
         {
-            var repository = sp.GetRequiredService<IGameSolutionRepository>();
+            ConsoleBanner.Warning(console, "Nessun gioco senza soluzione trovato.");
+            return ExitCodes.Success;
+        }
 
-            try
-            {
-                System.Console.WriteLine($"\n🔍 Ricerca giochi senza soluzione...");
-                
-                var unsolvedGames = await repository.GetUnsolvedGamesAsync(magazineId);
+        var table = new Table().AddColumn("ID").AddColumn("Titolo").AddColumn("Tipo").AddColumn("Pagina");
+        foreach (var game in games)
+            table.AddRow(game.Id.ToString(), Markup.Escape(game.Title ?? "N/A"), game.GameType.ToString(), game.PageId.ToString());
 
-                // Filter by game type if specified
-                var filteredGames = gameType.HasValue 
-                    ? unsolvedGames.Where(g => g.GameType == gameType.Value).ToList()
-                    : unsolvedGames.ToList();
+        console.Write(table);
+        ConsoleBanner.Success(console, $"Trovati {games.Count} giochi senza soluzione");
 
-                System.Console.WriteLine();
+        if (!string.IsNullOrWhiteSpace(exportPath))
+            await ExportAsync(games, exportPath, cancellationToken);
 
-                if (!filteredGames.Any())
-                {
-                    System.Console.ForegroundColor = ConsoleColor.Yellow;
-                    System.Console.WriteLine("⚠ Nessun gioco senza soluzione trovato.");
-                    System.Console.ResetColor();
-                    return;
-                }
-
-                // Display table
-                System.Console.ForegroundColor = ConsoleColor.Cyan;
-                System.Console.WriteLine("╔════════╦════════════════════╦══════════════╦═══════════╦════════╗");
-                System.Console.WriteLine("║   ID   ║      Titolo        ║     Tipo     ║  Rivista  ║ Pagina ║");
-                System.Console.WriteLine("╠════════╬════════════════════╬══════════════╬═══════════╬════════╣");
-                System.Console.ResetColor();
-
-                foreach (var game in filteredGames)
-                {
-                    var title = (game.Title ?? "N/A").PadRight(18).Substring(0, 18);
-                    var type = game.GameType.ToString().PadRight(12).Substring(0, 12);
-                    var magazineIdDisplay = game.PageId.ToString().PadRight(9).Substring(0, 9);
-                    System.Console.WriteLine($"║ {game.Id,6} ║ {title} ║ {type} ║ {magazineIdDisplay} ║ {game.PageId,6} ║");
-                }
-
-                System.Console.ForegroundColor = ConsoleColor.Cyan;
-                System.Console.WriteLine("╚════════╩════════════════════╩══════════════╩═══════════╩════════╝");
-                System.Console.ResetColor();
-
-                System.Console.WriteLine();
-                System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.WriteLine($"✓ Trovati {filteredGames.Count} giochi senza soluzione");
-                System.Console.ResetColor();
-
-                // Export to JSON if requested
-                if (!string.IsNullOrWhiteSpace(exportPath))
-                {
-                    var exportData = filteredGames.Select(g => new
-                    {
-                        g.Id,
-                        g.Title,
-                        Type = g.GameType.ToString(),
-                        g.PageId,
-                        g.PositionX,
-                        g.PositionY
-                    }).ToList();
-
-                    var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions 
-                    { 
-                        WriteIndented = true 
-                    });
-                    
-                    await System.IO.File.WriteAllTextAsync(exportPath, json);
-
-                    System.Console.ForegroundColor = ConsoleColor.Green;
-                    System.Console.WriteLine($"✓ Dati esportati in: {exportPath}");
-                    System.Console.ResetColor();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Console.ForegroundColor = ConsoleColor.Red;
-                System.Console.WriteLine($"✗ Errore: {ex.Message}");
-                System.Console.ResetColor();
-            }
-        }, magazineIdOption, gameTypeOption, exportOption, 
-           new ServiceProviderBinder());
+        return ExitCodes.Success;
     }
 
-    private class ServiceProviderBinder : System.CommandLine.Binding.BinderBase<IServiceProvider>
+    private async Task ExportAsync(
+        IEnumerable<Domain.Entities.Game> games,
+        string exportPath,
+        CancellationToken cancellationToken)
     {
-        protected override IServiceProvider GetBoundValue(System.CommandLine.Binding.BindingContext bindingContext)
+        var data = games.Select(g => new
         {
-            return bindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider 
-                ?? throw new InvalidOperationException("Service provider not found");
-        }
+            g.Id,
+            g.Title,
+            Type = g.GameType.ToString(),
+            g.PageId,
+            g.PositionX,
+            g.PositionY
+        }).ToList();
+
+        var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(exportPath, json, cancellationToken);
+
+        ConsoleBanner.Success(console, $"Dati esportati in: {exportPath}");
     }
 }

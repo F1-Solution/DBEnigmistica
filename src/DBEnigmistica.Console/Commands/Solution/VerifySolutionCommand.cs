@@ -1,93 +1,53 @@
 using System.CommandLine;
-using DBEnigmistica.Domain.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
+using DBEnigmistica.Application.Services.Solutions;
+using DBEnigmistica.Console.Cli;
+using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands.Solution;
 
 public class VerifySolutionCommand : Command
 {
-    public VerifySolutionCommand() : base("verify-solution", "Verifica o rifiuta una soluzione")
+    public VerifySolutionCommand(CommandRunner runner) : base("verify-solution", "Verifica o rifiuta una soluzione")
     {
-        var solutionIdOption = new Option<int>(
-            "--solution-id",
-            "ID della soluzione da verificare"
-        ) { IsRequired = true };
+        var solutionIdOption = new Option<int>("--solution-id") { Description = "ID della soluzione da verificare", Required = true };
+        var verifiedOption = new Option<bool>("--verified") { Description = "Indica se la soluzione è corretta (true/false)", Required = true };
+        var notesOption = new Option<string?>("--notes") { Description = "Note sulla verifica (opzionale)" };
 
-        var verifiedOption = new Option<bool>(
-            "--verified",
-            "Indica se la soluzione è corretta (true/false)"
-        ) { IsRequired = true };
+        Options.Add(solutionIdOption);
+        Options.Add(verifiedOption);
+        Options.Add(notesOption);
 
-        var notesOption = new Option<string?>(
-            "--notes",
-            "Note sulla verifica (opzionale)"
-        );
-
-        AddOption(solutionIdOption);
-        AddOption(verifiedOption);
-        AddOption(notesOption);
-
-        this.SetHandler(async (solutionId, verified, notes, sp) =>
-        {
-            var gameRepository = sp.GetRequiredService<IGameRepository>();
-            var solutionRepository = sp.GetRequiredService<IGameSolutionRepository>();
-
-            try
-            {
-                System.Console.WriteLine($"\n✓ Verifica della soluzione #{solutionId}...");
-
-                var gameSolution = await solutionRepository.GetByIdAsync(solutionId)
-                    ?? throw new ArgumentException($"Soluzione {solutionId} non trovata");
-
-                gameSolution.IsVerified = verified;
-                gameSolution.VerifiedDate = DateTime.UtcNow;
-                if (notes != null)
-                {
-                    gameSolution.Notes = notes;
-                }
-
-                if (verified)
-                {
-                    var game = await gameRepository.GetByIdAsync(gameSolution.GameId);
-                    if (game != null)
-                    {
-                        game.Solution = gameSolution.SolutionText;
-                        game.SolutionPageId = gameSolution.SolutionPageId;
-                        game.HasSolution = true;
-                    }
-                }
-
-                await solutionRepository.SaveChangesAsync();
-
-                System.Console.ForegroundColor = verified ? ConsoleColor.Green : ConsoleColor.Yellow;
-                var status = verified ? "✓ Approvata" : "✗ Rifiutata";
-                System.Console.WriteLine($"{status}");
-                System.Console.ResetColor();
-
-                System.Console.WriteLine($"  ID Soluzione: #{solutionId}");
-                System.Console.WriteLine($"  Stato: {(verified ? "Verificata" : "Non verificata")}");
-                
-                if (!string.IsNullOrWhiteSpace(notes))
-                {
-                    System.Console.WriteLine($"  Note: {notes}");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Console.ForegroundColor = ConsoleColor.Red;
-                System.Console.WriteLine($"✗ Errore: {ex.Message}");
-                System.Console.ResetColor();
-            }
-        }, solutionIdOption, verifiedOption, notesOption, 
-           new ServiceProviderBinder());
+        this.SetAction((parseResult, ct) => runner.RunAsync<VerifySolutionHandler>(
+            HostRequirements.Database,
+            (handler, token) => handler.ExecuteAsync(
+                parseResult.GetRequiredValue(solutionIdOption),
+                parseResult.GetRequiredValue(verifiedOption),
+                parseResult.GetValue(notesOption),
+                token),
+            ct));
     }
+}
 
-    private class ServiceProviderBinder : System.CommandLine.Binding.BinderBase<IServiceProvider>
+public sealed class VerifySolutionHandler(IGameSolutionService solutionService, IAnsiConsole console, CliStreams streams)
+{
+    public async Task<int> ExecuteAsync(int solutionId, bool verified, string? notes, CancellationToken cancellationToken)
     {
-        protected override IServiceProvider GetBoundValue(System.CommandLine.Binding.BindingContext bindingContext)
+        try
         {
-            return bindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider 
-                ?? throw new InvalidOperationException("Service provider not found");
+            await solutionService.VerifyAsync(solutionId, verified, notes, cancellationToken);
         }
+        catch (KeyNotFoundException ex)
+        {
+            streams.Error.WriteLine($"Errore: {ex.Message}");
+            return ExitCodes.Error;
+        }
+
+        console.MarkupLine(verified ? "[green]✓ Approvata[/]" : "[yellow]✗ Rifiutata[/]");
+        console.MarkupLineInterpolated($"  ID soluzione: #{solutionId}");
+        console.MarkupLineInterpolated($"  Stato: {(verified ? "Verificata" : "Non verificata")}");
+        if (!string.IsNullOrWhiteSpace(notes))
+            console.MarkupLineInterpolated($"  Note: {notes}");
+
+        return ExitCodes.Success;
     }
 }

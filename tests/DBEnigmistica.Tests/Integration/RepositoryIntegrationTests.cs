@@ -1,169 +1,188 @@
 using DBEnigmistica.Domain.Entities;
 using DBEnigmistica.Domain.Enums;
-using DBEnigmistica.Infrastructure.Data;
 using DBEnigmistica.Infrastructure.Repositories;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 
 namespace DBEnigmistica.Tests.Integration;
 
-public class RepositoryIntegrationTests : IDisposable
+[Collection(PostgresCollection.Name)]
+[Trait("Category", "Integration")]
+public class RepositoryIntegrationTests : IntegrationTestBase
 {
-    private readonly EnigmisticaDbContext _context;
-    private readonly MagazineRepository _magazineRepository;
-    private readonly GameRepository _gameRepository;
-
-    public RepositoryIntegrationTests()
+    public RepositoryIntegrationTests(PostgresFixture fixture) : base(fixture)
     {
-        var options = new DbContextOptionsBuilder<EnigmisticaDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-
-        _context = new EnigmisticaDbContext(options);
-        _magazineRepository = new MagazineRepository(_context);
-        _gameRepository = new GameRepository(_context);
     }
 
     [Fact]
-    public async Task Magazine_CRUD_Operations_WorkCorrectly()
+    public async Task Saved_magazine_is_read_back_with_all_its_fields()
     {
-        // Create
-        var magazine = new Magazine
+        var magazine = NewMagazine(periodicity: MagazinePeriodicity.Monthly);
+        magazine.IssueNumber = "4500";
+        magazine.SolutionsInNextIssue = true;
+        magazine.Notes = "numero di prova";
+
+        await using (var write = NewContext())
         {
-            Title = "La Settimana Enigmistica",
-            PublicationDate = new DateTime(2024, 1, 15),
-            Periodicity = MagazinePeriodicity.Weekly,
-            IssueNumber = "4500",
-            Year = 2024,
-            SourceFilePath = "/test/magazine.pdf",
-            ProcessedDate = DateTime.UtcNow
-        };
+            var repository = new MagazineRepository(write);
+            await repository.AddAsync(magazine);
+            await repository.SaveChangesAsync();
+        }
 
-        var created = await _magazineRepository.AddAsync(magazine);
-        await _magazineRepository.SaveChangesAsync();
+        await using var read = NewContext();
+        var loaded = await new MagazineRepository(read).GetByIdAsync(magazine.Id);
 
-        created.Id.Should().BeGreaterThan(0);
-
-        // Read
-        var retrieved = await _magazineRepository.GetByIdAsync(created.Id);
-        retrieved.Should().NotBeNull();
-        retrieved!.Title.Should().Be("La Settimana Enigmistica");
-        retrieved.IssueNumber.Should().Be("4500");
-
-        // Update
-        retrieved.IssueNumber = "4501";
-        await _magazineRepository.UpdateAsync(retrieved);
-        await _magazineRepository.SaveChangesAsync();
-
-        var updated = await _magazineRepository.GetByIdAsync(created.Id);
-        updated!.IssueNumber.Should().Be("4501");
-
-        // Delete
-        await _magazineRepository.DeleteAsync(created.Id);
-        await _magazineRepository.SaveChangesAsync();
-
-        var deleted = await _magazineRepository.GetByIdAsync(created.Id);
-        deleted.Should().BeNull();
+        magazine.Id.Should().BeGreaterThan(0);
+        loaded.Should().NotBeNull();
+        loaded!.Title.Should().Be("La Settimana Enigmistica");
+        loaded.IssueNumber.Should().Be("4500");
+        loaded.Periodicity.Should().Be(MagazinePeriodicity.Monthly);
+        loaded.SolutionsInNextIssue.Should().BeTrue();
+        loaded.Notes.Should().Be("numero di prova");
+        loaded.PublicationDate.Should().Be(Utc(2024, 1, 15));
     }
 
     [Fact]
-    public async Task Magazine_GetByTitleAndDate_FindsCorrectMagazine()
+    public async Task Periodicity_and_game_type_are_stored_as_text_in_the_database()
     {
-        // Arrange
-        var date = new DateTime(2024, 1, 15);
-        var magazine1 = new Magazine
+        var (_, pageIds) = await SeedMagazineWithPagesAsync(magazine: NewMagazine(periodicity: MagazinePeriodicity.Weekly));
+        await SeedGameAsync(pageIds[0], g => g.GameType = GameType.Rebus);
+
+        (await ScalarAsync<string>("SELECT \"Periodicity\" FROM magazines")).Should().Be("Weekly");
+        (await ScalarAsync<string>("SELECT \"GameType\" FROM games")).Should().Be("Rebus");
+    }
+
+    [Fact]
+    public async Task Updated_magazine_keeps_the_change()
+    {
+        var (magazineId, _) = await SeedMagazineWithPagesAsync(0);
+
+        await using (var write = NewContext())
         {
-            Title = "La Settimana Enigmistica",
-            PublicationDate = date,
-            Periodicity = MagazinePeriodicity.Weekly,
-            Year = 2024,
-            SourceFilePath = "/test/mag1.pdf",
-            ProcessedDate = DateTime.UtcNow
-        };
+            var repository = new MagazineRepository(write);
+            var magazine = (await repository.GetByIdAsync(magazineId))!;
+            magazine.IssueNumber = "4501";
+            await repository.UpdateAsync(magazine);
+            await repository.SaveChangesAsync();
+        }
 
-        var magazine2 = new Magazine
+        await using var read = NewContext();
+        (await new MagazineRepository(read).GetByIdAsync(magazineId))!.IssueNumber.Should().Be("4501");
+    }
+
+    [Fact]
+    public async Task Deleted_magazine_is_no_longer_found()
+    {
+        var (magazineId, _) = await SeedMagazineWithPagesAsync(0);
+
+        await using (var write = NewContext())
         {
-            Title = "Enigmistica Italiana",
-            PublicationDate = date,
-            Periodicity = MagazinePeriodicity.Monthly,
-            Year = 2024,
-            SourceFilePath = "/test/mag2.pdf",
-            ProcessedDate = DateTime.UtcNow
-        };
+            var repository = new MagazineRepository(write);
+            await repository.DeleteAsync(magazineId);
+            await repository.SaveChangesAsync();
+        }
 
-        await _magazineRepository.AddAsync(magazine1);
-        await _magazineRepository.AddAsync(magazine2);
-        await _magazineRepository.SaveChangesAsync();
+        await using var read = NewContext();
+        (await new MagazineRepository(read).GetByIdAsync(magazineId)).Should().BeNull();
+    }
 
-        // Act
-        var found = await _magazineRepository.GetByTitleAndDateAsync("La Settimana Enigmistica", date);
+    [Fact]
+    public async Task Magazine_is_found_by_title_and_day_ignoring_the_time_of_day()
+    {
+        await SeedMagazineWithPagesAsync(0, NewMagazine("La Settimana Enigmistica", Utc(2024, 1, 15)));
+        await SeedMagazineWithPagesAsync(0, NewMagazine("Enigmistica Italiana", Utc(2024, 1, 15)));
+        await SeedMagazineWithPagesAsync(0, NewMagazine("La Settimana Enigmistica", Utc(2024, 1, 22)));
 
-        // Assert
+        await using var read = NewContext();
+        var found = await new MagazineRepository(read)
+            .GetByTitleAndDateAsync("La Settimana Enigmistica", new DateTime(2024, 1, 15, 14, 30, 0, DateTimeKind.Utc));
+
         found.Should().NotBeNull();
         found!.Title.Should().Be("La Settimana Enigmistica");
+        found.PublicationDate.Date.Should().Be(new DateTime(2024, 1, 15));
     }
 
     [Fact]
-    public async Task Magazine_WithPages_LoadsCorrectly()
+    public async Task Magazine_lookup_by_title_and_date_returns_nothing_when_no_issue_matches()
     {
-        // Arrange
-        var magazine = new Magazine
-        {
-            Title = "Test Magazine",
-            PublicationDate = DateTime.UtcNow,
-            Periodicity = MagazinePeriodicity.Monthly,
-            Year = 2024,
-            SourceFilePath = "/test/mag.pdf",
-            ProcessedDate = DateTime.UtcNow
-        };
+        await SeedMagazineWithPagesAsync(0, NewMagazine("La Settimana Enigmistica", Utc(2024, 1, 15)));
 
-        await _magazineRepository.AddAsync(magazine);
-        await _magazineRepository.SaveChangesAsync();
+        await using var read = NewContext();
+        var found = await new MagazineRepository(read)
+            .GetByTitleAndDateAsync("La Settimana Enigmistica", Utc(2024, 1, 16));
 
-        var page1 = new Page { MagazineId = magazine.Id, PageNumber = 1, Width = 800, Height = 1200, ProcessedDate = DateTime.UtcNow };
-        var page2 = new Page { MagazineId = magazine.Id, PageNumber = 2, Width = 800, Height = 1200, ProcessedDate = DateTime.UtcNow };
-
-        await _magazineRepository.AddPageAsync(page1);
-        await _magazineRepository.AddPageAsync(page2);
-        await _magazineRepository.SaveChangesAsync();
-
-        // Act
-        var withPages = await _magazineRepository.GetWithPagesAsync(magazine.Id);
-
-        // Assert
-        withPages.Should().NotBeNull();
-        withPages!.Pages.Should().HaveCount(2);
-        withPages.Pages.Should().Contain(p => p.PageNumber == 1);
-        withPages.Pages.Should().Contain(p => p.PageNumber == 2);
+        found.Should().BeNull();
     }
 
     [Fact]
-    public async Task Game_Creation_WithValidData_Succeeds()
+    public async Task Magazines_of_a_year_are_returned_oldest_first()
     {
-        // Arrange - Create magazine and page first
-        var magazine = new Magazine
+        await SeedMagazineWithPagesAsync(0, NewMagazine("B", Utc(2024, 3, 1), 2024));
+        await SeedMagazineWithPagesAsync(0, NewMagazine("A", Utc(2024, 1, 1), 2024));
+        await SeedMagazineWithPagesAsync(0, NewMagazine("C", Utc(2023, 6, 1), 2023));
+
+        await using var read = NewContext();
+        var magazines = (await new MagazineRepository(read).GetByYearAsync(2024)).ToList();
+
+        magazines.Select(m => m.Title).Should().Equal("A", "B");
+    }
+
+    [Fact]
+    public async Task Magazine_with_pages_loads_all_of_its_pages()
+    {
+        var (magazineId, _) = await SeedMagazineWithPagesAsync(pageCount: 2);
+        await SeedMagazineWithPagesAsync(pageCount: 3);
+
+        await using var read = NewContext();
+        var loaded = await new MagazineRepository(read).GetWithPagesAsync(magazineId);
+
+        loaded.Should().NotBeNull();
+        loaded!.Pages.Select(p => p.PageNumber).Should().BeEquivalentTo(new[] { 1, 2 });
+    }
+
+    [Fact]
+    public async Task Page_added_through_the_repository_belongs_to_the_magazine()
+    {
+        var (magazineId, _) = await SeedMagazineWithPagesAsync(0);
+
+        await using (var write = NewContext())
         {
-            Title = "Test Magazine",
-            PublicationDate = DateTime.UtcNow,
-            Periodicity = MagazinePeriodicity.Monthly,
-            Year = 2024,
-            SourceFilePath = "/test/mag.pdf",
-            ProcessedDate = DateTime.UtcNow
-        };
-        await _magazineRepository.AddAsync(magazine);
-        await _magazineRepository.SaveChangesAsync();
+            var repository = new MagazineRepository(write);
+            await repository.AddPageAsync(new Page { MagazineId = magazineId, PageNumber = 7, Width = 800, Height = 1200 });
+            await repository.SaveChangesAsync();
+        }
 
-        var page = new Page { MagazineId = magazine.Id, PageNumber = 1, ProcessedDate = DateTime.UtcNow };
-        await _magazineRepository.AddPageAsync(page);
-        await _magazineRepository.SaveChangesAsync();
+        await using var read = NewContext();
+        var loaded = await new MagazineRepository(read).GetWithPagesAsync(magazineId);
+        loaded!.Pages.Should().ContainSingle(p => p.PageNumber == 7 && p.Width == 800 && p.Height == 1200);
+    }
 
-        // Act - Create game
+    [Fact]
+    public async Task Magazine_with_pages_and_games_loads_the_whole_tree()
+    {
+        var (magazineId, pageIds) = await SeedMagazineWithPagesAsync(pageCount: 2);
+        await SeedGameAsync(pageIds[0], g => g.Title = "Primo");
+        await SeedGameAsync(pageIds[0], g => g.Title = "Secondo");
+        await SeedGameAsync(pageIds[1], g => g.Title = "Terzo");
+
+        await using var read = NewContext();
+        var loaded = await new MagazineRepository(read).GetWithPagesAndGamesAsync(magazineId);
+
+        loaded!.Pages.Should().HaveCount(2);
+        loaded.Pages.SelectMany(p => p.Games).Select(g => g.Title)
+            .Should().BeEquivalentTo(new[] { "Primo", "Secondo", "Terzo" });
+    }
+
+    [Fact]
+    public async Task Saved_game_is_read_back_with_all_its_fields()
+    {
+        var (_, pageIds) = await SeedMagazineWithPagesAsync();
         var game = new Game
         {
-            PageId = page.Id,
+            PageId = pageIds[0],
             GameType = GameType.Crossword,
             Title = "Cruciverba Facile",
             Description = "Un cruciverba semplice",
+            Difficulty = "facile",
             PositionX = 100,
             PositionY = 200,
             BoundingBoxWidth = 300,
@@ -172,69 +191,85 @@ public class RepositoryIntegrationTests : IDisposable
             ExtractedDate = DateTime.UtcNow
         };
 
-        await _gameRepository.AddAsync(game);
-        await _gameRepository.SaveChangesAsync();
+        await using (var write = NewContext())
+        {
+            var repository = new GameRepository(write);
+            await repository.AddAsync(game);
+            await repository.SaveChangesAsync();
+        }
 
-        // Assert
+        await using var read = NewContext();
+        var loaded = await new GameRepository(read).GetByIdAsync(game.Id);
+
         game.Id.Should().BeGreaterThan(0);
-        
-        var retrieved = await _gameRepository.GetByIdAsync(game.Id);
-        retrieved.Should().NotBeNull();
-        retrieved!.GameType.Should().Be(GameType.Crossword);
-        retrieved.Title.Should().Be("Cruciverba Facile");
+        loaded.Should().NotBeNull();
+        loaded!.GameType.Should().Be(GameType.Crossword);
+        loaded.Title.Should().Be("Cruciverba Facile");
+        loaded.Difficulty.Should().Be("facile");
+        loaded.PositionX.Should().Be(100);
+        loaded.BoundingBoxHeight.Should().Be(400);
+        loaded.ClassificationConfidence.Should().Be(0.95);
+        loaded.HasSolution.Should().BeFalse();
     }
 
     [Fact]
-    public async Task Game_GetByPageId_ReturnsCorrectGames()
+    public async Task Games_of_a_page_are_ordered_by_vertical_then_horizontal_position()
     {
-        // Arrange
-        var magazine = new Magazine
-        {
-            Title = "Test Magazine",
-            PublicationDate = DateTime.UtcNow,
-            Periodicity = MagazinePeriodicity.Monthly,
-            Year = 2024,
-            SourceFilePath = "/test/mag.pdf",
-            ProcessedDate = DateTime.UtcNow
-        };
-        await _magazineRepository.AddAsync(magazine);
-        await _magazineRepository.SaveChangesAsync();
+        var (_, pageIds) = await SeedMagazineWithPagesAsync(pageCount: 2);
+        await SeedGameAsync(pageIds[0], g => { g.Title = "basso"; g.PositionY = 500; g.PositionX = 0; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "alto-destra"; g.PositionY = 10; g.PositionX = 300; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "alto-sinistra"; g.PositionY = 10; g.PositionX = 5; });
+        await SeedGameAsync(pageIds[1], g => g.Title = "altra pagina");
 
-        var page = new Page { MagazineId = magazine.Id, PageNumber = 1, ProcessedDate = DateTime.UtcNow };
-        await _magazineRepository.AddPageAsync(page);
-        await _magazineRepository.SaveChangesAsync();
+        await using var read = NewContext();
+        var games = (await new GameRepository(read).GetByPageIdAsync(pageIds[0])).ToList();
 
-        var game1 = new Game
-        {
-            PageId = page.Id,
-            GameType = GameType.Crossword,
-            Title = "Game 1",
-            ExtractedDate = DateTime.UtcNow
-        };
-        var game2 = new Game
-        {
-            PageId = page.Id,
-            GameType = GameType.Rebus,
-            Title = "Game 2",
-            ExtractedDate = DateTime.UtcNow
-        };
-
-        await _gameRepository.AddAsync(game1);
-        await _gameRepository.AddAsync(game2);
-        await _gameRepository.SaveChangesAsync();
-
-        // Act
-        var games = await _gameRepository.GetByPageIdAsync(page.Id);
-
-        // Assert
-        games.Should().HaveCount(2);
-        games.Should().Contain(g => g.GameType == GameType.Crossword);
-        games.Should().Contain(g => g.GameType == GameType.Rebus);
+        games.Select(g => g.Title).Should().Equal("alto-sinistra", "alto-destra", "basso");
     }
 
-    public void Dispose()
+    [Fact]
+    public async Task Games_of_a_type_are_returned_with_their_page_and_magazine()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        var (_, pageIds) = await SeedMagazineWithPagesAsync();
+        await SeedGameAsync(pageIds[0], g => { g.GameType = GameType.Rebus; g.Title = "rebus"; });
+        await SeedGameAsync(pageIds[0], g => { g.GameType = GameType.Crossword; g.Title = "cruciverba"; });
+
+        await using var read = NewContext();
+        var games = (await new GameRepository(read).GetByGameTypeAsync(GameType.Rebus)).ToList();
+
+        var game = games.Should().ContainSingle().Subject;
+        game.Title.Should().Be("rebus");
+        game.Page.Should().NotBeNull();
+        game.Page.Magazine.Title.Should().Be("La Settimana Enigmistica");
+    }
+
+    [Fact]
+    public async Task Games_of_a_magazine_are_ordered_by_page_and_leave_out_other_magazines()
+    {
+        var (magazineId, pageIds) = await SeedMagazineWithPagesAsync(pageCount: 2);
+        var (_, otherPageIds) = await SeedMagazineWithPagesAsync();
+        await SeedGameAsync(pageIds[1], g => { g.Title = "pagina 2"; g.PositionY = 0; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "pagina 1 sotto"; g.PositionY = 300; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "pagina 1 sopra"; g.PositionY = 10; });
+        await SeedGameAsync(otherPageIds[0], g => g.Title = "altra rivista");
+
+        await using var read = NewContext();
+        var games = (await new GameRepository(read).GetByMagazineIdAsync(magazineId)).ToList();
+
+        games.Select(g => g.Title).Should().Equal("pagina 1 sopra", "pagina 1 sotto", "pagina 2");
+    }
+
+    [Fact]
+    public async Task Game_with_details_loads_page_and_magazine()
+    {
+        var (_, pageIds) = await SeedMagazineWithPagesAsync();
+        var gameId = await SeedGameAsync(pageIds[0]);
+
+        await using var read = NewContext();
+        var game = await new GameRepository(read).GetWithDetailsAsync(gameId);
+
+        game.Should().NotBeNull();
+        game!.Page.PageNumber.Should().Be(1);
+        game.Page.Magazine.Year.Should().Be(2024);
     }
 }
