@@ -29,17 +29,35 @@ public class VerifySolutionCommand : Command
 
         this.SetHandler(async (solutionId, verified, notes, sp) =>
         {
-            var matchingService = sp.GetRequiredService<ISolutionMatchingService>();
+            var gameRepository = sp.GetRequiredService<IGameRepository>();
+            var solutionRepository = sp.GetRequiredService<IGameSolutionRepository>();
 
             try
             {
                 System.Console.WriteLine($"\n✓ Verifica della soluzione #{solutionId}...");
-                
-                await matchingService.VerifySolutionAsync(
-                    solutionId,
-                    verified,
-                    notes
-                );
+
+                var gameSolution = await solutionRepository.GetByIdAsync(solutionId)
+                    ?? throw new ArgumentException($"Soluzione {solutionId} non trovata");
+
+                gameSolution.IsVerified = verified;
+                gameSolution.VerifiedDate = DateTime.UtcNow;
+                if (notes != null)
+                {
+                    gameSolution.Notes = notes;
+                }
+
+                if (verified)
+                {
+                    var game = await gameRepository.GetByIdAsync(gameSolution.GameId);
+                    if (game != null)
+                    {
+                        game.Solution = gameSolution.SolutionText;
+                        game.SolutionPageId = gameSolution.SolutionPageId;
+                        game.HasSolution = true;
+                    }
+                }
+
+                await solutionRepository.SaveChangesAsync();
 
                 System.Console.ForegroundColor = verified ? ConsoleColor.Green : ConsoleColor.Yellow;
                 var status = verified ? "✓ Approvata" : "✗ Rifiutata";

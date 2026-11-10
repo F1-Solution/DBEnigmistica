@@ -1,4 +1,5 @@
 using System.CommandLine;
+using DBEnigmistica.Domain.Entities;
 using DBEnigmistica.Domain.Enums;
 using DBEnigmistica.Domain.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,18 +38,35 @@ public class LinkSolutionCommand : Command
 
         this.SetHandler(async (gameId, solution, pageId, solutionType, sp) =>
         {
-            var matchingService = sp.GetRequiredService<ISolutionMatchingService>();
+            var gameRepository = sp.GetRequiredService<IGameRepository>();
+            var solutionRepository = sp.GetRequiredService<IGameSolutionRepository>();
 
             try
             {
                 System.Console.WriteLine($"\n🔗 Associazione soluzione al gioco #{gameId}...");
-                
-                var solutionId = await matchingService.LinkSolutionToGameAsync(
-                    gameId, 
-                    solution, 
-                    pageId, 
-                    solutionType
-                );
+
+                var game = await gameRepository.GetByIdAsync(gameId)
+                    ?? throw new ArgumentException($"Gioco {gameId} non trovato");
+
+                game.Solution = solution;
+                game.SolutionPageId = pageId;
+                game.HasSolution = true;
+
+                // Collegamento manuale: la soluzione nasce già verificata.
+                var gameSolution = new GameSolution
+                {
+                    GameId = gameId,
+                    SolutionText = solution,
+                    SolutionPageId = pageId,
+                    SolutionType = solutionType,
+                    IsVerified = true,
+                    ExtractedDate = DateTime.UtcNow,
+                    VerifiedDate = DateTime.UtcNow
+                };
+
+                await solutionRepository.AddAsync(gameSolution);
+                await solutionRepository.SaveChangesAsync();
+                var solutionId = gameSolution.Id;
 
                 System.Console.ForegroundColor = ConsoleColor.Green;
                 System.Console.WriteLine($"✓ Soluzione associata con successo! (ID: {solutionId})");

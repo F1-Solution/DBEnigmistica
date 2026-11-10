@@ -1,6 +1,3 @@
-using DBEnigmistica.Application.Services.Schema;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 
@@ -21,104 +18,11 @@ public class AnalyzeGameTextCommand : Command
         AddArgument(descriptionArgument);
         AddOption(nameOption);
 
-        this.SetHandler(async (InvocationContext context) =>
+        // Le nuove tipologie arrivano in fase 4, senza DDL a runtime.
+        this.SetHandler((InvocationContext context) =>
         {
-            var description = context.ParseResult.GetValueForArgument(descriptionArgument);
-            var name = context.ParseResult.GetValueForOption(nameOption);
-
-            var services = context.BindingContext.GetService(typeof(IServiceProvider)) as IServiceProvider 
-                ?? throw new InvalidOperationException("Service provider not available");
-            
-            var logger = services.GetRequiredService<ILogger<AnalyzeGameTextCommand>>();
-            var orchestrator = services.GetRequiredService<DynamicSchemaOrchestrator>();
-
-            await ExecuteAsync(description, name, orchestrator, logger, context.GetCancellationToken());
+            System.Console.Error.WriteLine("Comando disponibile dalla fase 4");
+            context.ExitCode = 2;
         });
-    }
-
-    private static async Task ExecuteAsync(
-        string description,
-        string? gameName,
-        DynamicSchemaOrchestrator orchestrator,
-        ILogger logger,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            System.Console.ForegroundColor = ConsoleColor.Cyan;
-            System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-            System.Console.WriteLine("║       DBEnigmistica - Analisi Nuovo Tipo di Gioco        ║");
-            System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-            System.Console.ResetColor();
-            System.Console.WriteLine();
-
-            if (string.IsNullOrWhiteSpace(description))
-            {
-                System.Console.ForegroundColor = ConsoleColor.Red;
-                System.Console.WriteLine($"✗ Errore: La descrizione non può essere vuota.");
-                System.Console.ResetColor();
-                Environment.Exit(1);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(gameName))
-                System.Console.WriteLine($"🎮 Nome gioco: {gameName}");
-            
-            System.Console.WriteLine($"📝 Descrizione: {description}");
-            System.Console.WriteLine();
-            System.Console.WriteLine("🤖 Generazione schema con AI...");
-            System.Console.WriteLine();
-
-            // Create schema from description
-            var success = await orchestrator.CreateNewGameTypeSchemaAsync(
-                gameName ?? "custom_game",
-                description,
-                cancellationToken);
-
-            System.Console.WriteLine();
-
-            if (success)
-            {
-                System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-                System.Console.WriteLine("║                  ✅ SUCCESSO                               ║");
-                System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-                System.Console.ResetColor();
-                System.Console.WriteLine();
-                System.Console.WriteLine("📊 Schema creato con successo!");
-                System.Console.WriteLine();
-
-                logger.LogInformation("Game schema created successfully from description");
-            }
-            else
-            {
-                System.Console.ForegroundColor = ConsoleColor.Red;
-                System.Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
-                System.Console.WriteLine("║                   ❌ FALLITO                               ║");
-                System.Console.WriteLine("╚════════════════════════════════════════════════════════════╝");
-                System.Console.ResetColor();
-                System.Console.WriteLine();
-
-                logger.LogError("Failed to create game schema from description");
-                Environment.Exit(1);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            System.Console.WriteLine();
-            System.Console.ForegroundColor = ConsoleColor.Yellow;
-            System.Console.WriteLine("⚠️  Operazione annullata dall'utente.");
-            System.Console.ResetColor();
-            Environment.Exit(130);
-        }
-        catch (Exception ex)
-        {
-            System.Console.WriteLine();
-            System.Console.ForegroundColor = ConsoleColor.Red;
-            System.Console.WriteLine($"✗ Errore fatale: {ex.Message}");
-            System.Console.ResetColor();
-            logger.LogError(ex, "Fatal error during game analysis");
-            Environment.Exit(1);
-        }
     }
 }

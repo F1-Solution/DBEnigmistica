@@ -193,16 +193,5 @@ public class DataExportService
     /// <summary>
     /// Escape CSV field per gestire virgole e quotes
     /// </summary>
-    private string EscapeCsvField(string? field)
-    {
-        if (string.IsNullOrEmpty(field))
-            return string.Empty;
-
-        if (field.Contains(',') || field.Contains('"') || field.Contains('\n'))
-        {
-            return $"\"{field.Replace("\"", "\"\"")}\"";
-        }
-
-        return field;
-    }
+    private static string EscapeCsvField(string? field) => CsvFieldFormatter.Format(field);
 }
