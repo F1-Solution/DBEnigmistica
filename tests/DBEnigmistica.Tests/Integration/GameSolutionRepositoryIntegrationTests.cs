@@ -58,7 +58,7 @@ public class GameSolutionRepositoryIntegrationTests : IntegrationTestBase
             await write.SaveChangesAsync();
         }
 
-        (await ScalarAsync<string>("SELECT \"SolutionType\" FROM game_solutions")).Should().Be("InNextIssue");
+        (await ScalarAsync<string>("SELECT \"SolutionType\" FROM riviste.game_solutions")).Should().Be("InNextIssue");
     }
 
     [Fact]
@@ -183,11 +183,11 @@ public class GameSolutionRepositoryIntegrationTests : IntegrationTestBase
             await delete.SaveChangesAsync();
         }
 
-        (await ScalarAsync<long>("SELECT count(*) FROM game_solutions")).Should().Be(0);
+        (await ScalarAsync<long>("SELECT count(*) FROM riviste.game_solutions")).Should().Be(0);
     }
 
     [Fact]
-    public async Task Deleting_the_solution_page_keeps_the_solution_and_clears_its_page()
+    public async Task Deleting_a_page_that_is_the_solution_page_of_a_solution_is_rejected_and_nothing_changes()
     {
         var (_, pageIds) = await SeedMagazineWithPagesAsync(pageCount: 2);
         var gameId = await SeedGameAsync(pageIds[0]);
@@ -200,12 +200,13 @@ public class GameSolutionRepositoryIntegrationTests : IntegrationTestBase
         await using (var delete = NewContext())
         {
             delete.Pages.Remove((await delete.Pages.FindAsync(pageIds[1]))!);
-            await delete.SaveChangesAsync();
+            var save = async () => await delete.SaveChangesAsync();
+            await save.Should().ThrowAsync<DbUpdateException>();
         }
 
         await using var read = NewContext();
-        var solution = (await read.GameSolutions.SingleAsync());
-        solution.SolutionPageId.Should().BeNull();
+        (await read.GameSolutions.SingleAsync()).SolutionPageId.Should().Be(pageIds[1]);
+        (await read.Pages.CountAsync()).Should().Be(2);
     }
 
     [Fact]
@@ -220,6 +221,6 @@ public class GameSolutionRepositoryIntegrationTests : IntegrationTestBase
         var save = async () => await repository.SaveChangesAsync();
 
         await save.Should().NotThrowAsync();
-        (await ScalarAsync<long>("SELECT count(*) FROM games")).Should().Be(0);
+        (await ScalarAsync<long>("SELECT count(*) FROM riviste.games")).Should().Be(0);
     }
 }

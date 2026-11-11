@@ -62,9 +62,9 @@ public class DatabaseConstraintsIntegrationTests : IntegrationTestBase
             await repository.SaveChangesAsync();
         }
 
-        (await ScalarAsync<long>("SELECT count(*) FROM magazines")).Should().Be(0);
-        (await ScalarAsync<long>("SELECT count(*) FROM pages")).Should().Be(0);
-        (await ScalarAsync<long>("SELECT count(*) FROM games")).Should().Be(0);
+        (await ScalarAsync<long>("SELECT count(*) FROM riviste.magazines")).Should().Be(0);
+        (await ScalarAsync<long>("SELECT count(*) FROM riviste.pages")).Should().Be(0);
+        (await ScalarAsync<long>("SELECT count(*) FROM riviste.games")).Should().Be(0);
     }
 
     [Fact]
@@ -80,8 +80,8 @@ public class DatabaseConstraintsIntegrationTests : IntegrationTestBase
             await write.SaveChangesAsync();
         }
 
-        (await ScalarAsync<long>("SELECT count(*) FROM games")).Should().Be(1);
-        (await ScalarAsync<int>("SELECT \"PageId\" FROM games")).Should().Be(pageIds[1]);
+        (await ScalarAsync<long>("SELECT count(*) FROM riviste.games")).Should().Be(1);
+        (await ScalarAsync<int>("SELECT \"PageId\" FROM riviste.games")).Should().Be(pageIds[1]);
     }
 
     [Fact]
@@ -153,7 +153,7 @@ public class DatabaseConstraintsIntegrationTests : IntegrationTestBase
             await delete.SaveChangesAsync();
         }
 
-        (await ScalarAsync<long>("SELECT count(*) FROM rebus_games")).Should().Be(0);
+        (await ScalarAsync<long>("SELECT count(*) FROM riviste.rebus_games")).Should().Be(0);
     }
 
     [Fact]

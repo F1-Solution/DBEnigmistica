@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using DBEnigmistica.Console.Cli;
 
 namespace DBEnigmistica.Console;

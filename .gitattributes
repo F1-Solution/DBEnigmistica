@@ -1,0 +1,5 @@
+# Fine riga LF nel repository e nella cartella di lavoro, uguale su Windows e sul runner Linux.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf

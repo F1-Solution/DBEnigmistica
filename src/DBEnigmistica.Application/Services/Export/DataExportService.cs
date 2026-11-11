@@ -97,7 +97,7 @@ public class DataExportService
         }
 
         var csv = new StringBuilder();
-        
+
         csv.AppendLine(CsvFieldFormatter.SeparatorDirective);
         csv.AppendLine("Id,GameType,Title,Description,Difficulty,PositionX,PositionY,Width,Height,Confidence,ExtractedDate,PageId");
 
