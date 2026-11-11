@@ -11,7 +11,7 @@ public class CliAppTests
     [
         "scan-folder", "scan-file", "analyze-game", "analyze-game-text", "list-games", "export-schema",
         "export-games", "export-stats", "migrate", "link-solution", "list-unsolved", "verify-solution",
-        "scan-solutions", "export-solutions", "check-ai"
+        "scan-solutions", "export-solutions", "check-ai", "verify-integrity"
     ];
 
     public static TheoryData<string[], int> DisabledCommands => new()
@@ -42,6 +42,7 @@ public class CliAppTests
         { ["link-solution", "--game-id", "1", "--solution", "abc"] },
         { ["verify-solution", "--solution-id", "1", "--verified", "true"] },
         { ["list-unsolved"] },
+        { ["verify-integrity"] },
         { ["export-solutions", "--output", "soluzioni.json"] },
     };
 
