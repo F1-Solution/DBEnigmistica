@@ -1,3 +1,4 @@
+using DBEnigmistica.Domain.Diritti;
 using System.Globalization;
 using DBEnigmistica.Application.Services.Export;
 using DBEnigmistica.Domain.Entities;
@@ -55,7 +56,7 @@ public class CsvExportTests
     [Fact]
     public async Task ExportGamesAsCsv_StartsWithSeparatorDirective()
     {
-        var csv = await ExportAsync(new Game { Id = 1, Title = "t" });
+        var csv = await ExportAsync(new Game { Origine = Origine.Rivista, Id = 1, Title = "t" });
 
         csv.Split(Environment.NewLine)[0].Should().Be("sep=,");
         csv.Split(Environment.NewLine)[1].Should().StartWith("Id,GameType,Title,");
@@ -64,7 +65,7 @@ public class CsvExportTests
     [Fact]
     public async Task ExportGamesAsCsv_NeutralizesFormulaInTitle()
     {
-        var csv = await ExportAsync(new Game { Id = 1, Title = "=1+1", Description = "ok" });
+        var csv = await ExportAsync(new Game { Origine = Origine.Rivista, Id = 1, Title = "=1+1", Description = "ok" });
 
         csv.Should().Contain("\"'=1+1\"");
         csv.Should().NotContain(",=1+1");
@@ -73,7 +74,7 @@ public class CsvExportTests
     [Fact]
     public async Task ExportGamesAsCsv_QuotesSemicolonInjection()
     {
-        var csv = await ExportAsync(new Game { Id = 1, Title = "Cruciverba;=1+1;x" });
+        var csv = await ExportAsync(new Game { Origine = Origine.Rivista, Id = 1, Title = "Cruciverba;=1+1;x" });
 
         csv.Should().Contain(",\"Cruciverba;=1+1;x\",");
     }
@@ -81,7 +82,7 @@ public class CsvExportTests
     [Fact]
     public async Task ExportGamesAsCsv_NeutralizesFormulaAfterLeadingSpace()
     {
-        var csv = await ExportAsync(new Game { Id = 1, Title = " =HYPERLINK(\"http://x\")" });
+        var csv = await ExportAsync(new Game { Origine = Origine.Rivista, Id = 1, Title = " =HYPERLINK(\"http://x\")" });
 
         csv.Should().Contain("\"' =HYPERLINK(\"\"http://x\"\")\"");
     }
@@ -89,7 +90,7 @@ public class CsvExportTests
     [Fact]
     public async Task ExportGamesAsCsv_KeepsEmbeddedNewlineInsideQuotes()
     {
-        var csv = await ExportAsync(new Game { Id = 1, Title = "riga1\nriga2" });
+        var csv = await ExportAsync(new Game { Origine = Origine.Rivista, Id = 1, Title = "riga1\nriga2" });
 
         csv.Should().Contain("\"riga1\nriga2\"");
     }
@@ -97,7 +98,7 @@ public class CsvExportTests
     [Fact]
     public async Task ExportGamesAsCsv_WritesNegativeNumbersUnaltered()
     {
-        var csv = await ExportAsync(new Game { Id = 1, Title = "t", PositionX = -5, PositionY = -7 });
+        var csv = await ExportAsync(new Game { Origine = Origine.Rivista, Id = 1, Title = "t", PositionX = -5, PositionY = -7 });
 
         csv.Should().Contain(",-5,-7,");
         csv.Should().NotContain("'-5");
@@ -112,6 +113,7 @@ public class CsvExportTests
         {
             var csv = await ExportAsync(new Game
             {
+                Origine = Origine.Rivista,
                 Id = 1,
                 Title = "t",
                 ClassificationConfidence = 0.95,

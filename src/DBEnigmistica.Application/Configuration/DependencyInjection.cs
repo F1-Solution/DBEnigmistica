@@ -1,3 +1,4 @@
+using DBEnigmistica.Application.Registro;
 using DBEnigmistica.Application.Services.Export;
 using DBEnigmistica.Application.Services.Processing;
 using DBEnigmistica.Application.Services.Schema;
@@ -20,6 +21,9 @@ public static class DependencyInjection
 
         // Processing Services
         services.AddScoped<GameExtractionService>();
+
+        // Registro
+        services.AddScoped<VerificaIntegritaRegistro>();
 
         // Export Services
         services.AddScoped<DataExportService>();

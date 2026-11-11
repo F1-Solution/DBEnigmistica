@@ -1,3 +1,4 @@
+using DBEnigmistica.Application.Registro;
 using DBEnigmistica.Domain.Interfaces;
 using DBEnigmistica.Infrastructure.Data;
 using DBEnigmistica.Infrastructure.Repositories;
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IGameRepository, GameRepository>();
         services.AddScoped<IGameTypeSchemaRepository, GameTypeSchemaRepository>();
         services.AddScoped<IGameSolutionRepository, GameSolutionRepository>();
+        services.AddScoped<IRegistroEventi, RegistroEventiRepository>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         // Services - PDF

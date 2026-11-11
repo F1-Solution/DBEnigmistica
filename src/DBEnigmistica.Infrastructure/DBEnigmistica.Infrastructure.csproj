@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\DBEnigmistica.Application\DBEnigmistica.Application.csproj" />
     <ProjectReference Include="..\DBEnigmistica.Domain\DBEnigmistica.Domain.csproj" />
   </ItemGroup>
 

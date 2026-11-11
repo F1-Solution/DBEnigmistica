@@ -61,6 +61,7 @@ public static class CliApp
         root.Subcommands.Add(new VerifySolutionCommand(runner));
         root.Subcommands.Add(new ScanSolutionsCommand(streams));
         root.Subcommands.Add(new ExportSolutionsCommand(runner));
+        root.Subcommands.Add(new CheckAiCommand(runner));
 
         root.SetAction(_ =>
         {

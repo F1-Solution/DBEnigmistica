@@ -11,11 +11,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Claude API Client
-        services.AddSingleton<ClaudeApiClient>();
-
-        // AI Services
-        services.AddScoped<IAiGameAnalyzer, ClaudeGameAnalyzer>();
+        // Fino alla fase 1 l'analizzatore è un segnaposto che non apre connessioni di rete.
+        services.AddScoped<IAiGameAnalyzer, FornitoreAiNonDisponibile>();
 
         return services;
     }
