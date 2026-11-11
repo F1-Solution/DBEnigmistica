@@ -11,6 +11,7 @@ public static class HandlerRegistration
         services.AddScoped<ListGamesHandler>();
         services.AddScoped<CheckAiHandler>();
         services.AddScoped<MigrateHandler>();
+        services.AddScoped<VerifyIntegrityHandler>();
         services.AddScoped<ExportGamesHandler>();
         services.AddScoped<ExportSchemaHandler>();
         services.AddScoped<ExportStatsHandler>();

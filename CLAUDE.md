@@ -34,6 +34,8 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - `docs\ripianificazione-design.md`: decisioni dell'intervista di ripianificazione. Se manca, non ricostruire le decisioni a memoria: segnalalo al proprietario.
 - `docs\plan.md` e `docs\copilot_memory.md`: storici e superati. Non usarli per decidere.
 - `docs\giochi_enigmistici.md`: materiale di riferimento sui giochi, usato per il roadmap.
+- `docs\adr\`: decisioni di architettura, ADR 001-006 con indice in `docs\adr\README.md`. Sono proposte, in attesa dell'approvazione del proprietario. Un ADR si sostituisce con uno nuovo, non si riscrive.
+- `docs\fase-0-decisioni.md`, `docs\ondata-0-2-decisioni.md`, `docs\ondata-0-2-decisioni-2.md`: decisioni del proprietario per le fasi 0 e 1b, con le opzioni scartate. Gli ADR si basano su questi file.
 
 ## 4. Regole di lavoro (obblighi del proprietario)
 
@@ -84,9 +86,9 @@ Usa sempre questi termini, con la maiuscola iniziale.
 
 **Stack**
 - .NET 10 (`net10.0`), EF Core, PostgreSQL. Soluzione `DBEnigmistica.slnx`.
-- Progetti in `src\`: Domain, Application, Infrastructure, AI, Console. Test in `tests\DBEnigmistica.Tests` (cartelle `Unit` e `Integration`).
+- Progetti in `src\`: Domain, Application, Infrastructure, AI, Console. Test in `tests\DBEnigmistica.Tests` (cartelle `Unit`, `Integration`, `Architecture` e `EndToEnd`).
 - Dalla fase 2: interfaccia React e TypeScript con API ASP.NET Core. Dalla fase 5: involucro desktop Tauri. Non ancora presenti.
-- Estrazione con modelli Claude con visione. Il modello è configurabile. Il modello predefinito nel codice è `claude-sonnet-5-5`.
+- Estrazione con modelli con visione, dietro il Fornitore AI (ADR 004). Predefinito: Claude Code non interattivo con l'abbonamento, senza chiavi. Il modello è configurabile con `FornitoreAi:Modello`; quello in `appsettings.json` è `claude-sonnet-5-5`, da verificare (`ROADMAP.md`, sezione 8, rischio 5).
 
 **Compilare e testare** (comandi di `.github\workflows\ci.yml`)
 - `dotnet restore DBEnigmistica.slnx`
@@ -100,16 +102,17 @@ Usa sempre questi termini, con la maiuscola iniziale.
 
 **Console**
 - L'eseguibile si chiama `dbe` (assembly `dbe`). Aiuto: `dotnet run --project src\DBEnigmistica.Console -- --help`. I comandi non ancora disponibili rispondono "Comando disponibile dalla fase N" con codice 2.
-- Variabili d'ambiente: `ConnectionStrings__DefaultConnection` (stringa di connessione) e `Anthropic__ApiKey` (chiave API, letta come `Anthropic:ApiKey`).
+- `dbe check-ai` verifica la configurazione del Fornitore AI senza chiamate di rete. `dbe verify-integrity` verifica la catena di impronte del registro: codice 0 se integra («Registro integro: N eventi verificati.»), 1 se alterata, con l'id del primo evento non valido su stderr.
+- Variabili d'ambiente: `ConnectionStrings__DefaultConnection` (stringa di connessione), la sezione `FornitoreAi` (`FornitoreAi__Tipo`, `FornitoreAi__Modello`, `FornitoreAi__ClaudeCode__Eseguibile`, e `FornitoreAi__Api__ChiaveApi` solo con `api-anthropic`) e `CLAUDE_CODE_OAUTH_TOKEN` per Claude Code. Il fornitore predefinito non richiede chiavi.
 
 **Segreti**
 - `src\DBEnigmistica.Console\appsettings.Development.json` e `.env`, se esistono, contengono segreti e sono ignorati da git. Non aprirli, non stamparli, non copiarli. Cita solo i nomi delle chiavi, mai i valori.
-- `.env.template` non contiene più variabili per l'applicazione: la chiave API si imposta con `Anthropic__ApiKey`.
+- `.env.template` contiene le variabili di Compose e, commentati, i nomi delle variabili dell'applicazione. Nessun valore segreto va scritto nel file.
 
 ## 7. Stato attuale
 
-- Fase 0 (Fondamenta) in corso: `net10.0` e password fuori dai file tracciati sono fatti. La CI è stata eseguita ed è verde su `main`; il Dockerfile è predisposto. I commit esistono.
-- I test non falliscono più (15 su 24 era lo stato iniziale) e la CLI `dbe` parte. Il Motore di estrazione non produce ancora risultati. Compose usa PostgreSQL 16, i test della fase 0 usano 17.
+- Fase 0 (Fondamenta) in corso: le ondate 0.1 e 0.2 sono concluse e unite in `main`, con CI verde. L'ondata 0.3 ha consegnato documenti, ADR 001-006, `dbe verify-integrity` e test end-to-end della CLI. Restano la verifica dei criteri di accettazione, l'approvazione del proprietario e il tag `v0.1.0`.
+- La CLI `dbe` parte e i test d'integrazione girano su PostgreSQL 17 con Testcontainers. Il Motore di estrazione non produce ancora risultati: `scan-file` e `scan-folder` arrivano dalla fase 1. Compose usa PostgreSQL 16, i test della fase 0 usano 17: da allineare.
 
 ## 8. Protocollo di avanzamento
 

@@ -1,5 +1,7 @@
 # Piano di Sviluppo: DBEnigmistica
 
+> **Documento superato: non usarlo per decidere.** Fonte di verità: [ROADMAP.md](../ROADMAP.md). Le decisioni di architettura sono in [docs/adr](adr/README.md).
+
 ## Problema
 
 Creare una console application C# (.NET 10) per estrarre giochi enigmistici da riviste PDF, analizzarli tramite OCR e AI, e salvarli in un database PostgreSQL con schema dinamico che si evolve in base a nuove tipologie di giochi scoperte.

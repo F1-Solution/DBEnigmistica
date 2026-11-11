@@ -1,373 +1,104 @@
 # DBEnigmistica
 
-Sistema intelligente di estrazione automatica di giochi enigmistici da riviste PDF, con database PostgreSQL a schema dinamico e analisi AI.
+DBEnigmistica è un prodotto per l'enigmistica digitale in italiano, costruito attorno a Riviste e Giochi. Tre superfici: lo **Studio** (privato, sui dispositivi del proprietario), il **Sito pubblico** (per i giocatori) e l'**Admin** (gestione del Sito). Tre componenti: il **Motore di estrazione** (legge le Riviste in PDF), il **Motore di creazione** (genera Giochi originali) e il **Lettore** (fa giocare a schermo).
 
-## 🎯 Caratteristiche
+Lo stato reale del progetto è in [ROADMAP.md](ROADMAP.md). Questo file descrive il codice com'è oggi.
 
-- 🔍 **Estrazione automatica** da file PDF con OCR (Tesseract)
-- 🤖 **Classificazione AI** tramite Anthropic Claude per identificare tipi di gioco
-- 📊 **Schema dinamico** - Crea automaticamente nuove tabelle per nuovi tipi di gioco
-- 💾 **Database PostgreSQL** con Entity Framework Core
-- 🧩 **Gestione Soluzioni** - Tracciamento e associazione automatica delle soluzioni
-- 💾 **Caching OCR** - Cache intelligente per evitare riprocessamento
-- 📤 **Export Multi-formato** - JSON, CSV per giochi e statistiche
-- 🖥️ **CLI moderna** con System.CommandLine (14 comandi)
-- 📈 **Progress reporting** in tempo reale
-- 🎨 **Output formattato** con colori e box drawing characters
+## Stato
 
-## 🏗️ Architettura
+**Fase 0 (Fondamenta) in corso.** Le ondate 0.1 e 0.2 sono concluse e unite in `main`. È in corso l'ondata 0.3.
 
-Architettura a 5 layer con Clean Architecture:
+Oggi la riga di comando funziona per la gestione del database, delle soluzioni e dell'esportazione, per la verifica della configurazione dell'AI e per la verifica dell'integrità del registro. La scansione delle Riviste e la creazione dei Giochi non sono ancora disponibili: arrivano dalla fase 1.
 
-```
-┌─────────────────────────────────────┐
-│   Console UI Layer                  │
-│   (CLI Commands, Program.cs)        │
-└─────────────────────────────────────┘
-          ↓
-┌─────────────────────────────────────┐
-│   Application Layer                 │
-│   (Orchestration, Workflows)        │
-└─────────────────────────────────────┘
-          ↓
-┌──────────────┬───────────────┬──────┐
-│ Infrastructure│ AI Services  │Domain│
-│   (Data/OCR) │   (Claude)   │      │
-└──────────────┴───────────────┴──────┘
-          ↓
-┌─────────────────────────────────────┐
-│   PostgreSQL Database               │
-└─────────────────────────────────────┘
-```
+## Requisiti
 
-### Progetti
+- .NET 10 SDK
+- Docker Desktop (per PostgreSQL in locale e per i test d'integrazione)
+- Claude Code installato e autenticato, per il Fornitore AI predefinito (vedi [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md))
 
-- **DBEnigmistica.Console**: Applicazione console con comandi CLI
-- **DBEnigmistica.Domain**: Entità, interfacce, enumerazioni
-- **DBEnigmistica.Application**: Servizi di orchestrazione e business logic
-- **DBEnigmistica.Infrastructure**: Repository, servizi PDF/OCR, database
-- **DBEnigmistica.AI**: Integrazione con Claude per classificazione e analisi
-
-## 🛠️ Stack Tecnologico
-
-- **.NET 9.0** - Framework applicativo
-- **PostgreSQL 16** - Database relazionale
-- **Entity Framework Core 9** - ORM
-- **Tesseract.NET 5.2** - OCR open-source
-- **PdfPig 0.1.13** - Elaborazione PDF
-- **Anthropic Claude API** - Intelligenza artificiale
-- **System.CommandLine** - Parsing CLI moderno
-- **Serilog** - Logging strutturato
-- **xUnit + Moq + FluentAssertions** - Testing
-
-## 🚀 Setup Sviluppo
-
-### Prerequisiti
-
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [Docker & Docker Compose](https://www.docker.com/products/docker-desktop)
-- [Anthropic API Key](https://console.anthropic.com/) (per classificazione AI)
-- Tessdata files per Tesseract (italiano: `ita.traineddata`)
-
-### 1. Clone e Dipendenze
+## Avvio rapido
 
 ```bash
-git clone <repository-url>
-cd DBEnigmistica
-dotnet restore
-```
+# 1. Configurazione del database: copia il modello e imposta i valori
+cp .env.template .env
 
-### 2. Avvio Database
+# 2. Avvio di PostgreSQL
+docker compose up -d postgres
 
-```bash
-docker-compose up -d
-```
+# 3. Stringa di connessione (user-secrets, solo per 'dotnet run')
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=<database>;Username=<utente>;Password=<password>" --project src/DBEnigmistica.Console
 
-Servizi disponibili:
-- **PostgreSQL**: `localhost:5432` (utente e password definiti in `.env`)
-- **PgAdmin**: `http://localhost:5050` (email e password definite in `.env`)
-
-### 3. Configurazione
-
-Crea `src/DBEnigmistica.Console/appsettings.Development.json`:
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=enigmistica_db;Username=enigmistica;Password=YOUR_PASSWORD"
-  },
-  "Anthropic": {
-    "ApiKey": "sk-ant-api03-YOUR_API_KEY_HERE"
-  },
-  "Ocr": {
-    "TessdataPath": "C:/Program Files/Tesseract-OCR/tessdata",
-    "Language": "ita"
-  }
-}
-```
-
-### 4. Migrazioni Database
-
-```bash
-cd src/DBEnigmistica.Console
-dotnet ef database update
-```
-
-Oppure usa il comando CLI:
-
-```bash
-dotnet run -- migrate
-```
-
-### 5. Build & Run
-
-```bash
-dotnet build
+# 4. Aiuto e comandi
 dotnet run --project src/DBEnigmistica.Console -- --help
+dotnet run --project src/DBEnigmistica.Console -- migrate
+dotnet run --project src/DBEnigmistica.Console -- list-games
+dotnet run --project src/DBEnigmistica.Console -- check-ai
 ```
 
-## 📖 Comandi CLI
+Il dettaglio di ogni passo (variabili d'ambiente, user-secrets, configurazione del Fornitore AI, risoluzione dei problemi) è in [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md).
 
-### Scansione PDF
+## Comandi
 
-**Scansiona una cartella di PDF:**
-```bash
-dotnet run -- scan-folder ./riviste --title "La Settimana Enigmistica"
-```
+Il programma si chiama `dbe`. `dbe --help` elenca i comandi. Il flag `--verbose` mostra i dettagli completi degli errori.
 
-**Scansiona un singolo file:**
-```bash
-dotnet run -- scan-file rivista.pdf --title "Enigmistica Italiana" --issue 4500 --date 2024-01-15
-```
+### Funzionanti
 
-Opzioni:
-- `--title, -t` - Titolo della rivista
-- `--issue, -i` - Numero della rivista
-- `--date, -d` - Data pubblicazione (yyyy-MM-dd)
-- `--periodicity, -r` - Periodicità (Weekly/Monthly/Biweekly)
+| Comando | Cosa fa | Richiede |
+|---|---|---|
+| `migrate` | Applica le migrazioni pending al database | database |
+| `list-games` | Elenca le Tipologie presenti nel database | database |
+| `export-schema` | Esporta gli schemi di gioco in JSON | database |
+| `export-games` | Esporta i Giochi estratti in JSON o CSV | database |
+| `export-stats` | Esporta le statistiche delle Riviste in JSON | database |
+| `link-solution` | Associa una soluzione a un Gioco | database |
+| `verify-solution` | Verifica o rifiuta una soluzione | database |
+| `list-unsolved` | Elenca i Giochi senza soluzione | database |
+| `export-solutions` | Esporta le soluzioni in JSON o CSV | database |
+| `check-ai` | Verifica la configurazione del Fornitore AI, senza chiamate di rete | configurazione AI |
+| `verify-integrity` | Verifica la catena delle impronte del registro in sola aggiunta: codice 0 e "Registro integro: N eventi verificati.", oppure codice 1 con l'id del primo evento non valido su stderr | database |
 
-### Analisi Nuovi Tipi di Gioco
+### In arrivo
 
-**Da file Markdown:**
-```bash
-dotnet run -- analyze-game nuovo_gioco.md
-```
+Questi comandi esistono nella riga di comando ma rispondono `Comando disponibile dalla fase N` con codice d'uscita 2:
 
-**Da descrizione testuale:**
-```bash
-dotnet run -- analyze-game-text "Un gioco dove bisogna trovare parole nascoste in una griglia 10x10" --name word_search
-```
+| Comando | Fase |
+|---|---|
+| `scan-file`, `scan-folder` | 1 |
+| `analyze-game`, `analyze-game-text`, `scan-solutions` | 4 |
 
-### Gestione Database
-
-**Lista tipologie di giochi:**
-```bash
-dotnet run -- list-games --details
-```
-
-**Esporta schemi in JSON:**
-```bash
-dotnet run -- export-schema --output schemas.json --pretty
-```
-
-**Applica migrazioni:**
-```bash
-dotnet run -- migrate
-```
-
-### Gestione Soluzioni
-
-**Associa manualmente una soluzione a un gioco:**
-```bash
-dotnet run -- link-solution --game-id 123 --solution "PAROLA" --type InSameIssue
-```
-
-**Lista giochi senza soluzione:**
-```bash
-dotnet run -- list-unsolved --magazine-id 5 --export unsolved.json
-```
-
-**Scansiona una pagina per trovare soluzioni:**
-```bash
-dotnet run -- scan-solutions --page-id 89
-```
-
-**Verifica una soluzione proposta:**
-```bash
-dotnet run -- verify-solution --solution-id 45 --verified true --notes "Verificata manualmente"
-```
-
-**Esporta giochi con soluzioni:**
-```bash
-# Tutte le soluzioni in JSON
-dotnet run -- export-solutions --output solutions.json
-
-# Solo soluzioni verificate in CSV
-dotnet run -- export-solutions --output solutions.csv --format csv --verified-only
-
-# Filtra per rivista
-dotnet run -- export-solutions --output magazine_5_solutions.json --magazine-id 5
-```
-
-### Export Dati
-
-**Esporta giochi in formati diversi:**
-```bash
-# JSON
-dotnet run -- export-games --output games.json --format json
-
-# CSV
-dotnet run -- export-games --output games.csv --format csv --game-type crossword
-```
-
-**Esporta statistiche riviste:**
-```bash
-dotnet run -- export-stats --output stats.json
-```
-
-## 🧪 Testing
-
-### Esegui tutti i test
+## Test
 
 ```bash
-dotnet test
+dotnet restore DBEnigmistica.slnx
+dotnet build DBEnigmistica.slnx --configuration Release --no-restore
+dotnet test DBEnigmistica.slnx --configuration Release --no-build
 ```
 
-### Test con coverage
+I test d'integrazione usano Testcontainers con PostgreSQL 17: serve Docker in esecuzione. Non esistono test su database in memoria.
 
-```bash
-dotnet test /p:CollectCoverage=true /p:CoverageReportsDirectory=./coverage
+In GitHub Actions la sequenza aggiunge il controllo del formato (`dotnet format --verify-no-changes`), `-warnaserror` e la soglia di copertura (vedi [docs/CI.md](docs/CI.md)).
+
+## Struttura
+
+```
+src/
+  DBEnigmistica.Domain/          Entità, valori, policy di pubblicazione, registro (nessuna dipendenza)
+  DBEnigmistica.Application/     Casi d'uso e servizi (dipende dal Domain)
+  DBEnigmistica.Infrastructure/  EF Core, Npgsql, migrazioni, repository, PDF
+  DBEnigmistica.AI/              Fornitore AI (segnaposto fino alla fase 1)
+  DBEnigmistica.Console/         Riga di comando dbe, configurazione, presentazione
+tests/
+  DBEnigmistica.Tests/           Unit, Integration (PostgreSQL vero), Architecture, EndToEnd (CLI in processo)
+docs/
+  adr/                           Decisioni di architettura (ADR 001-006)
+  CI.md                          Flussi GitHub Actions e impostazioni del repository
 ```
 
-### Test specifici
+Le direzioni delle dipendenze sono verificate dai test di architettura.
 
-```bash
-# Unit test
-dotnet test --filter "FullyQualifiedName~Unit"
+## Documenti
 
-# Integration test
-dotnet test --filter "FullyQualifiedName~Integration"
-```
-
-## 🎮 Workflow Completo
-
-### Workflow Estrazione Giochi
-
-1. **Caricamento PDF** → Estrazione pagine come immagini
-2. **OCR** → Riconoscimento testo con Tesseract
-3. **Layout Analysis** → Identificazione regioni potenziali giochi
-4. **Classificazione AI** → Claude determina il tipo di gioco
-5. **Schema Check** → Verifica se esiste tabella per quel tipo
-   - Se NO → Proposta schema AI → Validazione utente → Creazione tabella
-   - Se SI → Continua
-6. **Estrazione Dati** → Claude estrae campi specifici
-7. **Persistenza** → Salvataggio nel database
-
-### Workflow Gestione Soluzioni
-
-1. **Scansione Soluzione** → Riconoscimento soluzioni da pagine dedicate
-2. **Pattern Matching** → Identificazione riferimenti a giochi (es: "Pag. 12 - Cruciverba: SOLUZIONE")
-3. **AI Matching** → Claude associa soluzione al gioco corretto
-4. **Link Automatico** → Creazione associazione con confidence score
-5. **Verifica Manuale** → Utente conferma o corregge l'associazione
-6. **Persistenza** → Salvataggio in `game_solutions` + aggiornamento `games.solution`
-
-#### Tipi di Soluzione
-
-- **InSamePage** - Soluzione nella stessa pagina del gioco
-- **InSameIssue** - Soluzione in un'altra pagina dello stesso numero
-- **InNextIssue** - Soluzione nel numero successivo (flag `SolutionsInNextIssue` su Magazine)
-- **External** - Soluzione in fonte esterna
-
-## 📊 Database Schema
-
-### Tabelle Statiche (EF Core)
-
-- `magazines` - Riviste elaborate (+ campo `solutions_in_next_issue`)
-- `pages` - Pagine delle riviste
-- `games` - Giochi estratti (base + campi soluzione)
-- `game_solutions` - Soluzioni complesse associate ai giochi
-- `game_type_schemas` - Metadata schemi dinamici
-
-### Tabelle Dinamiche (Runtime SQL)
-
-Create automaticamente per ogni nuovo tipo di gioco scoperto:
-- `crossword_games`
-- `rebus_games`
-- `logic_games`
-- `anagram_games`
-- `[custom_game_type]_games`
-
-Ogni tabella dinamica include:
-- `id` (SERIAL PRIMARY KEY)
-- `game_id` (FK → games)
-- Colonne custom definite dall'AI
-- Indici automatici su game_id
-
-## 🤝 Contribuire
-
-1. Fork del repository
-2. Crea un feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit dei cambiamenti (`git commit -m 'Add amazing feature'`)
-4. Push al branch (`git push origin feature/amazing-feature`)
-5. Apri una Pull Request
-
-## 📝 Note Tecniche
-
-### Schema Dinamico
-
-Il sistema può creare nuove tabelle a runtime quando scopre un tipo di gioco non mappato:
-1. AI genera proposta schema JSON
-2. Validazione automatica (nomi, tipi, duplicati)
-3. Conferma interattiva utente
-4. Esecuzione SQL CREATE TABLE
-5. Salvataggio metadata in `game_type_schemas`
-
-### OCR Configuration
-
-Tesseract richiede i file `tessdata` installati. Download da:
-https://github.com/tesseract-ocr/tessdata
-
-File necessari: `ita.traineddata` (italiano)
-
-### Performance
-
-- Batch processing per cartelle di PDF
-- Progress reporting non bloccante
-- Connection pooling PostgreSQL
-- Async/await pervasivo
-
-## 🐛 Troubleshooting
-
-**Errore: "Tesseract not found"**
-- Installa Tesseract OCR: https://github.com/tesseract-ocr/tesseract
-- Configura `TessdataPath` in appsettings
-
-**Errore: "Connection refused 5432"**
-- Verifica Docker: `docker-compose ps`
-- Check logs: `docker-compose logs postgres`
-
-**Errore: "Claude API key invalid"**
-- Verifica API key in appsettings.Development.json
-- Check account Anthropic: https://console.anthropic.com/
-
-**Test falliti**
-- Rebuild: `dotnet clean && dotnet build`
-- Check migration: `dotnet ef database update`
-
-## 📄 Licenza
-
-Questo progetto è rilasciato sotto licenza MIT. Vedi file `LICENSE` per dettagli.
-
-## 👥 Autori
-
-- Progetto sviluppato come case study per estrazione intelligente di contenuti strutturati da PDF
-
-## 🔮 Roadmap Future
-
-- [ ] Caching risultati OCR
-- [ ] Export dati in formati vari (JSON, CSV, Excel)
-- [ ] Web API REST per accesso dati
-- [ ] Dashboard web di monitoraggio
-- [ ] Support per più lingue (multilingua)
-- [ ] Miglioramento accuracy con fine-tuning AI
+- [ROADMAP.md](ROADMAP.md): fasi, stato, decisioni e domande aperte. È la fonte di verità.
+- [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md): preparazione dell'ambiente di sviluppo.
+- [docs/CI.md](docs/CI.md): flussi GitHub Actions, pubblicazione e creazione dei tag.
+- [docs/adr/README.md](docs/adr/README.md): indice delle decisioni di architettura.
