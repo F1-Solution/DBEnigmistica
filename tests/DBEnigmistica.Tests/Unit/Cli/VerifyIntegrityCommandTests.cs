@@ -71,14 +71,15 @@ public class VerifyIntegrityCommandTests
     }
 
     [Fact]
-    public async Task AlteredRegistry_ExitsWithOneAndNamesTheRowAndTheReason()
+    public async Task AlteredRegistry_ExitsWithFiveAndNamesTheRowAndTheReason()
     {
         var righe = Catena(3);
         righe[1] = righe[1] with { Dati = "{\"a\":1}" };
 
         var result = await RunAsync(righe);
 
-        result.Code.Should().Be(ExitCodes.Error);
+        result.Code.Should().Be(5);
+        result.Code.Should().Be(ExitCodes.RegistryTampered);
         result.Error.Should().Contain("Registro alterato").And.Contain("id 2").And.Contain(VerificaCatena.MotivoRicalcolata);
         result.Out.Should().BeEmpty();
     }
