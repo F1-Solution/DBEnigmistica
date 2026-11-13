@@ -55,7 +55,18 @@ Regola: i valori reali stanno in `.env`, in user-secrets o nelle variabili d'amb
 
    Il servizio `postgres` deve risultare `healthy`. Il database ascolta solo su `127.0.0.1:5432`. Il servizio `pgadmin` è su `127.0.0.1:5050`.
 
-Il file `docker-compose.yml` usa PostgreSQL 16. I test d'integrazione usano PostgreSQL 17. Le due versioni sono da allineare (vedi `docs/adr/006-stack-e-cli.md`).
+Il file `docker-compose.yml` e i test d'integrazione usano PostgreSQL 18. Un volume creato con PostgreSQL 16 non si apre con la 18. Scegli una delle due opzioni.
+
+**Opzione A, senza dati da conservare:** `docker compose down -v`, poi `docker compose up -d postgres`.
+
+**Opzione B, con dati da conservare:**
+
+1. Con il container 16 ancora attivo, PRIMA di aggiornare l'immagine: `docker compose exec postgres pg_dump -U <utente> -Fc <db> > backup.dump`.
+2. `docker compose down -v`.
+3. Aggiorna e avvia: `docker compose up -d postgres`.
+4. Ripristina con `docker compose exec -T postgres pg_restore -U <utente> -d <db> < backup.dump`.
+
+Dall'immagine 18 il volume dati si monta su `/var/lib/postgresql` (vedi `docs/fase-0-chiusura-decisioni.md`).
 
 ## 4. Stringa di connessione
 
@@ -129,7 +140,7 @@ Nota: oggi nessun adattatore del Fornitore AI è implementato. L'estrazione e la
 
 ## 7. Test
 
-I test d'integrazione avviano un PostgreSQL 17 con Testcontainers. Docker deve essere in esecuzione.
+I test d'integrazione avviano un PostgreSQL 18 con Testcontainers. Docker deve essere in esecuzione.
 
 ```bash
 dotnet restore DBEnigmistica.slnx
@@ -186,7 +197,7 @@ Imposta `FornitoreAi:Api:ChiaveApi` da variabile d'ambiente o user-secrets.
 Il comando non è ancora implementato. Lo stato per fase è in `ROADMAP.md`.
 
 **I test d'integrazione non partono**
-Docker Desktop deve essere in esecuzione. Testcontainers scarica `postgres:17-alpine` alla prima esecuzione: serve la connessione alla rete.
+Docker Desktop deve essere in esecuzione. Testcontainers scarica `postgres:18-alpine` alla prima esecuzione: serve la connessione alla rete.
 
 **Il commit è bloccato dall'hook**
 Installa gitleaks (sezione 8). Se trova un segreto, rimuovilo dal file, ruota il segreto se era reale, e riprova. Non disattivare l'hook con `--no-verify`.

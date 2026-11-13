@@ -1,6 +1,6 @@
 # ADR 006: stack e riga di comando
 
-- **Stato:** Proposto, in attesa dell'approvazione del proprietario
+- **Stato:** Accettato il 13/11/2026
 - **Data:** 11/11/2026
 
 ## Contesto
@@ -15,14 +15,14 @@ Il progetto parte da un codice con migrazioni mai applicate, una CLI che non fun
 4. **Riga di comando** `dbe` su System.CommandLine 2.0.15, con Generic Host (`Microsoft.Extensions.Hosting`). I servizi si risolvono dal contenitore con validazione alla costruzione (`ValidateOnBuild`, `ValidateScopes`). Le opzioni usano l'options pattern con `ValidateOnStart`. Il logging passa per Serilog. L'interfaccia di console (Spectre.Console) sta nel progetto Console, mai nell'Application layer.
 5. **Codici d'uscita** restituiti dai gestori. Nessun `Environment.Exit`. Un comando non ancora disponibile esce con 2 e il messaggio "Comando disponibile dalla fase N".
 6. **Configurazione**: `appsettings.json` copiato in output dal progetto, poi `appsettings.<ambiente>.json`, poi user-secrets (solo ambiente Development), poi variabili d'ambiente. Nessun segreto nei file tracciati (ADR 004).
-7. **Test**: xUnit con FluentAssertions e Moq. I test d'integrazione usano Testcontainers con PostgreSQL 17. Nessun test usa un database in memoria. I test di architettura (NetArchTest) verificano le direzioni delle dipendenze, compreso il divieto per Application di dipendere da `Anthropic`. Un test separato verifica che né `Directory.Packages.props` né i progetti dichiarino pacchetti `Anthropic*` (fase 0, criterio 6). Il confinamento degli adattatori in Infrastructure arriva con la fase 1.
+7. **Test**: xUnit con FluentAssertions e Moq. I test d'integrazione usano Testcontainers con PostgreSQL 18. Nessun test usa un database in memoria. I test di architettura (NetArchTest) verificano le direzioni delle dipendenze, compreso il divieto per Application di dipendere da `Anthropic`. Un test separato verifica che né `Directory.Packages.props` né i progetti dichiarino pacchetti `Anthropic*` (fase 0, criterio 6). Il confinamento degli adattatori in Infrastructure arriva con la fase 1.
 8. **Pubblicazione solo da GitHub Actions.** `ci.yml` esegue build con avvisi come errori, formato, test con copertura (soglia dell'80% per Domain e Application), vulnerabilità dei pacchetti, gitleaks e build dell'immagine Docker. `publish.yml` gira su tag `vX.Y.Z` o avvio manuale, rifiuta i commit che non discendono da `main` e pubblica l'immagine su GHCR e gli eseguibili. Nessuna pubblicazione manuale.
 9. **Librerie native** non ammesse nell'immagine finale, con eccezione da definire nella fase 1 (PDFium, ADR 003).
 
 ## Conseguenze
 
 - I test d'integrazione richiedono Docker in esecuzione, anche in locale. Un test senza Docker non può dare un esito valido.
-- Il database per i test (PostgreSQL 17) e quello di sviluppo in Compose (PostgreSQL 16, `docker-compose.yml`) non coincidono. È un punto da allineare: la versione di sviluppo va portata alla 17, o le due versioni vanno documentate come scelta.
+- PostgreSQL 18 è la versione unica per i test e per Compose (`docker-compose.yml`), come deciso il 13/11/2026 (`docs/fase-0-chiusura-decisioni.md`). Un volume creato con la 16 va ricreato o esportato con `pg_dump`.
 - Il progetto di console contiene la configurazione dei comandi; la logica di dominio resta nei progetti interni. Ogni nuovo comando passa da `CliApp` e da `HandlerRegistration`.
 - La pubblicazione richiede che il tag punti a un commit di `main`. Un tag creato su un ramo di lavoro fallisce prima di pubblicare.
 - Ogni fase aggiunge i propri controlli alla CI, senza toglierne quelli già presenti.

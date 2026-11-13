@@ -15,7 +15,7 @@ public sealed class PostgresFixture : IAsyncLifetime
 {
     private const string TemplateDatabase = "enigmistica_template";
 
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17-alpine").Build();
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:18-alpine").Build();
 
     public async Task InitializeAsync()
     {

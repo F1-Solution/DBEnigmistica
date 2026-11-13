@@ -6,7 +6,7 @@ Lo stato reale del progetto è in [ROADMAP.md](ROADMAP.md). Questo file descrive
 
 ## Stato
 
-**Fase 0 (Fondamenta) in corso.** Le ondate 0.1 e 0.2 sono concluse e unite in `main`. È in corso l'ondata 0.3.
+**Fase 0 (Fondamenta) in chiusura, in attesa dell'approvazione del proprietario.** Le ondate 0.1-0.3 sono concluse e unite in `main`. La chiusura va con il tag `v0.1.1` dopo la PR (decisioni del 13/11/2026: `docs/fase-0-chiusura-decisioni.md`).
 
 Oggi la riga di comando funziona per la gestione del database, delle soluzioni e dell'esportazione, per la verifica della configurazione dell'AI e per la verifica dell'integrità del registro. La scansione delle Riviste e la creazione dei Giochi non sono ancora disponibili: arrivano dalla fase 1.
 
@@ -55,7 +55,7 @@ Il programma si chiama `dbe`. `dbe --help` elenca i comandi. Il flag `--verbose`
 | `list-unsolved` | Elenca i Giochi senza soluzione | database |
 | `export-solutions` | Esporta le soluzioni in JSON o CSV | database |
 | `check-ai` | Verifica la configurazione del Fornitore AI, senza chiamate di rete | configurazione AI |
-| `verify-integrity` | Verifica la catena delle impronte del registro in sola aggiunta: codice 0 e "Registro integro: N eventi verificati.", oppure codice 1 con l'id del primo evento non valido su stderr | database |
+| `verify-integrity` | Verifica la catena delle impronte del registro in sola aggiunta: codice 0 e "Registro integro: N eventi verificati.", oppure codice 5 con l'id del primo evento non valido su stderr; codice 1 per gli errori generici, per esempio database non raggiungibile | database |
 
 ### In arrivo
 
@@ -74,7 +74,7 @@ dotnet build DBEnigmistica.slnx --configuration Release --no-restore
 dotnet test DBEnigmistica.slnx --configuration Release --no-build
 ```
 
-I test d'integrazione usano Testcontainers con PostgreSQL 17: serve Docker in esecuzione. Non esistono test su database in memoria.
+I test d'integrazione usano Testcontainers con PostgreSQL 18: serve Docker in esecuzione. Non esistono test su database in memoria.
 
 In GitHub Actions la sequenza aggiunge il controllo del formato (`dotnet format --verify-no-changes`), `-warnaserror` e la soglia di copertura (vedi [docs/CI.md](docs/CI.md)).
 

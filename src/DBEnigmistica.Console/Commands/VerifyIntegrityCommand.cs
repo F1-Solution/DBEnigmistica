@@ -16,7 +16,7 @@ public class VerifyIntegrityCommand : Command
     }
 }
 
-/// <summary>Esito 0 se la catena delle impronte è integra, 1 con l'id del primo evento non valido se è alterata.</summary>
+/// <summary>Esito 0 se la catena delle impronte è integra, 5 con l'id del primo evento non valido se è alterata.</summary>
 public sealed class VerifyIntegrityHandler(VerificaIntegritaRegistro verifica, CliStreams streams)
 {
     public async Task<int> ExecuteAsync(CancellationToken cancellationToken)
@@ -32,6 +32,6 @@ public sealed class VerifyIntegrityHandler(VerificaIntegritaRegistro verifica, C
         streams.Error.WriteLine(
             $"Registro alterato: primo evento non valido con id {esito.PrimoIdNonValido} ({esito.Motivo}). " +
             $"Eventi verificati prima: {esito.EventiVerificati}.");
-        return ExitCodes.Error;
+        return ExitCodes.RegistryTampered;
     }
 }

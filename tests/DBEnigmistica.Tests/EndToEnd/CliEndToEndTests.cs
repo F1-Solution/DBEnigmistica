@@ -9,7 +9,7 @@ using Npgsql;
 
 namespace DBEnigmistica.Tests.EndToEnd;
 
-/// <summary>La CLI vera, dall'ingresso in processo, contro PostgreSQL 17 (criteri 5 e 9 della fase 0).</summary>
+/// <summary>La CLI vera, dall'ingresso in processo, contro PostgreSQL 18 (criteri 5 e 9 della fase 0).</summary>
 [Collection(PostgresCollection.Name)]
 [Trait("Category", "EndToEnd")]
 public class CliEndToEndTests : IntegrationTestBase
@@ -27,11 +27,12 @@ public class CliEndToEndTests : IntegrationTestBase
     {
         var output = new StringWriter();
         var error = new StringWriter();
-        var coppie = new List<KeyValuePair<string, string?>>
+        var coppie = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
         {
-            new("ConnectionStrings:DefaultConnection", ConnectionString),
+            ["ConnectionStrings:DefaultConnection"] = ConnectionString,
         };
-        coppie.AddRange(impostazioni.Select(i => new KeyValuePair<string, string?>(i.Chiave, i.Valore)));
+        foreach (var (chiave, valore) in impostazioni)
+            coppie[chiave] = valore;
 
         var code = await CliApp.RunAsync(args, output, error, builder => builder.AddInMemoryCollection(coppie));
         return (code, output.ToString(), error.ToString());
@@ -99,9 +100,23 @@ public class CliEndToEndTests : IntegrationTestBase
 
         var result = await CliAsync("verify-integrity");
 
-        result.Code.Should().Be(ExitCodes.Error);
+        result.Code.Should().Be(5);
+        result.Code.Should().Be(ExitCodes.RegistryTampered);
         result.Error.Should().Contain($"id {alterato}").And.Contain(VerificaCatena.MotivoRicalcolata);
         result.Output.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task VerifyIntegrity_with_an_unreachable_database_exits_with_one_not_five()
+    {
+        var result = await CliConAsync(
+            ["verify-integrity"],
+            ("ConnectionStrings:DefaultConnection",
+                "Host=127.0.0.1;Port=1;Database=x;Username=x;Password=x;Timeout=3;Pooling=false"));
+
+        result.Code.Should().Be(1, result.Error);
+        result.Code.Should().Be(ExitCodes.Error);
+        result.Error.Should().Contain("Database non raggiungibile").And.NotContain("same key");
     }
 
     [Fact]

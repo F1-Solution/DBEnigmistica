@@ -1,6 +1,6 @@
 # ADR 003: lettura delle pagine con visione, senza OCR
 
-- **Stato:** Proposto, in attesa dell'approvazione del proprietario
+- **Stato:** Accettato il 13/11/2026
 - **Data:** 11/11/2026
 
 ## Contesto

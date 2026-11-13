@@ -1,6 +1,6 @@
 # ADR 005: provenienza, diritti e registro in sola aggiunta
 
-- **Stato:** Proposto, in attesa dell'approvazione del proprietario
+- **Stato:** Accettato il 13/11/2026
 - **Data:** 11/11/2026
 
 ## Contesto
@@ -17,7 +17,7 @@ Il proprietario ha preso decisioni vincolanti l'11/11/2026 (`docs/ondata-0-2-dec
 4. **Stato di inedito a due stati senza ritorno**: un Gioco è inedito finché non ha una prima pubblicazione, di cui si salvano data e luogo. Un trigger impedisce di tornare indietro.
 5. **Policy di pubblicazione** come funzione pura del dominio, senza accessi al database o all'orologio. Raccoglie tutti i motivi di blocco, non solo il primo. Un Gioco con origine `rivista` non è mai pubblicabile. Un Gioco ceduto come inedito non è pubblicabile finché la Cessione è in corso. Un'esclusiva in corso blocca la pubblicazione sul Sito qualunque sia il suo territorio, perché il Sito vale come pubblicazione su `MONDO`.
 6. **Registro in sola aggiunta** (`registro.eventi`): un trigger rifiuta `UPDATE`, `DELETE` e `TRUNCATE`. Ogni riga contiene lo SHA-256 della precedente, calcolato su un contenuto codificato a lunghezza prefissata. L'aggiunta avviene con un lucchetto di transazione sull'ultima riga, più un vincolo di unicità sull'impronta precedente, che impedisce una biforcazione della catena anche se il lucchetto viene saltato.
-7. **Verifica** della catena con `dbe verify-integrity` (ondata 0.3): codice d'uscita 0 se integra, 1 se alterata, con l'id del primo evento non valido e il motivo.
+7. **Verifica** della catena con `dbe verify-integrity` (ondata 0.3): codice 0 se integra; 5 se alterata, con l'id del primo evento non valido e il motivo; 1 per gli errori generici, per esempio database non raggiungibile.
 
 ## Conseguenze
 

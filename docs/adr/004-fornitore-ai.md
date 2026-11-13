@@ -1,6 +1,6 @@
 # ADR 004: Fornitore AI dietro un'unica interfaccia, Claude Code predefinito
 
-- **Stato:** Proposto, in attesa dell'approvazione del proprietario
+- **Stato:** Accettato il 13/11/2026
 - **Data:** 11/11/2026
 
 ## Contesto
@@ -34,7 +34,7 @@ Il codice precedente usava il pacchetto non ufficiale `Anthropic.SDK` e una chia
 - Con `api-anthropic`, la validazione verifica solo la presenza della chiave, non la sua validità. Un controllo di rete, se servisse, è una decisione separata.
 - La condivisione dei limiti dell'abbonamento è un vincolo di pianificazione: estrazione e creazione girano in orari diversi dal lavoro degli agenti, e la fase 1 misura quante pagine si leggono per finestra.
 - L'esecuzione in container dello Studio richiede l'eseguibile di Claude Code nell'immagine e il token passato come segreto. Il punto è da verificare nell'ondata 1.1: se le condizioni d'uso lo sconsigliano, lo Studio chiamerà Claude Code installato su Windows.
-- Il modello predefinito è un valore da verificare. `ROADMAP.md` (sezione 8, rischio 5) segnala che il modello configurato potrebbe essere già ritirato: va controllato prima della fase 1.
+- Il modello predefinito è `claude-sonnet-5-5`, confermato il 13/11/2026 (`docs/fase-0-chiusura-decisioni.md`, D4). Il confronto tra modelli resta alla linea di base della fase 1.
 
 ## Alternative scartate
 

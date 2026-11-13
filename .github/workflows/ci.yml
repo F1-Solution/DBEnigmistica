@@ -55,7 +55,7 @@ jobs:
       - name: Compilazione (Release, avvisi come errori)
         run: dotnet build "$SOLUTION" --configuration Release --no-restore -warnaserror -consoleLoggerParameters:Summary -v:minimal
 
-      # I test d'integrazione usano Testcontainers (postgres:17-alpine): il Docker dei runner ubuntu basta.
+      # I test d'integrazione usano Testcontainers (postgres:18-alpine): il Docker dei runner ubuntu basta.
       - name: Test con copertura
         run: >
           dotnet test "$SOLUTION" --configuration Release --no-build

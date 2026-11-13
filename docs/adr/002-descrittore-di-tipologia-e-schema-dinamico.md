@@ -1,6 +1,6 @@
 # ADR 002: descrittore di Tipologia e Schema dinamico come migrazioni da rivedere
 
-- **Stato:** Proposto, in attesa dell'approvazione del proprietario
+- **Stato:** Accettato il 13/11/2026
 - **Data:** 11/11/2026
 
 ## Contesto
