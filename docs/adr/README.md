@@ -10,7 +10,17 @@ Ogni file registra una decisione con il suo contesto e le sue conseguenze. Le de
 | 004 | [Fornitore AI dietro un'unica interfaccia](004-fornitore-ai.md) | Accettato | 13/11/2026 |
 | 005 | [Provenienza, diritti e registro in sola aggiunta](005-provenienza-diritti-e-registro.md) | Accettato | 13/11/2026 |
 | 006 | [Stack e riga di comando](006-stack-e-cli.md) | Accettato | 13/11/2026 |
+| 008 | [Set di riferimento e Registrazioni solo sul PC del proprietario](008-set-di-riferimento-solo-sul-pc.md) | Accettato | 19/11/2026 |
+| 009 | [Rendering delle pagine con PDFium, PNG codificato dal progetto](009-rendering-con-pdfium.md) | Accettato | 19/11/2026 |
+| 010 | [Estrazione dal vivo su Windows con Claude Code e login OAuth](010-estrazione-dal-vivo-con-claude-code.md) | Accettato | 19/11/2026 |
+| 011 | [Risposta grezza del Fornitore AI fuori dal registro immutabile](011-risposta-grezza-fuori-dal-registro.md) | Accettato | 19/11/2026 |
 
-Stato di tutti gli ADR: **accettato dal proprietario il 13/11/2026**, con la chiusura della fase 0. Un ADR si sostituisce con uno nuovo, non si riscrive.
+Relazioni con gli ADR precedenti:
 
-Il primo ADR di interfaccia (ADR 007, React e TypeScript con API ASP.NET Core, e involucro Tauri) è previsto dalla fase 2.
+- **009** sostituisce il punto 1 dell'ADR 003 (la libreria di rendering). Il resto dell'ADR 003 resta valido.
+- **010** integra l'ADR 004 (autenticazione di Claude Code in fase 1 e container rimandato alla fase 2).
+- **011** integra l'ADR 005 (il registro contiene solo metadati e impronte delle chiamate al Fornitore AI).
+
+Stato degli ADR 001-006: **accettati dal proprietario il 13/11/2026**, con la chiusura della fase 0. Stato degli ADR 008-011: **accettati dal proprietario il 19/11/2026**, con le decisioni D2, D3, D5 e D7 della fase 1 (`docs/fase-1-decisioni.md`). Un ADR si sostituisce con uno nuovo, non si riscrive.
+
+Il numero 007 è riservato al primo ADR di interfaccia (React e TypeScript con API ASP.NET Core, e involucro Tauri), previsto dalla fase 2. Non è ancora stato scritto.
