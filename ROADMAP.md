@@ -12,10 +12,10 @@ Convenzioni: **[P]** = decisione del proprietario; **[A]** = scelta dell'archite
 1. Un solo prodotto web con due profili di esecuzione: **studio** (privato: Studio e archivio delle Riviste) e **pubblico** (Sito e Admin). Interfaccia in React e TypeScript con API ASP.NET Core [P]; involucro desktop dello Studio con Tauri [P]; la riga di comando `dbe` resta per i batch.
 2. Ordine [P]: fondamenta, poi **Motore di estrazione e Studio** (fasi 1-5), poi **Motore di creazione** (fasi 6-7), infine **Sito pubblico e Admin** (fasi 8-9). Accanto all'estrazione, la **fase 1b** (confermata) costruisce un prototipo minimo di creazione solo per misurare il tempo di revisione entro la soglia G1 del 28 febbraio 2027, su sei famiglie di Giochi con 5 candidati ciascuna [P].
 3. Tipologie in sequenza in ogni componente: cruciverba classico e giochi brevi, poi crittografie e giochi a chiave, poi rebus. Sudoku e giochi logici entrano nel catalogo dalla fase 1b (generati e verificati da un algoritmo, senza AI) e nell'estrazione con la fase 5. Ogni tipologia è un **descrittore** da cui si generano la migrazione delle tabelle dedicate, lo schema dell'output dell'AI e la resa nel Lettore.
-4. Lettura delle pagine: immagine della pagina, testo nativo del PDF e una chiamata per pagina al **Fornitore AI** con visione e output strutturato. Si parte con Claude tramite l'abbonamento del proprietario come misura di riferimento; diventa predefinito il fornitore che supera la soglia di accuratezza al costo minore, tra quelli con condizioni d'uso verificate [P]. L'accuratezza si misura su un set di riferimento fornito dal proprietario. Niente Tesseract.
+4. Lettura delle pagine: immagine della pagina, testo nativo del PDF e una chiamata per pagina al **Fornitore AI** con visione e output strutturato. Si parte con Claude tramite l'abbonamento del proprietario come misura di riferimento; diventa predefinito il fornitore che supera la soglia di accuratezza al costo minore, tra quelli con condizioni d'uso verificate [P]. L'accuratezza si misura su un Set di riferimento fornito dal proprietario. Niente Tesseract.
 5. **Nessuna API a consumo come scelta predefinita** [P]: il programma raggiunge l'AI attraverso un'unica interfaccia verso il Fornitore AI; la creazione usa Claude Code in modalità non interattiva con l'abbonamento, solo nello Studio privato. I limiti dell'abbonamento sono condivisi con lo sviluppo; il Sito pubblico non dipende dall'abbonamento. L'adattatore API resta possibile, non predefinito.
 6. I Giochi estratti non vanno mai online, con un blocco su tre livelli: domain policy, vincoli del database e un database pubblico separato. Nella creazione si usa solo la conoscenza di formato (regole delle tipologie approvate dal proprietario). L'uso come esempi richiede un parere legale favorevole, da ricevere entro il 28 febbraio 2027, e un interruttore [P].
-7. Fase 0 **in chiusura, ondate 0.1-0.3 concluse**: CI verde su `main` (build e test, vulnerabilità dei pacchetti, controllo dei segreti, immagine Docker); OCR, layout e DDL a runtime eliminati; CLI `dbe` su System.CommandLine e test su PostgreSQL vero; modello di provenienza, diritti e registro in sola aggiunta; Fornitore AI configurato senza API a consumo. Decisioni del 13/11/2026: codice 5 per il registro alterato, PostgreSQL 18, ADR accettati, chiusura con tag `v0.1.1` dopo la PR. Restano l'approvazione del proprietario e le domande al legale.
+7. Fase 0 **conclusa il 19/11/2026**, ondate 0.1-0.3 concluse: CI verde su `main` (build e test, vulnerabilità dei pacchetti, controllo dei segreti, immagine Docker); OCR, layout e DDL a runtime eliminati; CLI `dbe` su System.CommandLine e test su PostgreSQL vero; modello di provenienza, diritti e registro in sola aggiunta; Fornitore AI configurato senza API a consumo. Decisioni del 13/11/2026: codice 5 per il registro alterato, PostgreSQL 18, ADR accettati, chiusura con tag `v0.1.1` dopo la PR. Chiusura sul tag `v0.1.1`, approvata dal proprietario il 19/11/2026, con l'immagine `0.1.1` verificata. Restano le domande al legale (entro il 15/12/2026).
 8. Ore richieste al proprietario [S]: circa 131 di guida, prova e collaudo fino al lancio (di cui 14 di prova 1), più circa 15 di contenuti per riempire la coda. Sono distribuite su 11 fasi (0-9 più 1b) e 38 ondate di 2-3 agenti.
 9. Date del piano commerciale tenute: parere legale e soglia **G1 al 28 febbraio 2027** (regge con 1-2 ore di margine sulla prova 1, vedi fase 1b). Date non raggiungibili con l'ordine scelto, che va rispettato: Sito online il **1 settembre 2027** invece di marzo, quindi da G2 in poi soglie spostate di 3-6 mesi (sezione 5).
 10. A 24 mesi (30 novembre 2028) la soglia realistica è 450 € netti al mese; gli 800 € slittano al 31 maggio 2029.
@@ -28,8 +28,8 @@ Convenzioni: **[P]** = decisione del proprietario; **[A]** = scelta dell'archite
 | N | Nome | Obiettivo in una riga | Dipende da | Stato | Cosa serve dal proprietario |
 |---|---|---|---|---|---|
 | - | Analisi preliminare | Valutazione del codice, piano commerciale, proposte UX e UI | - | **Fatto** | - |
-| 0 | Fondamenta | Codice verde su .NET 10, CLI funzionante, segreti fuori dai file, CI eseguita, modello di provenienza e diritti | - | **In chiusura (attesa approvazione)**: ondate 0.1-0.3 concluse, CI verde su `main`; chiusura con tag `v0.1.1` | Approvazione della chiusura e del tag `v0.1.1`; impostazioni manuali su GitHub (GHCR; protezione di `main` e dei tag rimandata, `docs/fase-0-chiusura-decisioni.md`, D1); **domande al legale entro il 15 dicembre 2026** (circa 7 h) |
-| 1 | Estrazione: cruciverba e giochi brevi | Dalla riga di comando una Rivista PDF diventa Giochi salvati nelle tabelle dedicate, con accuratezza misurata e Fornitore AI scelto per misura | 0 | Da iniziare | PDF di prova, correzione dei risultati attesi, regole delle tipologie da approvare, verifica delle condizioni d'uso dei Fornitori AI, scelta del fornitore predefinito, conferma delle soglie di accuratezza (circa 20 h) |
+| 0 | Fondamenta | Codice verde su .NET 10, CLI funzionante, segreti fuori dai file, CI eseguita, modello di provenienza e diritti | - | **Conclusa** (19/11/2026, tag `v0.1.1`) | Impostazioni manuali su GitHub (GHCR; protezione di `main` e dei tag rimandata, `docs/fase-0-chiusura-decisioni.md`, D1); **domande al legale entro il 15 dicembre 2026** (circa 7 h) |
+| 1 | Estrazione: cruciverba e giochi brevi | Dalla riga di comando una Rivista PDF diventa Giochi salvati nelle tabelle dedicate, con accuratezza misurata e Fornitore AI scelto per misura | 0 | Da iniziare | PDF di prova, correzione dei risultati attesi, regole delle tipologie da approvare, verifica delle condizioni d'uso dei Fornitori AI, scelta del fornitore predefinito, login OAuth di Claude Code sul PC, conferma delle soglie di accuratezza (circa 20 h) |
 | 1b | Prototipo di revisione della creazione | Generazione (AI per i giochi a parole, algoritmo per sudoku e giochi logici) e schermata di revisione con cronometro per sei famiglie, per misurare G1 entro il 28 febbraio 2027 | 0 | Da iniziare | Regole e brief, **prova 1** (30 candidati a cronometro, 5 per famiglia), decisione G1 (circa 21 h) |
 | 2 | Fondamenta dell'interfaccia | Studio in container sul PC Windows del proprietario (Docker Desktop, solo rete di casa): accesso con passkey, involucro "Banco", Lettore di base | 1, 1b | Da iniziare | Certificato locale sui dispositivi di casa, passkey (circa 6 h) |
 | 3 | Studio: acquisizione e revisione | Importare una Rivista e verificarne i Giochi da tastiera, con ricerca, schede e gioco | 2 | Da iniziare | Uso reale su almeno 2 numeri e segnalazione degli attriti (circa 10 h) |
@@ -42,13 +42,13 @@ Convenzioni: **[P]** = decisione del proprietario; **[A]** = scelta dell'archite
 
 ### Stime per fase [S]
 
-Regola usata: durata = ore del proprietario / ore disponibili per lo sviluppo nel periodo, arrotondata per eccesso, più una settimana di margine per i cicli di correzione degli agenti. Festività a ore ridotte. Le date partono da lunedì 16 novembre 2026. Le fasi 1 e 1b procedono in parallelo e alternano le ondate, così non lavorano mai più di 3 agenti insieme. Tra il 18 gennaio e il 21 febbraio 2027 circa 3 ore a settimana vanno alla prova 1, quindi la fase 2 avanza più lentamente.
+Regola usata: durata = ore del proprietario / ore disponibili per lo sviluppo nel periodo, arrotondata per eccesso, più una settimana di margine per i cicli di correzione degli agenti. Festività a ore ridotte. Le date partono da lunedì 16 novembre 2026. Le fasi 1 e 1b procedono in parallelo con questo ordine delle ondate [P, D1]: 1.1 dal 23 nov 2026, poi 1b.1, 1.2, 1b.2, 1.3, e 1.4 accanto alla 1b.3. Così non lavorano mai più di 3 agenti insieme. Tra il 18 gennaio e il 21 febbraio 2027 circa 3 ore a settimana vanno alla prova 1, quindi la fase 2 avanza più lentamente.
 
 | Fase | Ondate | Ore del proprietario | Periodo stimato | Rilascio |
 |---|---|---|---|---|
 | 0 | 3 | 7 | 16 nov - 6 dic 2026 | `v0.1.0`; chiusura `v0.1.1` |
-| 1 | 4 | 20 | 7 dic 2026 - 24 gen 2027 (festività) | `v0.2.0` |
-| 1b | 3 | 7 di costruzione + 14 di prova 1 | costruzione 7 dic 2026 - 17 gen 2027; prova 1 18 gen - 21 feb 2027; **G1 il 28 feb 2027** | `v0.2.x` |
+| 1 | 4 | 20 | 23 nov 2026 - 21 feb 2027 (festività) | `v0.2.0` |
+| 1b | 3 | 7 di costruzione + 14 di prova 1 | costruzione dic 2026 - 17 gen 2027 (prototipo pronto verso il 10 gen); prova 1 18 gen - 21 feb 2027; **G1 il 28 feb 2027** | `v0.2.0-prova.1` (pre-release); correzioni `v0.2.1` e seguenti |
 | 2 | 3 | 6 | 25 gen - 21 feb 2027 | `v0.3.0` |
 | 3 | 4 | 10 | 22 feb - 14 mar 2027 | `v0.4.0` |
 | 4 | 4 | 11 | 15 mar - 11 apr 2027 (Pasqua) | `v0.5.0` |
@@ -58,6 +58,8 @@ Regola usata: durata = ore del proprietario / ore disponibili per lo sviluppo ne
 | 8 | 5 | 20 (+15 di contenuti) | 28 giu - 8 ago 2027, agosto di margine; online il **1 set 2027** | `v1.0.0` |
 | 9 | 4 | 9 | set - nov 2027 (prima ondata: esportazione KDP) | `v1.1.0`... |
 | **Totale fino al lancio** | **38** | **circa 131** (di cui 14 di prova 1) | | |
+
+Le date delle fasi 2-9 non sono ricalcolate: la chiusura della fase 1 al 21 feb 2027 le sposta. Da decidere con il proprietario.
 
 ---
 
@@ -74,12 +76,14 @@ Regola usata: durata = ore del proprietario / ore disponibili per lo sviluppo ne
 1. **Preparazione** (agente principale, Opus): `.planning/phases/<fase>/CONTEXT.md` e `PLAN.md` derivati da questa roadmap. Il proprietario li approva (decisioni della fase). Nessuna esecuzione se mancano `ROADMAP.md`, `CLAUDE.md`, `CONTEXT.md` o `PLAN.md`.
 2. **Ondate**: ogni ondata si chiude con la CI verde e la revisione di Opus (sforzo massimo). Le osservazioni CRITICAL e HIGH vanno corrette prima dell'ondata successiva. Ogni ondata aggiunge a `PROGRESS.md` una riga `PHASE:<n> WAVE:<n.m> STATUS:<complete|failed> TS:<ISO-8601 UTC>`. Alla ripresa non si rieseguono le ondate già complete.
 3. **Verifica**: un agente Opus controlla i criteri di accettazione partendo dall'obiettivo, esegue i comandi elencati e scrive l'esito.
-4. **Collaudo e chiusura**: il proprietario prova il risultato, approva la fusione del ramo di fase in `main` e il tag di rilascio. Senza questa approvazione la fase non si chiude.
+4. **Collaudo e chiusura**: il proprietario prova il risultato, approva la fusione in `main` e il tag di rilascio. Senza questa approvazione la fase non si chiude.
+
+**Rami e versioni** [P, D6]: un ramo per ondata, con una pull request verso `main`. Il prototipo della 1b esce come pre-release `v0.2.0-prova.1`, senza spostare `latest`. La fase 1 si chiude con `v0.2.0`; le correzioni della 1b.3 escono come `v0.2.1` e seguenti.
 
 ### 1.3 CI e pubblicazione [P]
 
-- Test e pubblicazione **solo tramite GitHub Actions** sul repository `github.com/F1-Solution/DBEnigmistica`. La protezione del ramo `main` (CI verde e approvazione del proprietario) è rimandata: il piano gratuito dei repository privati non la consente (`docs/fase-0-chiusura-decisioni.md`, D1, 13/11/2026).
-- Base già predisposta (vedi `docs/CI.md`): `ci.yml` eseguito per la prima volta e verde su `main` il 10/11/2026; `publish.yml` parte con il tag `v0.1.0`. `ci.yml` gira su push a `main`, pull request e chiamata da `publish`: build e test con copertura, vulnerabilità dei pacchetti, gitleaks. `publish.yml` gira su tag `vX.Y.Z` o avvio manuale: riesegue la CI, pubblica `ghcr.io/f1-solution/dbenigmistica` con i tag `X.Y.Z`, `sha-<commit>` e `latest`, e crea la GitHub Release con gli eseguibili. Dependabot è configurato. GHCR resta privato.
+- Test e pubblicazione **solo tramite GitHub Actions** sul repository `github.com/F1-Solution/DBEnigmistica`. Eccezione dichiarata, limitata alla regressione sul Set di riferimento vero: è uno script locale che il proprietario lancia prima di ogni release, con il rapporto allegato alla release (ADR 008). La protezione del ramo `main` (CI verde e approvazione del proprietario) è rimandata: il piano gratuito dei repository privati non la consente (`docs/fase-0-chiusura-decisioni.md`, D1, 13/11/2026).
+- Base già predisposta (vedi `docs/CI.md`): `ci.yml` eseguito per la prima volta e verde su `main` il 10/11/2026; `publish.yml` parte con il tag `v0.1.0`. `ci.yml` gira su push a `main`, pull request e chiamata da `publish`: build e test con copertura, vulnerabilità dei pacchetti, gitleaks. `publish.yml` gira su tag `vX.Y.Z` o avvio manuale: riesegue la CI, pubblica `ghcr.io/f1-solution/dbenigmistica` con i tag `X.Y.Z`, `sha-<commit>` e `latest`, e crea la GitHub Release con gli eseguibili. Dependabot è configurato. GHCR resta privato. Una pre-release (`vX.Y.Z-prova.N`) non sposta `latest`.
 - Una sola immagine per tutto [A]: profilo web scelto con `DBE_PROFILO=studio|pubblico`, riga di comando con `docker run ... dbe <comando>`. Così c'è un solo artefatto da tenere aggiornato. Gli artefatti in più (involucro desktop, pacchetto del Lettore) si aggiungono a `publish.yml` come lavori a sé, seguendo `docs/CI.md`.
 - I controlli si accumulano: ogni fase dice solo quelli che **aggiunge**.
 
@@ -101,7 +105,7 @@ Regola usata: durata = ore del proprietario / ore disponibili per lo sviluppo ne
  │   schema catalogo   (Giochi originali, creazione)    │──▶│   calendario, eventi d'uso,    │
  │   schema tipologie  (descrittori, migrazioni)        │   │   aspetto del sito             │
  │   schema registro   (sola aggiunta)                  │   │   CHECK: origine originale     │
- │  Volume: PDF, immagini delle pagine, ritagli         │   └───────────────────────────────┘
+ │  Archivio: PDF, immagini delle pagine, ritagli       │   └───────────────────────────────┘
  └─────────────────────────────────────────────────────┘
        Consegna firmata Studio → Pubblico: solo Giochi approvati che superano la policy di pubblicazione
 ```
@@ -143,20 +147,21 @@ Ogni tipologia è un file versionato (`tipologie/<id>/v<n>.json`, nel repository
 
 ### 2.3 Lettura delle pagine [P, dettagli A]
 
-1. Rendering della pagina con PDFium (pacchetto PDFtoImage) a una risoluzione configurabile (150-200 DPI) e testo nativo con PdfPig quando esiste. Le impronte SHA-256 di PDF e pagina servono all'idempotenza.
+1. Rendering della pagina con PDFiumCore e la libreria nativa `bblanchon.PDFium` a una risoluzione configurabile (150-200 DPI); il PNG lo codifica il progetto (ADR 009, che sostituisce il punto 1 dell'ADR 003). Testo nativo con PdfPig quando esiste. Le impronte SHA-256 di PDF e pagina servono all'idempotenza. L'Archivio (`Archivio:Cartella`) conserva la copia della Rivista con nome uguale alla sua impronta, le immagini delle pagine in cartelle per impronta e il testo nativo nel database; la cartella va nel backup, e lo spazio delle Riviste è occupato due volte (`docs/fase-1-decisioni.md`, D3 e D4).
 2. **Una chiamata per pagina** al Fornitore AI configurato (sezione 2.4; riferimento iniziale: Claude tramite l'abbonamento, modello configurabile) con: immagine, testo nativo, catalogo dei descrittori e uno JSON Schema per l'output strutturato, verificato anche lato programma perché non tutti i fornitori lo impongono. La risposta contiene l'elenco dei Giochi: tipologia nota oppure "nuova tipologia proposta", titolo, riquadro normalizzato tra 0 e 1, dati conformi al descrittore, confidenza per campo e avvisi.
-3. I validatori strutturali del descrittore (per esempio la numerazione coerente con la griglia) abbassano la confidenza dei Giochi incoerenti. Una seconda chiamata sul ritaglio ingrandito del solo Gioco che non passa la validazione resta **disattivata**: si accende solo se il set di riferimento dimostra che migliora l'accuratezza [A].
-4. Le cartelle passano da una coda che rispetta i limiti del fornitore: quando la finestra dell'abbonamento o la quota del piano gratuito si esaurisce, la coda si ferma e riprende da sola. Ogni chiamata registra fornitore, modello, durata, esito e risposta grezza, più token e costo quando il fornitore li riporta. Un limite di pagine per esecuzione interrompe il lavoro; il tetto di spesa vale solo con l'adattatore API.
+3. I validatori strutturali del descrittore (per esempio la numerazione coerente con la griglia) abbassano la confidenza dei Giochi incoerenti. Una seconda chiamata sul ritaglio ingrandito del solo Gioco che non passa la validazione resta **disattivata**: si accende solo se il Set di riferimento dimostra che migliora l'accuratezza [A].
+4. Le cartelle passano da una coda che rispetta i limiti del fornitore: quando la finestra dell'abbonamento o la quota del piano gratuito si esaurisce, la coda si ferma e riprende da sola. Ogni chiamata registra nel registro fornitore, modello, durata, esito, token e costo quando il fornitore li riporta, più lo SHA-256 della risposta. La risposta grezza va nella tabella `riviste.chiamate_ai`, che si può svuotare (ADR 011). Un limite di pagine per esecuzione interrompe il lavoro; il tetto di spesa vale solo con l'adattatore API.
 5. Il modello più capace del fornitore di riferimento (oggi Opus) solo per progettare descrittori di tipologie nuove: sono chiamate rare e conta la qualità.
 
 ### 2.4 Il Fornitore AI [P, dettagli A]
 
 - **Un'unica interfaccia** nell'Application layer, con due usi: estrazione (pagina → Giochi) e creazione (brief e regole → candidato). Gli adattatori stanno in Infrastructure e si scelgono da configurazione, così cambiare fornitore non tocca il resto.
-- **Adattatori previsti.** *Claude Code non interattivo* con l'abbonamento del proprietario: predefinito per la creazione e riferimento per l'estrazione, utilizzabile **solo nello Studio sul PC del proprietario**. *Piani gratuiti di altri fornitori* e *modello aperto in locale*: candidati per l'estrazione, confrontati sul set di riferimento. *API a consumo* (SDK ufficiale, prompt caching, Batch API, tetto di spesa): possibile ma non predefinito; si attiva solo se un ostacolo dei limiti viene misurato e il proprietario accetta la spesa.
+- **Adattatori previsti.** *Claude Code non interattivo* con l'abbonamento del proprietario: predefinito per la creazione e riferimento per l'estrazione, utilizzabile **solo nello Studio sul PC del proprietario**. *Piani gratuiti di altri fornitori* e *modello aperto in locale*: candidati per l'estrazione, confrontati sul Set di riferimento. *API a consumo* (SDK ufficiale, prompt caching, Batch API, tetto di spesa): possibile ma non predefinito; si attiva solo se un ostacolo dei limiti viene misurato e il proprietario accetta la spesa.
 - **Regola di scelta per l'estrazione** [P]: diventa predefinito il fornitore che supera le soglie di accuratezza al costo minore, tra quelli le cui condizioni d'uso il proprietario ha verificato. I piani gratuiti ricevono pagine delle Riviste solo dopo questa verifica [A: è la posizione meno prudente, ed è tra le domande al legale].
 - **Limiti condivisi.** L'abbonamento serve anche allo sviluppo del progetto: estrazione e creazione si pianificano in orari diversi dal lavoro degli agenti, e la fase 1 misura quante pagine si leggono per finestra.
 - **Sito pubblico.** Il profilo pubblico non registra alcun adattatore del Fornitore AI e non dipende dall'abbonamento: serve solo edizioni già approvate nello Studio.
-- **Esecuzione in container** [A, da verificare nell'ondata 1.1]: l'adattatore Claude Code richiede l'eseguibile di Claude Code nel container dello Studio, autenticato con un token dell'abbonamento passato come segreto in `.env`. Se le condizioni d'uso o la pratica lo sconsigliano, lo Studio chiama Claude Code installato su Windows tramite un piccolo servizio locale.
+- **Esecuzione in fase 1** [P, ADR 010]: l'estrazione dal vivo gira sul PC Windows del proprietario con l'eseguibile `dbe` win-x64 pubblicato dalla CI e con Claude Code installato sul PC. Claude Code usa il login OAuth con l'abbonamento (`claude`, poi `/login`). Non si usa mai una chiave API: nessuna `ANTHROPIC_API_KEY` resta nell'ambiente, perché l'adattatore la rimuove dal processo figlio. `dbe check-ai` segnala se manca il login. `CLAUDE_CODE_OAUTH_TOKEN` (da `claude setup-token`) serve solo in un container, quindi in fase 1 non si usa.
+- **Container, rimandato alla fase 2** [P, ADR 010]: la prova di Claude Code nel container diventa una nota scritta. La scelta dipende dalla verifica delle condizioni d'uso dell'abbonamento (domanda aperta 13).
 
 ---
 
@@ -168,7 +173,7 @@ Ogni tipologia è un file versionato (`tipologie/<id>/v<n>.json`, nel repository
 
 **Perché qui.** All'avvio della fase nessun comando funzionava (`ScanFileCommand.cs:50`), il repository non aveva commit e nessun test toccava un database vero. Costruire sopra senza CI significherebbe ripetere l'errore del vecchio piano, che dichiarava "completate" funzioni mai eseguite. Il modello di provenienza va per primo perché ogni Gioco, estratto o creato, ne ha bisogno dal primo salvataggio [P].
 
-**Stato al 13/11/2026.**
+**Stato al 19/11/2026.**
 
 | Voce | Stato |
 |---|---|
@@ -180,7 +185,7 @@ Ogni tipologia è un file versionato (`tipologie/<id>/v<n>.json`, nel repository
 | Pacchetto non ufficiale `Anthropic.SDK` eliminato; validazione della configurazione del Fornitore AI al posto della chiave API | **Fatto** (ondata 0.2) |
 | Ondata 0.2: provenienza e diritti, registro in sola aggiunta, schemi e ruoli, baseline delle migrazioni, hook gitleaks, estensioni della CI | **Fatto** |
 | Ondata 0.3: `CLAUDE.md`, ADR, README e SETUP riscritti (compresa la sezione superata sulle password di `SETUP_INSTRUCTIONS.md`), test end-to-end, tag `v0.1.0` | **Fatto** |
-| Chiusura: decisioni del 13/11/2026 (`docs/fase-0-chiusura-decisioni.md`): codice 5 per il registro alterato, PostgreSQL 18, tag `v0.1.1` | **In corso** (in attesa dell'approvazione del proprietario) |
+| Chiusura: decisioni del 13/11/2026 (`docs/fase-0-chiusura-decisioni.md`): codice 5 per il registro alterato, PostgreSQL 18, tag `v0.1.1` | **Fatto** (19/11/2026, approvata dal proprietario; immagine `0.1.1` verificata) |
 | Impostazioni manuali su GitHub (`docs/CI.md`): la protezione di `main` e dei tag è rimandata, perché il piano gratuito dei repository privati non la consente (`docs/fase-0-chiusura-decisioni.md`, D1, 13/11/2026); domande al legale | Da fare (proprietario) |
 
 Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2026: 0 avvisi (`.planning/phases/0/CONTEXT.md`). La CI compila con `-warnaserror`, come chiede il criterio 1 (verificato in `ci.yml`).
@@ -227,7 +232,7 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 9. Test d'integrazione: salvare un Gioco senza origine fallisce (`NOT NULL`, nessun default); due cessioni esclusive sovrapposte sullo stesso Gioco falliscono (vincolo di esclusione); `UPDATE` e `DELETE` su `registro.eventi` falliscono; dopo un'alterazione fatta da superutente nel test, `dbe verify-integrity` termina con codice diverso da 0 (codice 5).
 10. Test a tabella della `PolicyDiPubblicazione` con il 100% dei rami coperto: un Gioco con origine `rivista` non è mai pubblicabile, qualunque sia il resto.
 11. Copertura delle righe di Domain e Application di almeno l'80%.
-12. I quattro lavori di `ci.yml` (Build e test, Vulnerabilita pacchetti, Controllo segreti, Build immagine Docker) sono verdi su GitHub su ogni commit di `main`. Il tag `v0.1.1` fa pubblicare a `publish.yml` `ghcr.io/f1-solution/dbenigmistica:0.1.1`, e `docker run <immagine> --version` stampa `0.1.1`. Un tag su un commit che non discende da `main` fa fallire `publish.yml` prima di pubblicare. La protezione di `main` con controlli obbligatori è rimandata a quando il piano GitHub la consente.
+12. I quattro lavori di `ci.yml` (Build e test, Vulnerabilita pacchetti, Controllo segreti, Build immagine Docker) sono verdi su GitHub su ogni commit di `main`. Il tag `v0.1.1` fa pubblicare a `publish.yml` `ghcr.io/f1-solution/dbenigmistica:0.1.1`, e `docker run <immagine> --version` stampa `0.1.1`. Un tag su un commit che non discende da `main` fa fallire `publish.yml` prima di pubblicare. La protezione di `main` con controlli obbligatori è rimandata a quando il piano GitHub la consente. Immagine `0.1.1` verificata dal proprietario il 19/11/2026.
 13. Test d'integrazione: tutte le colonne di data e ora sono `timestamptz` e i valori salvati sono in UTC; la cancellazione di una pagina usata come pagina-soluzione da un Gioco di un'altra Rivista segue il comportamento deciso nell'ondata 0.2 (oggi il database la rifiuta).
 
 **Requisiti coperti.** OBJ-02 (in parte), OBJ-05, OBJ-07, APP-01, DB-01, DB-02, DB-03, DB-04, DB-06, DB-07, DB-08, DB-10, CLI-01, TEC-01, TEC-02, TEC-03, TEC-07, TEC-11, TEC-12 (CLI), OUT-03, OUT-07, OUT-08, OUT-09, OUT-10, OUT-11, OUT-15, OUT-16. Piano commerciale: RQ-01, RQ-02 (campi e vincolo d'esclusiva), RQ-03 (campo), RQ-04 (policy e test), RQ-05 (separazione), RQ-12 (infrastruttura del registro).
@@ -243,21 +248,21 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 | 0.3 (**conclusa**) | Haiku A, Sonnet B | A: `CLAUDE.md`, ADR 001-006, README e SETUP riscritti (via la sezione sulle password), `docs/CI.md` aggiornato, avviso "superato" su `docs/plan.md`. B: test end-to-end della CLI in CI e `dbe verify-integrity` |
 | Revisione | Opus (sforzo massimo) | Diff completo della fase, con attenzione a segreti, vincoli del registro e direzione delle dipendenze |
 
-**Immagine Docker e librerie native.** Il rilievo decade per Tesseract e SkiaSharp: sono stati eliminati nell'ondata 0.1-A e il `Dockerfile` usa già l'immagine `runtime:10.0-noble-chiseled`, senza pacchetti di sistema. Nell'ondata 0.2 il `Dockerfile` ha ricevuto il controllo che rifiuta le librerie native. Il tema torna nella fase 1 per due motivi: PDFium (PDFtoImage) ha una libreria nativa propria, da provare sull'immagine chiseled anche con PDF a font non incorporati; l'adattatore Claude Code richiede il suo eseguibile nel container dello Studio (sezione 2.4).
+**Immagine Docker e librerie native.** Il rilievo decade per Tesseract e SkiaSharp: sono stati eliminati nell'ondata 0.1-A e il `Dockerfile` usa già l'immagine `runtime:10.0-noble-chiseled`, senza pacchetti di sistema. Nell'ondata 0.2 il `Dockerfile` ha ricevuto il controllo che rifiuta le librerie native. Il tema torna nella fase 1 per due motivi: PDFium (PDFiumCore con `bblanchon.PDFium`, ADR 009) ha una libreria nativa propria, da provare sull'immagine chiseled anche con PDF a font non incorporati; la scelta del container per Claude Code è rimandata alla fase 2 (sezione 2.4, ADR 010).
 
 **Rischi e segnali precoci.**
 - *Il primo commit include un segreto.* **Superato**: primo commit fatto con il controllo dei segreti verde.
 - *Migrazione a System.CommandLine 2.0 più lunga del previsto.* **Superato**: migrazione fatta nell'ondata 0.1-B.
 - *Le ondate 0.1-B e 0.1-C restano fuori da `main` mentre parte la 0.2.* **Superato**: 0.1-B e 0.1-C sono unite in `main` prima della 0.2.
 
-**Dal proprietario (circa 7 h).** Fatti: repository privato e approvazione del primo commit; ADR 001-006 approvati il 13/11/2026. Restano: impostazioni manuali di `docs/CI.md` (permessi dei flussi, GHCR privato, Dependabot; protezione di `main` e dei tag rimandata, `docs/fase-0-chiusura-decisioni.md`, D1); login a GHCR per provare `docker run` sull'immagine; approvazione della chiusura e del tag `v0.1.1`.
+**Dal proprietario (circa 7 h).** Fatti: repository privato e approvazione del primo commit; ADR 001-006 approvati il 13/11/2026; chiusura della fase 0 approvata il 19/11/2026, con immagine `0.1.1` verificata. Restano: impostazioni manuali di `docs/CI.md` (permessi dei flussi, GHCR privato, Dependabot; protezione di `main` e dei tag rimandata, `docs/fase-0-chiusura-decisioni.md`, D1).
 **Parere legale, azione con scadenza.** Scegliere il legale e **inviare le domande scritte entro il 15 dicembre 2026**: quelle della sezione 12 del piano commerciale, più l'estrazione privata dalle Riviste acquistate, la conferma che lo Studio sul PC di casa è una collocazione adeguata, l'invio delle pagine delle Riviste a un Fornitore AI esterno (Claude con l'abbonamento, piani gratuiti di altri fornitori che possono usare i dati per addestramento), la tutela di sudoku e giochi logici generati da un algoritmo e l'uso dei Giochi estratti come esempi per la creazione. **Risposta attesa entro il 28 febbraio 2027**, la data della prova 0 del piano commerciale. Il parere serve a decidere l'interruttore degli esempi (fase 6), le immagini dei rebus (fase 7) e il lancio del Sito (fase 8). Se non arriva entro il 30 aprile 2027, il lancio resta fermo.
 
 ---
 
 ### Fase 1 - Motore di estrazione: cruciverba e giochi brevi
 
-**Obiettivo.** Dalla riga di comando, un PDF o una cartella di Riviste diventano Giochi salvati nelle tabelle dedicate del cruciverba classico e dei giochi brevi (anagramma, sciarada, cambio di lettera). L'accuratezza è misurata su un set di riferimento.
+**Obiettivo.** Dalla riga di comando, un PDF o una cartella di Riviste diventano Giochi salvati nelle tabelle dedicate del cruciverba classico e dei giochi brevi (anagramma, sciarada, cambio di lettera). L'accuratezza è misurata su un Set di riferimento.
 
 **Perché qui.** È il primo componente scelto dal proprietario [P] e quello dove la valutazione ha trovato il guasto più grave: pagine bianche, OCR mai inizializzato, dati scartati. La riga di comando basta a dimostrare la pipeline prima di investire nell'interfaccia. Cruciverba e giochi brevi danno subito un risultato usabile e coprono i due modelli di resa più frequenti.
 
@@ -265,10 +270,10 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 
 | Elemento | Destino | Riferimento |
 |---|---|---|
-| `PdfService` | Riscrivere: rendering reale con PDFium e testo nativo con PdfPig | `PdfService.cs:102-111` |
+| `PdfService` | Riscrivere: rendering reale con PDFiumCore e `bblanchon.PDFium` (ADR 009), testo nativo con PdfPig | `PdfService.cs:102-111` |
 | `ClaudeApiClient` | Riscrivere dietro l'interfaccia unica del Fornitore AI (sezione 2.4): adattatore predefinito Claude Code non interattivo con l'abbonamento (immagini, output strutturato verificato, retry, gestione della finestra esaurita); adattatori per i piani gratuiti scelti e per un modello aperto locale. L'adattatore API (SDK ufficiale, prompt caching, Batch API) resta possibile, non predefinito | `ClaudeApiClient.cs:29`, `:50-53`, `:124-144` |
 | `PromptTemplates`, `ClaudeGameAnalyzer` | Riscrivere: prompt costruiti dai descrittori, niente campi cablati | `PromptTemplates.cs:18`; `ClaudeGameAnalyzer.cs:26`, `:176-214` |
-| `MagazineProcessingService` | Rifattorizzare: tenere il ciclo per pagina e gli errori per pagina; aggiungere idempotenza, ripresa, persistenza dei dati e di immagine e testo della pagina, cartelle ricorsive su richiesta | `MagazineProcessingService.cs:180-187`, `:213-214`, `:279` |
+| `MagazineProcessingService` | Rifattorizzare: tenere il ciclo per pagina e gli errori per pagina; aggiungere idempotenza, ripresa, persistenza dei dati, testo nativo nel database, immagini delle pagine nell'Archivio, cartelle ricorsive su richiesta | `MagazineProcessingService.cs:180-187`, `:213-214`, `:279` |
 | `GameExtractionService` | Riscrivere sul nuovo contratto: niente più tipi scartati né dati persi | `GameExtractionService.cs:44-45`, `:76-90` |
 | Entità `CrosswordGame`, `AnagramGame` | Sostituire con i descrittori `cruciverba-classico`, `anagramma`, `sciarada`, `cambio-di-lettera` | `Domain/Entities/CrosswordGame.cs`, `AnagramGame.cs` |
 | Entità `LogicGame` | Eliminare: i giochi logici non sono tra le tipologie di partenza dell'estrazione; tornano come descrittori (sudoku e giochi logici nel catalogo dalla fase 1b, estrazione in fase 5) | `Domain/Entities/LogicGame.cs` |
@@ -278,16 +283,17 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 - `dbe types generate` (rigenera i file SQL; in CI verifica che coincidano con quelli registrati) e `dbe migrate` (applica le migrazioni EF del nucleo e quelle delle tipologie approvate, con checksum).
 - Scrittore e lettore parametrizzati delle tabelle per tipologia: Npgsql con parametri, identificatori presi solo dal descrittore validato.
 - Pipeline per pagina: rendering, testo nativo, chiamata al Fornitore AI, validatori strutturali, persistenza in una transazione per pagina. Una riscansione salta le pagine già elaborate (impronta SHA-256).
+- **Archivio** (`Archivio:Cartella`): copia della Rivista con nome uguale alla sua impronta SHA-256; immagini delle pagine in cartelle per impronta; testo nativo nel database (`docs/fase-1-decisioni.md`, D4).
 - `dbe scan-file` e `dbe scan-folder [--recursive]` (coda che si ferma e riprende con i limiti del fornitore; `--batch` solo con l'adattatore API) con un riepilogo per Gioco (tipologia, pagina, riquadro, confidenza, avvisi) e uno per Rivista. Metadati della Rivista (testata, numero, anno, data, periodicità) proposti dal modello a partire dalla copertina e dal nome del file, sovrascrivibili da opzioni.
-- Registro delle chiamate AI (fornitore, modello, durata, risposta grezza; token e costo quando disponibili) nel `registro`; limite di pagine per esecuzione e, solo con l'adattatore API, tetto di spesa; `dbe costs` riepiloga chiamate, tempi e costi per Rivista, pagina e fornitore.
+- Registro delle chiamate AI (fornitore, modello, durata, token e costo quando disponibili, SHA-256 della risposta) nel `registro`; la risposta grezza va nella tabella `riviste.chiamate_ai`, che si può svuotare (ADR 011); limite di pagine per esecuzione e, solo con l'adattatore API, tetto di spesa; `dbe costs` riepiloga chiamate, tempi e costi per Rivista, pagina e fornitore.
 - **Set di riferimento** e banco di prova: `dbe eval extraction --set <percorso> [--fornitore <id>]` produce un rapporto JSON e uno leggibile.
 - **Confronto dei Fornitori AI** [P]: sullo stesso set, Claude con l'abbonamento come riferimento, i piani gratuiti di altri fornitori con condizioni d'uso verificate e un modello aperto eseguito sul PC. Rapporto con metriche, costo e **pagine lette per finestra dell'abbonamento**; il fornitore predefinito si registra in configurazione e in un ADR.
-- Modalità *registra e riproduci*: la risposta del modello per ogni pagina del set viene salvata una volta e riprodotta in CI senza costi.
+- Modalità *registra e riproduci*: la risposta del modello per ogni pagina del Set di riferimento viene salvata una volta, come Registrazione sul PC del proprietario, e riprodotta in locale senza costi. In CI, le Registrazioni del Set sintetico.
 
 **Set di riferimento e misura di accuratezza [P, metriche A].**
 - Composizione per questa fase: 15-20 pagine con cruciverba e giochi brevi, di cui almeno 5 da scansioni. Vengono da almeno 4 Riviste diverse fornite dal proprietario. Le fasi 4 e 5 aggiungono crittografie, soluzioni, rebus, sudoku e giochi logici. Lo stesso set serve al confronto dei Fornitori AI.
-- Risultato atteso: un JSON per pagina conforme ai descrittori. Lo prepara in bozza un agente Opus, il proprietario lo corregge con lo strumento `dbe eval draft`.
-- Conservazione: repository privato separato `DBEnigmistica-refset` (Git LFS), letto dalla CI con un token in sola lettura. Le pagine delle Riviste non entrano mai nel repository del prodotto [A] (RQ-05).
+- Risultato atteso, solo sul PC del proprietario: un JSON per pagina conforme ai descrittori. Lo prepara in bozza un agente Opus, il proprietario lo corregge con lo strumento `dbe eval draft`.
+- Conservazione [P, ADR 008]: il Set di riferimento, i risultati attesi e le Registrazioni stanno solo sul PC del proprietario, mai su GitHub. Non esiste un repository `DBEnigmistica-refset`. Le pagine delle Riviste non entrano mai nel repository del prodotto (RQ-05).
 - Metriche: **richiamo e precisione dei Giochi** (un Gioco atteso è trovato se tipologia uguale e IoU dei riquadri ≥ 0,5); **accuratezza della tipologia**; **accuratezza delle caselle** del cruciverba (nera o bianca, più il numero); **CER** (tasso d'errore sui caratteri dopo normalizzazione di maiuscole, spazi e apostrofi) su definizioni ed esposti; **campi esatti** per i giochi brevi; costo e tempo medi per pagina.
 - Soglie iniziali, da confermare dal proprietario dopo la prima misura di riferimento:
 
@@ -303,25 +309,25 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 **Criteri di accettazione.**
 1. `dbe types generate --check` termina con codice 0 (SQL registrato uguale a quello generato). Un fuzz test con 10.000 descrittori casuali, inclusi nomi e tipi con payload d'iniezione, li rifiuta o li quota tutti. Applicati su PostgreSQL, nessuno esegue istruzioni estranee: il test conta le tabelle prima e dopo.
 2. `dbe migrate` su un database vuoto crea il nucleo e le tabelle delle 4 tipologie in `riviste` e in `catalogo`; una seconda esecuzione non fa nulla. squawk non riporta errori sulle migrazioni generate.
-3. `dbe scan-file <pdf del set> --replay` salva esattamente i Giochi attesi. Una seconda esecuzione fa 0 chiamate al modello (contatore nel log) e non crea duplicati.
+3. *Verificato in locale* (ADR 008): `dbe scan-file <pdf del Set di riferimento> --replay` salva esattamente i Giochi attesi. Una seconda esecuzione fa 0 chiamate al modello (contatore nel log) e non crea duplicati. In CI lo stesso test usa il Set sintetico.
 4. Interrompendo `scan-folder` a metà e rilanciandolo, si riprende dalle pagine mancanti: test con un estrattore finto che conta le chiamate.
-5. `dbe eval extraction --live` sul set di riferimento rispetta le soglie confermate. Il rapporto è allegato alla release.
+5. `dbe eval extraction --live` sul Set di riferimento rispetta le soglie confermate (verificato in locale). Il rapporto è allegato alla release.
 6. Ogni chiamata AI ha una riga nel registro con fornitore, modello e durata, più token e costo quando il fornitore li riporta. Con un limite di 1 pagina per esecuzione il comando si ferma dopo la prima pagina con codice 4 e il messaggio "limite dell'esecuzione raggiunto". Con l'adattatore API e un tetto di 0,01 € si ferma con codice 4 e il messaggio "tetto di spesa raggiunto". Con un estrattore finto che segnala la finestra esaurita, la coda si ferma e riprende senza perdere pagine.
 7. Con il set riprodotto, `Page.ImagePath`, il testo nativo e il riquadro normalizzato di ogni Gioco sono valorizzati. Nessun Gioco si perde perché ha una tipologia non prevista: finisce come "nuova tipologia proposta", in attesa della fase 4.
 8. Il rapporto di confronto dei Fornitori AI sullo stesso set è allegato alla release, con le pagine lette per finestra dell'abbonamento. Il fornitore predefinito supera le soglie confermate ed è il meno costoso tra quelli con condizioni d'uso verificate dal proprietario; se nessuno le supera, resta Claude con l'abbonamento e la decisione si registra nell'ADR.
 
 **Requisiti coperti.** OBJ-03, OBJ-04 (con visione), OBJ-05, OBJ-06, APP-01, APP-02, APP-03, APP-04, APP-05, APP-06, APP-09, APP-10, DB-05, DB-09, DB-10, DB-11, DB-12 (cruciverba e brevi), UX-01 (riga di comando), CLI-02, CLI-03, CLI-07 (`eval`, `costs`), TEC-05, TEC-06 (rendering), TEC-08, TEC-10 (riformulato), AI-01, OUT-04, OUT-05, OUT-14 (generatore), OUT-17, OUT-20. Piano commerciale: RQ-07 (registro delle chiamate AI, riusato in fase 6), RQ-20, RQ-22 (validatori strutturali), RQ-23 (limite per esecuzione; tetto di spesa solo con l'adattatore API).
 
-**CI aggiunta e artefatti.** Controllo di coerenza dei descrittori e degli SQL generati, fuzz test del generatore, squawk, applicazione delle migrazioni su Testcontainers, **test di regressione riprodotti** sul set di riferimento: le metriche non devono scendere sotto l'ultima linea di base registrata. La misura dal vivo (`dbe eval extraction --live`) gira sul PC del proprietario e non in CI [A: l'abbonamento non va usato da runner di terzi e le pagine delle Riviste restano a casa]; il rapporto si allega alla release. Un workflow `eval-live.yml` si aggiunge solo se si attiva l'adattatore API. Test di avvio del rendering PDFium nell'immagine chiseled. Artefatti: immagine con `scan-*`, rapporto di accuratezza in JSON e in versione leggibile.
+**CI aggiunta e artefatti.** Controllo di coerenza dei descrittori e degli SQL generati, fuzz test del generatore, squawk, applicazione delle migrazioni su Testcontainers, **test riprodotti sul Set sintetico**: la regressione fallisce se una metrica scende sotto la linea di base. La regressione sul Set di riferimento vero non sta in CI: è uno script locale che il proprietario lancia prima di ogni release, con il rapporto allegato alla release (eccezione dichiarata alla regola sulle GitHub Actions, ADR 008). La misura dal vivo (`dbe eval extraction --live`) gira sul PC del proprietario e non in CI [A: l'abbonamento non va usato da runner di terzi e le pagine delle Riviste restano a casa]; il rapporto si allega alla release. Un workflow `eval-live.yml` si aggiunge solo se si attiva l'adattatore API. Test di avvio del rendering PDFium (`bblanchon.PDFium`) nell'immagine chiseled. Artefatti: immagine con `scan-*`, rapporto di accuratezza in JSON e in versione leggibile.
 
 **Ondate.**
 
 | Ondata | Agenti | Contenuto |
 |---|---|---|
-| 1.1 | Opus A, Sonnet B, Sonnet C | A: meta-schema dei descrittori, regole di traduzione verso SQL, JSON Schema e resa; definizione delle metriche e del formato del risultato atteso; prompt di estrazione. B: adattatore PDF (PDFium, PdfPig, impronte, archivio delle immagini). C: interfaccia del Fornitore AI e adattatore Claude Code non interattivo (output strutturato verificato, retry, finestra esaurita, registrazione e riproduzione, limite per esecuzione); prova dell'esecuzione nel container dello Studio |
+| 1.1 | Opus A, Sonnet B, Sonnet C | A: meta-schema dei descrittori, regole di traduzione verso SQL, JSON Schema e resa; definizione delle metriche e del formato del risultato atteso; prompt di estrazione. B: adattatore PDF (PDFiumCore e `bblanchon.PDFium`, PdfPig, PNG, impronte, Archivio), con prova del PDFium nell'immagine chiseled e della resa dei font non incorporati. C: interfaccia del Fornitore AI e adattatore Claude Code non interattivo (output strutturato verificato, retry, finestra esaurita, registrazione e riproduzione, limite per esecuzione); prova di Claude Code sul PC Windows con login OAuth, nota scritta sul container |
 | 1.2 | Sonnet A, Sonnet B, Sonnet C | A: generatore SQL, `types generate`, `migrate` con le migrazioni delle tipologie, scrittore e lettore parametrizzati, fuzz test. B: descrittori delle 4 tipologie e validatori strutturali. C: `eval draft` ed `eval extraction`, calcolo delle metriche |
 | 1.3 | Sonnet A, Sonnet B | A: pipeline per pagina (idempotenza, ripresa, persistenza, metadati della Rivista). B: coda delle cartelle nei limiti del fornitore, riepiloghi in console, `costs`, misura delle pagine per finestra dell'abbonamento |
-| 1.4 | Opus A, Sonnet B | A: analisi degli errori sulla prima misura reale e messa a punto di prompt e DPI; confronto dei Fornitori AI sul set (Claude con l'abbonamento, piani gratuiti, modello aperto locale). B: adattatori dei piani gratuiti scelti e del modello locale, correzioni e nuova linea di base |
+| 1.4 (accanto alla 1b.3) | Opus A, Sonnet B | A: analisi degli errori sulla prima misura reale e messa a punto di prompt e DPI; confronto dei Fornitori AI sul set (Claude con l'abbonamento, piani gratuiti, modello aperto locale). B: adattatori dei piani gratuiti scelti e del modello locale, correzioni e nuova linea di base |
 | Revisione | Opus (sforzo massimo) | Sicurezza del generatore e dello scrittore, segreti del Fornitore AI, limiti per esecuzione, determinismo dei test riprodotti |
 
 **Rischi e segnali precoci.**
@@ -330,7 +336,7 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 - *Fornitori gratuiti o locali sotto soglia.* Segnale: il confronto dell'ondata 1.4. Contromisura: resta predefinito Claude con l'abbonamento e si ripete il confronto quando cambiano i modelli disponibili.
 - *Risultati attesi costosi da preparare.* Segnale: più di 30 minuti per pagina nella prima sessione. Contromisura: si parte con 10 pagine e il set cresce nelle fasi successive.
 
-**Dal proprietario (circa 20 h).** Fornire i PDF (almeno 4 testate, incluse scansioni); correggere i risultati attesi di 15-20 pagine (8-10 h); **approvare le regole** delle 4 tipologie, scritte in bozza dagli agenti (1 h); **verificare le condizioni d'uso** dell'abbonamento per l'uso non interattivo e dei piani gratuiti candidati, compreso l'uso dei dati per addestramento (circa 2 h); installare il modello aperto locale, se la scheda grafica del PC lo consente (circa 1 h); scegliere il fornitore predefinito sul rapporto di confronto; confermare le soglie di accuratezza dopo la linea di base; creare il repository `DBEnigmistica-refset`.
+**Dal proprietario (circa 20 h).** Fornire i PDF (almeno 4 testate, incluse scansioni); correggere i risultati attesi di 15-20 pagine (8-10 h); **approvare le regole** delle 4 tipologie, scritte in bozza dagli agenti (1 h); **verificare le condizioni d'uso** dell'abbonamento per l'uso non interattivo e dei piani gratuiti candidati, compreso l'uso dei dati per addestramento (circa 2 h); installare il modello aperto locale, se la scheda grafica del PC lo consente (circa 1 h); scegliere il fornitore predefinito sul rapporto di confronto; eseguire `/login` di Claude Code sul PC; confermare le soglie di accuratezza dopo la linea di base; tenere sul PC il Set di riferimento e lanciare la regressione locale prima di ogni release, allegandone il rapporto.
 
 ---
 
@@ -340,7 +346,7 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 
 **Giochi logici scelti** [P, confermati l'11/11/2026; proposti dall'architetto]. *Futoshiki* (5x5-7x7): riusa il risolutore a vincoli del sudoku (quadrato latino più i segni di maggiore e minore tra caselle), la soluzione unica si verifica in millisecondi e la griglia piccola si legge bene da telefono. *Nonogramma* (Hanjie, 10x10-15x15): meccanica diversa, con indizi ai margini e un disegno come premio, e soluzione unica verificabile con un risolutore per righe e colonne più ricerca. Scartati: kakuro (generarlo con soluzione unica costa di più e chiede calcoli), hashi (resa a ponti, non a caselle), griglie logiche a indizi testuali (richiedono testo, quindi AI). Entrambi sono descritti in `docs/giochi_enigmistici.md` (sezione "Puzzles logici numerici").
 
-**Perché qui.** Il proprietario ha confermato le date del piano commerciale [P]. La soglia G1 è la prova di cui dipende tutta la strategia commerciale e richiede circa 14 ore di revisione a cronometro tra gennaio e febbraio. Il prototipo deve quindi essere pronto a metà gennaio, accanto all'estrazione e non dopo. Non dipende dall'estrazione: usa solo la conoscenza di formato, cioè le regole delle tipologie approvate dal proprietario [P].
+**Perché qui.** Il proprietario ha confermato le date del piano commerciale [P]. La soglia G1 è la prova di cui dipende tutta la strategia commerciale e richiede circa 14 ore di revisione a cronometro tra gennaio e febbraio. Il prototipo deve quindi essere pronto verso il 10 gennaio 2027, con scadenza il 17, accanto all'estrazione e non dopo. Non dipende dall'estrazione: usa solo la conoscenza di formato, cioè le regole delle tipologie approvate dal proprietario [P].
 
 **Perimetro (volutamente minimo) [P].** Per crittografia breve, anagramma, rebus e cruciverba una richiesta al Fornitore AI di creazione per candidato (Claude Code con l'abbonamento). Sudoku e giochi logici si generano con un algoritmo e si verificano automaticamente, **senza AI**. Una schermata di revisione con cronometro. Il rebus usa **immagini segnaposto descritte a parole**: le immagini vere restano legate al parere legale. Niente lotti, validatori completi, registro completo, pubblicazione o autenticazione: il prototipo gira solo su `localhost` del PC del proprietario.
 
@@ -359,13 +365,13 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 3. Un test semina stringhe sentinella nello schema `riviste` e verifica che nessun prompt del prototipo le contenga. Il ruolo `dbe_creazione` riceve un errore di permesso su `riviste`.
 4. Il server ascolta solo su `127.0.0.1` (test d'integrazione sull'indirizzo di ascolto).
 5. `dbe eval review-time` su 30 candidati sintetici produce i valori attesi del test.
-6. Il proprietario ha rivisto 5 candidati per ciascuna delle sei famiglie entro il 21 febbraio 2027; il rapporto G1 è allegato alla release `v0.2.x`.
+6. Il proprietario ha rivisto 5 candidati per ciascuna delle sei famiglie entro il 21 febbraio 2027; il rapporto G1 è allegato a una release della 1b (`v0.2.0-prova.1` o successive).
 7. Test di proprietà: 1.000 sudoku, futoshiki e nonogrammi generati hanno tutti una e una sola soluzione secondo il risolutore, e la loro generazione fa 0 chiamate al Fornitore AI (contatore dell'adattatore finto).
 8. I candidati rebus contengono solo descrizioni testuali delle vignette: lo schema `prototipo` non ha campi per immagini e nessuna immagine viene generata né importata.
 
 **Requisiti coperti.** Piano commerciale: prova 1, soglia G1; anticipo parziale di RQ-06, RQ-08, RQ-09, RQ-11.
 
-**CI aggiunta e artefatti.** Toolchain Node in `ci.yml` (lint, controllo dei tipi e build dell'interfaccia; test dei componenti con Vitest), Playwright sul prototipo, test del cronometro e dei permessi, test di proprietà dei generatori di sudoku e giochi logici. Artefatti: immagine con il profilo `--prototipo`, rapporto `review-time` in JSON e versione leggibile.
+**CI aggiunta e artefatti.** Toolchain Node in `ci.yml` (lint, controllo dei tipi e build dell'interfaccia; test dei componenti con Vitest), Playwright sul prototipo, test del cronometro e dei permessi, test di proprietà dei generatori di sudoku e giochi logici. Artefatti: pre-release `v0.2.0-prova.1` con l'immagine del profilo `--prototipo` (senza spostare `latest`), rapporto `review-time` in JSON e versione leggibile.
 
 **Ondate** (alternate a quelle della fase 1).
 
@@ -394,7 +400,7 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 
 **Obiettivo.** Lo Studio gira come container sul PC Windows del proprietario con Docker Desktop [P], acceso quando lavora e raggiungibile dagli altri dispositivi solo sulla rete di casa, con accesso tramite passkey. Niente accesso da fuori casa né rete privata per ora. Ha l'involucro "Banco" con la coda in sola lettura e un Lettore di base che fa giocare da tastiera un cruciverba estratto.
 
-**Perché qui.** Arriva dopo la fase 1 perché l'interfaccia mostra dati reali fin dal primo giorno, e dopo la fase 1b perché ne eredita host e ossatura. Prima di Studio e Sito servono un'autenticazione forte, i due profili e un Lettore unico. Tecnologia decisa [P]: **React e TypeScript** per l'interfaccia, **API ASP.NET Core** per il motore, Lettore distribuibile anche come componente incorporabile; Blazor scartato.
+**Perché qui.** Arriva dopo la fase 1 perché l'interfaccia mostra dati reali fin dal primo giorno, e dopo la fase 1b perché ne eredita host e ossatura. Prima di Studio e Sito servono un'autenticazione forte, i due profili e un Lettore unico. Tecnologia decisa [P]: **React e TypeScript** per l'interfaccia, **API ASP.NET Core** per il motore, Lettore distribuibile anche come componente incorporabile; Blazor scartato. **Decisione rinviata** [P, ADR 010]: se Claude Code gira nel container dello Studio con un token dell'abbonamento; si decide in questa fase, dopo la verifica delle condizioni d'uso.
 
 **Riuso, riscrittura, eliminazione.** Si estendono l'host `DBEnigmistica.Web` e l'ossatura React della fase 1b; le schermate del prototipo restano dietro il flag `--prototipo` fino alla fase 6, che le sostituisce con la Postazione. Si riusano i casi d'uso dell'Application layer e i repository, esposti tramite API HTTP. La CLI resta un host separato sulla stessa Application.
 
@@ -405,7 +411,7 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 - Token di design derivati da `PROPOSTE-UI.md`: identità **Banco** per Studio e Admin; **Carta con le regole di Lente** per Lettore e Sito. Tema chiaro e scuro, testo di base 18-20 px, aree di tocco di almeno 44 px, focus visibile.
 - Involucro "Banco" (proposta A): barra laterale con le viste della coda, coda in sola lettura sui dati della fase 1, gestore delle scorciatoie da tastiera disattivabili e rimappabili (WCAG 2.1.4).
 - **Lettore v0** come pacchetto TypeScript a sé (`packages/lettore`), con due uscite fin da subito [P]: componente React per Studio e Sito e **web component** (elemento personalizzato) per l'incorporamento della fase 9 (RQ-19). Resa `griglia` dal descrittore, griglia `role="grid"` con fuoco mobile, modalità elenco, verifica offline tramite impronta della soluzione per parola, modi *gioco*, *anteprima* e *verifica affiancata*. Budget di peso: al massimo 80 KB compressi per il web component.
-- `deploy/studio/compose.yml` (applicazione, PostgreSQL, volume dati, HTTPS locale), script di backup (`pg_dump` più volume) con ripristino provato, guida all'installazione su Docker Desktop per Windows con l'avvio insieme al PC e l'accesso dalla rete di casa.
+- `deploy/studio/compose.yml` (applicazione, PostgreSQL, volume dati, HTTPS locale), script di backup (`pg_dump`, volume e cartella dell'Archivio) con ripristino provato, guida all'installazione su Docker Desktop per Windows con l'avvio insieme al PC e l'accesso dalla rete di casa.
 
 **Criteri di accettazione.**
 1. `docker compose -f deploy/studio/compose.yml up -d` porta `/health` a 200 entro 60 secondi su una macchina pulita (test in CI con l'immagine appena costruita).
@@ -518,7 +524,7 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 2. Una proposta con nomi o tipi ostili (`x"; DROP TABLE`, tipo `TEXT; --`) viene rifiutata con un messaggio e senza effetti sul database.
 3. Playwright: procedura in 3 tappe, poi migrazione **in attesa** e verifica che la tabella non esiste ancora; dopo "Applica migrazione" la tabella esiste e i Giochi in attesa sono salvati e di nuovo in "Da verificare".
 4. Il passaggio da v1 a v2 di un descrittore genera solo `ALTER` ammessi (squawk senza errori). I Giochi v1 restano leggibili.
-5. Sul set di riferimento: soglie della fase 1 rispettate per le crittografie (CER dell'esposto; diagramma esatto ≥ 97% sui digitali); collegamento delle soluzioni con precisione ≥ 90% e richiamo ≥ 85%.
+5. Sul Set di riferimento: soglie della fase 1 rispettate per le crittografie (CER dell'esposto; diagramma esatto ≥ 97% sui digitali); collegamento delle soluzioni con precisione ≥ 90% e richiamo ≥ 85%.
 6. `dbe analyze-game-text "..." --yes` non chiede input e termina con codice 0 (test end-to-end della CLI).
 
 **Requisiti coperti.** DB-11, DB-12 (crittografie), DYN-01, DYN-02, DYN-03, DYN-04, DYN-05, DYN-06, UX-02, UX-03, UX-04, CLI-05, CLI-06, AI-03, AI-04, OUT-06, OUT-12, OUT-13, OUT-14, OUT-18. Piano commerciale: RQ-20 (versioni), base tecnica di RQ-21.
@@ -564,11 +570,11 @@ Il numero di avvisi della build era 52 prima dell'ondata 0.1. Misurato l'11/11/2
 - Set di riferimento esteso con i rebus.
 
 **Criteri di accettazione.**
-1. Sul set di riferimento dei rebus: richiamo ≥ 95%, diagramma esatto ≥ 95%, lettere sulle figure corrette ≥ 90% (soglie da confermare dopo la linea di base).
+1. Sul Set di riferimento dei rebus: richiamo ≥ 95%, diagramma esatto ≥ 95%, lettere sulle figure corrette ≥ 90% (soglie da confermare dopo la linea di base).
 2. `dbe sql run --dry-run` di uno script con `INSERT` lascia i conteggi invariati. Uno script che tocca `registro` viene rifiutato. Con `DBE_PROFILO=pubblico` il comando non esiste.
 3. Il workflow di release produce l'eseguibile dell'involucro. Un test di avvio senza interfaccia apre l'indirizzo configurato e termina con codice 0.
 4. `dbe export --format csv` dei Giochi di una Rivista del set produce un CSV valido (rilettura e confronto dei conteggi).
-5. Sul set di riferimento di sudoku e giochi logici: indizi esatti ≥ 99% sui digitali; ogni griglia estratta con un indizio sbagliato viene segnalata dal risolutore (nessuna soluzione o più di una) e va in "Da verificare". Playwright: un sudoku e un futoshiki si completano solo da tastiera nel Lettore.
+5. Sul Set di riferimento di sudoku e giochi logici: indizi esatti ≥ 99% sui digitali; ogni griglia estratta con un indizio sbagliato viene segnalata dal risolutore (nessuna soluzione o più di una) e va in "Da verificare". Playwright: un sudoku e un futoshiki si completano solo da tastiera nel Lettore.
 
 **Requisiti coperti.** DB-11, DB-12 (rebus), CLI-04, CLI-07. Piano commerciale: RQ-36. RQ-37 anticipato per decisione del proprietario (vedi matrice).
 
@@ -808,7 +814,7 @@ Destino: numero di fase, oppure **Superato** con il motivo. Gli 84 requisiti han
 | TEC-03 | 0 | EF Core per il nucleo; Npgsql con parametri per le tabelle per tipologia |
 | TEC-04 | **Superato** | PostgreSQL da subito (decisione 9); un prototipo SQLite non serve e la portabilità verso altri RDBMS non è un obiettivo |
 | TEC-05 | 1 | PdfPig per il testo nativo |
-| TEC-06 | 1 | Il rendering della pagina resta (PDFium); la parte OCR è **superata** |
+| TEC-06 | 1 | Il rendering della pagina resta (PDFiumCore con `bblanchon.PDFium`, ADR 009); la parte OCR è **superata** |
 | TEC-07 | 0 | Verificato dai test di architettura |
 | TEC-08 | 1 | Adattatore per PDF e file |
 | TEC-09 | **Superato** | Lo strato OCR è sostituito dallo strato di lettura della pagina (immagine più testo nativo), fase 1 |
@@ -816,7 +822,7 @@ Destino: numero di fase, oppure **Superato** con il motivo. Gli 84 requisiti han
 | TEC-11 | 0 | |
 | TEC-12 | 0, 2 | CLI e interfaccia web |
 | AI-01 | 1 | Interfaccia unica verso il Fornitore AI; adattatore predefinito Claude Code non interattivo con l'abbonamento; adattatore API possibile, non predefinito |
-| AI-02 | **Superato** | Il Fornitore AI non si sceglie dalle recensioni ma dalla misura sul set di riferimento (fase 1): Claude con l'abbonamento come riferimento, piani gratuiti e modello aperto locale a confronto [P] |
+| AI-02 | **Superato** | Il Fornitore AI non si sceglie dalle recensioni ma dalla misura sul Set di riferimento (fase 1): Claude con l'abbonamento come riferimento, piani gratuiti e modello aperto locale a confronto [P] |
 | AI-03 | 4 | |
 | AI-04 | 4 | |
 | OUT-01 | **Superato** | Richiesta sul formato della risposta di un assistente; questa roadmap è organizzata in sezioni |
@@ -838,7 +844,7 @@ Destino: numero di fase, oppure **Superato** con il motivo. Gli 84 requisiti han
 | OUT-17 | 1 | |
 | OUT-18 | 4 | |
 | OUT-19 | **Superato** | Sostituito da un requisito più severo: codice funzionante, CI verde e criteri di accettazione verificati |
-| OUT-20 | 1 | PDFtoImage (PDFium) e PdfPig; le librerie OCR sono **superate** |
+| OUT-20 | 1 | PDFiumCore con `bblanchon.PDFium` (ADR 009) e PdfPig; le librerie OCR sono **superate** |
 | OUT-21 | **Superato** | La visione del modello sostituisce le librerie di layout (decisione 6) |
 | OUT-22 | **Superato** | Assorbito dal metodo a fasi e ondate con collaudo del proprietario |
 
@@ -925,12 +931,12 @@ Se G1 è "fermati" il 28 febbraio 2027, si applica la regola del piano commercia
 
 | Tema | Vecchio piano (`docs/plan.md`) | Nuova roadmap |
 |---|---|---|
-| Stato dichiarato | 10 fasi "completate" | Nessuna fase completata; fase 0 in chiusura, in attesa dell'approvazione del proprietario, con la CI verde su `main`. Lo stato si dimostra solo con la CI e i criteri di accettazione |
+| Stato dichiarato | 10 fasi "completate" | Nessuna fase completata; fase 0 conclusa il 19/11/2026 con l'approvazione del proprietario, con la CI verde su `main`. Lo stato si dimostra solo con la CI e i criteri di accettazione |
 | Prodotto | Console application | Un prodotto web con due profili (studio e pubblico), involucro desktop e riga di comando per i batch |
 | Lettura delle pagine | Tesseract più analisi del layout euristica più classificazione su testo | Immagine più testo nativo più una chiamata per pagina al Fornitore AI con visione e output strutturato; fornitore scelto per misura, senza API a consumo come scelta predefinita |
-| Accuratezza | Mai misurata ("test con PDF reali da fare su richiesta") | Set di riferimento con risultati attesi, metriche, soglie e regressione in CI |
+| Accuratezza | Mai misurata ("test con PDF reali da fare su richiesta") | Set di riferimento con risultati attesi, metriche e soglie; regressione locale prima di ogni release e Set sintetico in CI (ADR 008) |
 | Schema per tipologia | DDL generato al volo da stringhe dell'AI (SQL injection) | Descrittori con lista chiusa di tipi; migrazioni generate, riviste e applicate con un comando esplicito |
-| Dati estratti | Scartati dopo l'estrazione | Salvati nelle tabelle dedicate, con la risposta grezza nel registro |
+| Dati estratti | Scartati dopo l'estrazione | Salvati nelle tabelle dedicate; la risposta grezza in una tabella cancellabile, i metadati nel registro (ADR 011) |
 | Tipologie | Enum chiuso di 4 tipi (cruciverba, rebus, logica, anagramma) | Dato versionato; 4 tipologie di partenza in sequenza (cruciverba e brevi, crittografie, rebus); sudoku e giochi logici nel catalogo dalla fase 1b ed estratti in fase 5; altri giochi logici tramite il flusso delle tipologie nuove |
 | Contenuti e diritti | Assenti | Origine obbligatoria, diritti, inedito, registro in sola aggiunta, blocco di pubblicazione su tre livelli |
 | Creazione di giochi | Assente | Prototipo di misura subito (fase 1b, soglia G1 a febbraio 2027), poi Motore di creazione con validatori e registro del contributo umano (legge 132/2025); solo regole di formato approvate, esempi dalle Riviste solo dopo un parere legale favorevole |
@@ -947,7 +953,7 @@ Se G1 è "fermati" il 28 febbraio 2027, si applica la regola del piano commercia
 
 ## 7. Domande aperte
 
-Decisioni del 13/11/2026 per la chiusura della fase 0, con `docs/fase-0-chiusura-decisioni.md`: protezione di `main` rimandata (piano GitHub), codice 5 per il registro alterato, PostgreSQL 18, modello predefinito `claude-sonnet-5-5` confermato, ADR 001-006 accettati, chiusura con `v0.1.1`. Decisioni già chiuse dal proprietario il 10/11/2026 e recepite: interfaccia React e TypeScript con API ASP.NET Core e involucro Tauri; prototipo di creazione confermato (fase 1b) e date del piano commerciale tenute dove possibile; Giochi estratti nella creazione solo dopo un parere legale favorevole, dietro interruttore. Chiuse nella stessa data con `docs/fase-0-decisioni.md`: lo Studio gira sul PC Windows del proprietario con Docker Desktop, solo sulla rete di casa (era la domanda 1); nessuna API a consumo come scelta predefinita, AI raggiunta tramite un'unica interfaccia verso il Fornitore AI; prova 1 con sei famiglie e 5 candidati ciascuna (era la domanda 2). Chiusa l'11/11/2026, con `docs/ondata-0-2-decisioni.md`: giochi logici della prova 1 confermati, cioè sudoku, futoshiki e nonogramma (era la domanda 12). I numeri delle domande restanti non cambiano.
+Decisioni del 13/11/2026 per la chiusura della fase 0, con `docs/fase-0-chiusura-decisioni.md`: protezione di `main` rimandata (piano GitHub), codice 5 per il registro alterato, PostgreSQL 18, modello predefinito `claude-sonnet-5-5` confermato, ADR 001-006 accettati, chiusura con `v0.1.1`. Decisioni già chiuse dal proprietario il 10/11/2026 e recepite: interfaccia React e TypeScript con API ASP.NET Core e involucro Tauri; prototipo di creazione confermato (fase 1b) e date del piano commerciale tenute dove possibile; Giochi estratti nella creazione solo dopo un parere legale favorevole, dietro interruttore. Chiuse nella stessa data con `docs/fase-0-decisioni.md`: lo Studio gira sul PC Windows del proprietario con Docker Desktop, solo sulla rete di casa (era la domanda 1); nessuna API a consumo come scelta predefinita, AI raggiunta tramite un'unica interfaccia verso il Fornitore AI; prova 1 con sei famiglie e 5 candidati ciascuna (era la domanda 2). Chiusa l'11/11/2026, con `docs/ondata-0-2-decisioni.md`: giochi logici della prova 1 confermati, cioè sudoku, futoshiki e nonogramma (era la domanda 12). I numeri delle domande restanti non cambiano. Decisioni del 19/11/2026 per la fase 1, con `docs/fase-1-decisioni.md`: Set di riferimento solo sul PC (ADR 008); rendering con PDFiumCore e `bblanchon.PDFium` (ADR 009); estrazione dal vivo su Windows con login OAuth, con il container rimandato alla fase 2 (ADR 010); risposta grezza in una tabella cancellabile (ADR 011); Archivio, ondate e rami e versioni (D1, D4, D6). Nessuna domanda numerata si chiude per intero: la 13 resta aperta sulle condizioni d'uso.
 
 | # | Domanda | Opzioni e raccomandazione | Entro | Blocca |
 |---|---|---|---|---|
@@ -960,8 +966,8 @@ Decisioni del 13/11/2026 per la chiusura della fase 0, con `docs/fase-0-chiusura
 | 9 | Immagini dei rebus creati: solo libreria con licenza, o anche generate dall'AI? | Raccomandata solo libreria finché il legale non si esprime | Fase 7 | Rebus creati |
 | 10 | Fornitore della newsletter e del server pubblico | Fornitore europeo con doppia conferma; Hetzner come da piano commerciale | Fase 8 | Lancio |
 | 11 | Domande ancora aperte del piano commerciale (sezione 16): soglia di reddito, cessione in esclusiva, posizione fiscale, firma o pseudonimo, idee di format, budget | Restano del proprietario; la posizione fiscale va chiarita prima della prima vendita (nov 2027) | Varie | Fasi 7-9 |
-| 13 | **Condizioni d'uso dei Fornitori AI** | Il proprietario verifica: l'abbonamento Claude per l'uso non interattivo di Claude Code, anche in container; i piani gratuiti candidati (uso dei dati per addestramento, limiti di volume). L'invio di pagine di Riviste a piani gratuiti è anche tra le domande al legale | Abbonamento: 7 dic 2026; piani gratuiti: prima dell'ondata 1.4 (metà gen 2027) | Fasi 1 e 1b; scelta del fornitore predefinito |
-| 14 | **Set di PDF di prova** | Almeno 4 testate, con scansioni; idealmente 20-30 pagine di tipologie diverse | 7 dic 2026 | Fase 1 (set di riferimento) |
+| 13 | **Condizioni d'uso dei Fornitori AI** | Il proprietario verifica: l'abbonamento Claude per l'uso non interattivo di Claude Code, anche in container; i piani gratuiti candidati (uso dei dati per addestramento, limiti di volume). L'invio di pagine di Riviste a piani gratuiti è anche tra le domande al legale | Abbonamento: 7 dic 2026; piani gratuiti: prima dell'ondata 1.4 (accanto alla 1b.3, dalla prova 1) | Fasi 1 e 1b; scelta del fornitore predefinito; container (fase 2, ADR 010) |
+| 14 | **Set di PDF di prova** | Almeno 4 testate, con scansioni; idealmente 20-30 pagine di tipologie diverse | 7 dic 2026 | Fase 1 (Set di riferimento) |
 
 ---
 

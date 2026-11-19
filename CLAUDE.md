@@ -112,7 +112,7 @@ Usa sempre questi termini, con la maiuscola iniziale.
 
 ## 7. Stato attuale
 
-- Fase 0 (Fondamenta) in chiusura, in attesa dell'approvazione del proprietario: le ondate 0.1-0.3 sono concluse e unite in `main`, con CI verde. Il tag `v0.1.0` (commit 03a773b) è pubblicato. Il 13/11/2026 il proprietario ha deciso codice 5 per il registro alterato, PostgreSQL 18, protezione di `main` rimandata e ADR accettati (`docs/fase-0-chiusura-decisioni.md`). La chiusura va con la PR e il tag `v0.1.1`.
+- Fase 0 (Fondamenta) conclusa il 19/11/2026 con l'approvazione del proprietario: le ondate 0.1-0.3 sono concluse e unite in `main`, con CI verde. I tag `v0.1.0` (commit 03a773b) e `v0.1.1` sono pubblicati, e l'immagine `0.1.1` è verificata. Il 13/11/2026 il proprietario ha deciso codice 5 per il registro alterato, PostgreSQL 18, protezione di `main` rimandata e ADR accettati (`docs/fase-0-chiusura-decisioni.md`). Prossimo passo: fase 1 (Motore di estrazione), dopo la preparazione di `.planning/phases/1/CONTEXT.md` e `PLAN.md` e la chiusura delle decisioni aperte.
 - La CLI `dbe` parte e i test d'integrazione girano su PostgreSQL 18 con Testcontainers, come il Compose. Il Motore di estrazione non produce ancora risultati: `scan-file` e `scan-folder` arrivano dalla fase 1.
 
 ## 8. Protocollo di avanzamento
