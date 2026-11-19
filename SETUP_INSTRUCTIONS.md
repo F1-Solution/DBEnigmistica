@@ -1,736 +1,203 @@
-# 🚀 DBEnigmistica - Istruzioni di Setup Complete
+# Preparazione dell'ambiente di sviluppo
 
-Questa guida ti accompagnerà passo-passo nella configurazione del progetto **DBEnigmistica**, dalla configurazione dei secret fino all'esecuzione della prima scansione.
+Questa guida porta un PC Windows (o Linux) dallo stato di repository clonato a un database locale, una configurazione valida e i test verdi. Lo stato del progetto è in [ROADMAP.md](ROADMAP.md). Le decisioni di architettura sono in [docs/adr](docs/adr/README.md).
 
-## 📋 Indice
+## Indice
 
-1. [Prerequisiti](#-prerequisiti)
-2. [Gestione Secret e Sicurezza](#-gestione-secret-e-sicurezza)
-3. [Setup Database](#-setup-database)
-4. [Setup Tesseract OCR](#-setup-tesseract-ocr)
-5. [Setup Anthropic Claude API](#-setup-anthropic-claude-api)
-6. [Configurazione Applicazione](#-configurazione-applicazione)
-7. [Migrazioni Database](#-migrazioni-database)
-8. [Verifica Installazione](#-verifica-installazione)
-9. [Primo Utilizzo](#-primo-utilizzo)
-10. [Troubleshooting](#-troubleshooting)
+1. Prerequisiti
+2. Segreti e configurazione: dove stanno
+3. Database locale con Docker Compose
+4. Stringa di connessione
+5. Migrazioni
+6. Fornitore AI e `dbe check-ai`
+7. Test
+8. Hook gitleaks
+9. Risoluzione dei problemi
 
----
+## 1. Prerequisiti
 
-## 🔧 Prerequisiti
+- **.NET 10 SDK** (`dotnet --version` deve restituire `10.0.x`).
+- **Docker Desktop**, in esecuzione. Serve per PostgreSQL in locale e per i test d'integrazione, che usano Testcontainers.
+- **Git**.
+- Per il Fornitore AI predefinito: **Claude Code** installato e autenticato (vedi sezione 6). Non serve una chiave API.
+- Per l'hook dei segreti: **gitleaks** (sezione 8).
 
-### Software Richiesto
+## 2. Segreti e configurazione: dove stanno
 
-1. **[.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)**
-   - Verifica installazione: `dotnet --version` (deve essere ≥ 9.0)
+Nessun segreto sta nei file tracciati da git. Le fonti sono queste, nell'ordine in cui il programma le legge:
 
-2. **[Docker Desktop](https://www.docker.com/products/docker-desktop)**
-   - Verifica installazione: `docker --version` e `docker-compose --version`
-   - Assicurati che Docker Desktop sia avviato
+| Fonte | Quando si usa | Note |
+|---|---|---|
+| `appsettings.json` | Sempre | Contiene solo valori non sensibili (per esempio il Fornitore AI predefinito). |
+| `appsettings.<ambiente>.json` | Sempre, per l'ambiente corrente (`DOTNET_ENVIRONMENT`, predefinito Production) | Ignorato da git. Il modello di partenza è `appsettings.Development.json.template`. |
+| User-secrets | Solo ambiente Development (`dotnet run`) | Configurati con `dotnet user-secrets`. |
+| Variabili d'ambiente | Sempre (anche in produzione e nel container) | Hanno la precedenza sulle altre fonti. |
+| `.env` | Solo per Docker Compose | Ignorato da git. Il modello è `.env.template`. |
 
-3. **[Tesseract OCR](https://github.com/tesseract-ocr/tesseract)**
-   - **Windows**: Scarica l'installer da [UB-Mannheim](https://github.com/UB-Mannheim/tesseract/wiki)
-   - **Linux**: `sudo apt-get install tesseract-ocr tesseract-ocr-ita`
-   - **macOS**: `brew install tesseract tesseract-lang`
+Regola: i valori reali stanno in `.env`, in user-secrets o nelle variabili d'ambiente. I file `.template` contengono solo nomi e segnaposto.
 
-4. **Git** (per clonare il repository)
+## 3. Database locale con Docker Compose
 
-### Account e Servizi
+1. Copia il modello e imposta i valori:
 
-1. **Anthropic Claude API**
-   - Registrati su [Anthropic Console](https://console.anthropic.com/)
-   - Crea un account e ottieni la tua API key
-   - Assicurati di avere credito disponibile (free tier disponibile per test)
-
----
-
-## 🔒 Gestione Secret e Sicurezza
-
-> **⚠️ IMPORTANTE**: I file contenenti secret **NON** devono mai essere committati su Git!
-
-### Strategia di Sicurezza
-
-Il progetto implementa una strategia multi-livello per proteggere i secret:
-
-#### 1. `.gitignore` Configurato
-
-Il file `.gitignore` già esclude:
-```gitignore
-# File di configurazione con secret
-appsettings.Development.json
-appsettings.Production.json
-appsettings.*.json
-!appsettings.json  # Solo il template senza secret è tracciato
-.env
-.env.local
-secrets.json
-```
-
-#### 2. File Template
-
-Il repository include file **template** da copiare e configurare:
-- `appsettings.Development.json.template` → copia in `appsettings.Development.json`
-- `.env.template` → copia in `.env`
-
-#### 3. User Secrets (Metodo Raccomandato per .NET)
-
-Per maggiore sicurezza, puoi usare .NET User Secrets per lo sviluppo locale:
-
-```bash
-cd src/DBEnigmistica.Console
-dotnet user-secrets init
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=dbenigmistica;Username=dbenigmistica;Password=YOUR_PASSWORD"
-dotnet user-secrets set "Anthropic:ApiKey" "sk-ant-api03-YOUR_API_KEY"
-```
-
-I User Secrets sono memorizzati in:
-- **Windows**: `%APPDATA%\Microsoft\UserSecrets\`
-- **Linux/macOS**: `~/.microsoft/usersecrets/`
-
-#### 4. Variabili d'Ambiente (Produzione)
-
-In produzione, usa variabili d'ambiente:
-```bash
-export ConnectionStrings__DefaultConnection="Host=prod-server;..."
-export Anthropic__ApiKey="sk-ant-api03-..."
-```
-
----
-
-## 💾 Setup Database
-
-### 1. Avvio Docker Compose
-
-```bash
-# Dalla root del progetto
-docker-compose up -d
-```
-
-Questo comando avvia:
-- **PostgreSQL 16** sulla porta `5432`
-- **PgAdmin 4** su `http://localhost:5050`
-
-### 2. Verifica Stato Container
-
-```bash
-docker-compose ps
-```
-
-Dovresti vedere:
-```
-NAME                        STATUS
-dbenigmistica_postgres      Up (healthy)
-dbenigmistica_pgadmin       Up
-```
-
-### 3. Credenziali di Default
-
-Le credenziali sono definite in `docker-compose.yml`:
-
-**PostgreSQL:**
-- Host: `localhost`
-- Port: `5432`
-- Database: `dbenigmistica`
-- Username: `dbenigmistica`
-- Password: il valore di `POSTGRES_PASSWORD` nel file `.env`
-
-**PgAdmin:**
-- URL: `http://localhost:5050`
-- Email: `admin@dbenigmistica.local`
-- Password: il valore di `PGADMIN_DEFAULT_PASSWORD` nel file `.env`
-
-### 4. Modifica Password (Raccomandato)
-
-Per sicurezza, modifica le password di default:
-
-**Metodo 1: File `.env` (Raccomandato)**
-
-```bash
-# Copia il template
-cp .env.template .env
-
-# Modifica .env con le tue credenziali
-# Usa un editor di testo per modificare:
-POSTGRES_PASSWORD=TUA_PASSWORD_SICURA_QUI
-PGADMIN_DEFAULT_PASSWORD=TUA_PASSWORD_PGADMIN_QUI
-```
-
-Poi aggiorna `docker-compose.yml` per usare `.env`:
-
-```yaml
-services:
-  postgres:
-    env_file:
-      - .env
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-```
-
-**Metodo 2: Modifica Diretta docker-compose.yml (Locale)**
-
-⚠️ Se usi questo metodo, assicurati di NON committare le modifiche!
-
-```bash
-# Dopo la modifica, usa:
-git update-index --assume-unchanged docker-compose.yml
-```
-
-### 5. Riavvia i Container
-
-```bash
-docker-compose down
-docker-compose up -d
-```
-
----
-
-## 🔍 Setup Tesseract OCR
-
-### Windows
-
-1. **Scarica Installer**
-   - [Tesseract Installer per Windows](https://github.com/UB-Mannheim/tesseract/wiki)
-   - Scegli versione 64-bit
-
-2. **Installa Tesseract**
-   - Path predefinito: `C:\Program Files\Tesseract-OCR`
-   - ✅ Seleziona l'opzione per installare i language data durante l'installazione
-   - ✅ Assicurati che sia installato `ita.traineddata` (lingua italiana)
-
-3. **Verifica Installazione**
    ```bash
-   tesseract --version
+   cp .env.template .env
    ```
 
-4. **Scarica Language Data (se non incluso)**
-   - [tessdata repository](https://github.com/tesseract-ocr/tessdata)
-   - Scarica `ita.traineddata`
-   - Copia in `C:\Program Files\Tesseract-OCR\tessdata\`
+   Imposta in `.env` le variabili `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `PGADMIN_DEFAULT_EMAIL` e `PGADMIN_DEFAULT_PASSWORD`. Se una variabile manca, Compose si ferma con un messaggio che la nomina.
 
-### Linux
+2. Avvia PostgreSQL:
 
-```bash
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install tesseract-ocr tesseract-ocr-ita
-
-# Verifica
-tesseract --version
-tesseract --list-langs  # Deve mostrare 'ita'
-```
-
-### macOS
-
-```bash
-# Con Homebrew
-brew install tesseract tesseract-lang
-
-# Verifica
-tesseract --version
-tesseract --list-langs  # Deve mostrare 'ita'
-```
-
-### Path Tesseract
-
-Annota il path della cartella `tessdata`:
-- **Windows**: `C:\Program Files\Tesseract-OCR\tessdata`
-- **Linux**: `/usr/share/tesseract-ocr/4.00/tessdata`
-- **macOS**: `/usr/local/share/tessdata` o `/opt/homebrew/share/tessdata`
-
----
-
-## 🤖 Setup Anthropic Claude API
-
-### 1. Crea Account Anthropic
-
-1. Vai su [Anthropic Console](https://console.anthropic.com/)
-2. Registrati o accedi con il tuo account
-3. Completa la verifica dell'account (potrebbe richiedere email o telefono)
-
-### 2. Ottieni API Key
-
-1. Nel dashboard, vai su **API Keys**
-2. Clicca su **Create Key**
-3. Copia la chiave (formato: `sk-ant-api03-...`)
-   
-   ⚠️ **IMPORTANTE**: Salva la chiave in un posto sicuro! Non sarà più visibile dopo la creazione.
-
-### 3. Verifica Crediti
-
-- Controlla il saldo crediti nel dashboard
-- Free tier: ~$5 di credito per testare
-- Per uso estensivo: configura metodo di pagamento
-
-### 4. Modelli Disponibili
-
-Il progetto è configurato per usare:
-- **claude-sonnet-5-5** (default, bilanciato costo/prestazioni)
-- Altri modelli: vedi l'elenco ufficiale Anthropic; imposta `Anthropic:Model` di conseguenza
-
----
-
-## ⚙️ Configurazione Applicazione
-
-Le strade che funzionano sono due: la variabile d'ambiente (sempre) e gli user-secrets (solo in ambiente `Development`). Il file `appsettings.Development.json` non viene letto.
-
-### Metodo 1: User Secrets (sviluppo, ambiente Development)
-
-Gli user-secrets si leggono solo se `DOTNET_ENVIRONMENT=Development`. Con `dotnet run --project src\DBEnigmistica.Console` (o dalla cartella del progetto) il profilo in `Properties\launchSettings.json` imposta già quell'ambiente. Con l'eseguibile compilato (`dbe`) imposta tu `DOTNET_ENVIRONMENT=Development`, oppure usa il metodo 2.
-
-```bash
-cd src/DBEnigmistica.Console
-
-# Inizializza user secrets
-dotnet user-secrets init
-
-# Configura connection string
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=dbenigmistica;Username=dbenigmistica;Password=LA_TUA_PASSWORD"
-
-# Configura Anthropic API key
-dotnet user-secrets set "Anthropic:ApiKey" "sk-ant-api03-LA_TUA_API_KEY"
-
-# Visualizza tutti i secrets configurati
-dotnet user-secrets list
-```
-
-### Metodo 2: Variabili d'Ambiente (sempre valido: eseguibile, produzione, CI/CD)
-
-```bash
-# Windows PowerShell
-$env:ConnectionStrings__DefaultConnection = "Host=prod-db;..."
-$env:Anthropic__ApiKey = "sk-ant-api03-..."
-
-# Linux/macOS/Git Bash
-export ConnectionStrings__DefaultConnection="Host=prod-db;..."
-export Anthropic__ApiKey="sk-ant-api03-..."
-```
-
-### Configurazione Parametri
-
-#### Connection String
-
-Formato: `Host={host};Port={port};Database={database};Username={username};Password={password}`
-
-**Esempio Locale:**
-```
-Host=localhost;Port=5432;Database=dbenigmistica;Username=dbenigmistica;Password=mypassword123
-```
-
-**Esempio Produzione:**
-```
-Host=prod-server.example.com;Port=5432;Database=dbenigmistica_prod;Username=app_user;Password=secure_password;SSL Mode=Require
-```
-
-#### Anthropic Configuration
-
-```json
-"Anthropic": {
-  "ApiKey": "sk-ant-api03-...",  // La tua API key
-  "Model": "claude-sonnet-5-5",  // Modello da usare (predefinito in appsettings.json)
-  "MaxTokens": 4096  // Max token per risposta (1000-8000)
-}
-```
-
----
-
-## 🗄️ Migrazioni Database
-
-### 1. Installazione Entity Framework Tools
-
-```bash
-# Installa tools globali (se non già fatto)
-dotnet tool install --global dotnet-ef
-
-# Verifica installazione
-dotnet ef --version
-```
-
-### 2. Restore Dipendenze
-
-```bash
-# Dalla root del progetto
-dotnet restore
-```
-
-### 3. Applica Migrazioni
-
-**Metodo CLI Built-in (Raccomandato):**
-
-```bash
-cd src/DBEnigmistica.Console
-dotnet run -- migrate
-```
-
-**Metodo Entity Framework Tools:**
-
-```bash
-cd src/DBEnigmistica.Console
-dotnet ef database update
-```
-
-### 4. Verifica Database
-
-Connettiti con PgAdmin o psql:
-
-```bash
-# Con psql
-psql -h localhost -U dbenigmistica -d dbenigmistica
-
-# Query di verifica
-\dt  # Lista tabelle
-
-# Dovresti vedere:
-# - magazines
-# - pages
-# - games
-# - game_solutions
-# - game_type_schemas
-# - __EFMigrationsHistory
-```
-
----
-
-## ✅ Verifica Installazione
-
-### 1. Build Progetto
-
-```bash
-# Dalla root
-dotnet build
-
-# Verifica che build sia successful senza errori
-```
-
-### 2. Test Configurazione
-
-```bash
-cd src/DBEnigmistica.Console
-
-# Mostra help
-dotnet run -- --help
-
-# Dovrebbe mostrare lista comandi disponibili
-```
-
-### 3. Test Database Connection
-
-```bash
-# Lista giochi (dovrebbe essere vuoto inizialmente)
-dotnet run -- list-games
-
-# Output atteso: "No games found in database."
-```
-
-### 4. Test Tesseract
-
-Crea un file di test `test.png` con del testo e:
-
-```bash
-tesseract test.png stdout -l ita
-```
-
-Dovrebbe riconoscere il testo nell'immagine.
-
-### 5. Test Anthropic API
-
-```bash
-# Puoi testare con un curl (sostituisci YOUR_API_KEY)
-curl https://api.anthropic.com/v1/messages \
-  -H "x-api-key: $ANTHROPIC_API_KEY" \
-  -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  -d '{"model":"claude-sonnet-5-5","max_tokens":100,"messages":[{"role":"user","content":"Hello"}]}'
-```
-
----
-
-## 🎮 Primo Utilizzo
-
-### Scenario: Scansione Prima Rivista
-
-1. **Prepara PDF**
    ```bash
-   # Crea una cartella per i PDF
-   mkdir riviste
-   # Copia alcuni PDF di riviste enigmistiche nella cartella
+   docker compose up -d postgres
+   docker compose ps
    ```
 
-2. **Scansiona Cartella**
-   ```bash
-   dotnet run -- scan-folder ./riviste --title "La Settimana Enigmistica" --periodicity Weekly
-   ```
+   Il servizio `postgres` deve risultare `healthy`. Il database ascolta solo su `127.0.0.1:5432`. Il servizio `pgadmin` è su `127.0.0.1:5050`.
 
-3. **Monitoraggio**
-   - L'applicazione mostrerà progress bar per ogni pagina
-   - OCR → AI Classification → Database save
+Il file `docker-compose.yml` e i test d'integrazione usano PostgreSQL 18. Un volume creato con PostgreSQL 16 non si apre con la 18. Scegli una delle due opzioni.
 
-4. **Verifica Risultati**
-   ```bash
-   # Lista giochi estratti
-   dotnet run -- list-games --details
+**Opzione A, senza dati da conservare:** `docker compose down -v`, poi `docker compose up -d postgres`.
 
-   # Export in JSON
-   dotnet run -- export-games --output risultati.json --format json
-   ```
+**Opzione B, con dati da conservare:**
 
-### Scenario: Analisi Nuovo Tipo di Gioco
+1. Con il container 16 ancora attivo, PRIMA di aggiornare l'immagine: `docker compose exec postgres pg_dump -U <utente> -Fc <db> > backup.dump`.
+2. `docker compose down -v`.
+3. Aggiorna e avvia: `docker compose up -d postgres`.
+4. Ripristina con `docker compose exec -T postgres pg_restore -U <utente> -d <db> < backup.dump`.
 
-1. **Crea file descrizione** (`nuovo_gioco.md`):
-   ```markdown
-   # Word Search (Cerca Parole)
-   
-   Gioco dove bisogna trovare parole nascoste in una griglia.
-   
-   ## Caratteristiche
-   - Griglia NxN (tipicamente 10x10 o 15x15)
-   - Lista di parole da trovare
-   - Parole possono essere orizzontali, verticali, diagonali
-   ```
+Dall'immagine 18 il volume dati si monta su `/var/lib/postgresql` (vedi `docs/fase-0-chiusura-decisioni.md`).
 
-2. **Analizza con AI**
-   ```bash
-   dotnet run -- analyze-game nuovo_gioco.md
-   ```
+## 4. Stringa di connessione
 
-3. **Conferma Schema**
-   - L'AI proporrà uno schema per la tabella `word_search_games`
-   - Conferma interattivamente
-   - Tabella viene creata automaticamente
+Il programma legge la stringa di connessione dalla chiave `ConnectionStrings:DefaultConnection`. Senza di essa i comandi che usano il database si fermano con un messaggio che indica le due alternative.
 
----
+Scegli una delle due forme. Sostituisci i segnaposto con i valori di `.env`.
 
-## 🔥 Troubleshooting
+**Con user-secrets** (per `dotnet run`, ambiente Development):
 
-### Errore: "Database connection failed"
-
-**Causa**: PostgreSQL non è avviato o credenziali errate.
-
-**Soluzione**:
 ```bash
-# Verifica container Docker
-docker-compose ps
-
-# Se non è running
-docker-compose up -d
-
-# Controlla logs
-docker-compose logs postgres
-
-# Verifica credenziali in appsettings.Development.json
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=<database>;Username=<utente>;Password=<password>" --project src/DBEnigmistica.Console
 ```
 
-### Errore: "Tesseract not found"
+**Con variabile d'ambiente** (sempre valida, anche per `dbe` già compilato e per le migrazioni di EF):
 
-**Causa**: Tesseract non è installato o path errato.
+```powershell
+# PowerShell
+$env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=<database>;Username=<utente>;Password=<password>"
+```
 
-**Soluzione**:
 ```bash
-# Verifica installazione
-tesseract --version
-
-# Se non installato, vedi sezione Setup Tesseract OCR
-
-# Verifica path tessdata in appsettings:
-"Ocr": {
-  "TesseractDataPath": "IL_PATH_CORRETTO_QUI"
-}
+# Bash
+export ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=<database>;Username=<utente>;Password=<password>"
 ```
 
-### Errore: "Anthropic API authentication failed"
+Non scrivere la password in file tracciati. Il file `appsettings.Development.json.template` contiene un segnaposto da sostituire solo nella copia locale ignorata da git.
 
-**Causa**: API key non valida o non configurata.
+## 5. Migrazioni
 
-**Soluzione**:
+Le migrazioni applicano lo schema e i ruoli PostgreSQL (schemi `riviste`, `catalogo`, `tipologie`, `registro`).
+
 ```bash
-# Verifica API key su Anthropic Console
-# https://console.anthropic.com/settings/keys
-
-# Ricontrolla configurazione:
-dotnet user-secrets list
-# oppure controlla appsettings.Development.json
-
-# Testa API key con curl (vedi sezione Verifica Installazione)
+dotnet run --project src/DBEnigmistica.Console -- migrate
 ```
 
-### Errore: "Language 'ita' not found"
+Il comando è idempotente: una seconda esecuzione non modifica nulla.
 
-**Causa**: File `ita.traineddata` non installato.
+Per creare una nuova migrazione di EF Core serve lo strumento `dotnet-ef` e la variabile `ConnectionStrings__DefaultConnection` impostata (la fabbrica del contesto la legge dall'ambiente, anche se la migrazione non si connette):
 
-**Soluzione**:
-```bash
-# Scarica ita.traineddata
-# https://github.com/tesseract-ocr/tessdata/raw/main/ita.traineddata
-
-# Copia in tessdata folder
-# Windows: C:\Program Files\Tesseract-OCR\tessdata\ita.traineddata
-# Linux: /usr/share/tesseract-ocr/4.00/tessdata/ita.traineddata
-
-# Verifica
-tesseract --list-langs
-# Deve mostrare 'ita'
-```
-
-### Errore: "Migration failed" o "Table already exists"
-
-**Causa**: Database in stato inconsistente.
-
-**Soluzione**:
-```bash
-# Opzione 1: Reset database
-docker-compose down -v
-docker-compose up -d
-dotnet run -- migrate
-
-# Opzione 2: Drop manualmente
-psql -h localhost -U dbenigmistica -d dbenigmistica
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
-\q
-dotnet run -- migrate
-```
-
-### Performance Lenta durante OCR
-
-**Causa**: Parametri di processing troppo aggressivi.
-
-**Soluzione**: Riduci parallelismo in `appsettings`:
-```json
-"Processing": {
-  "BatchSize": 2,  // Ridotto da 5
-  "MaxDegreeOfParallelism": 2  // Ridotto da 4
-}
-```
-
-### Errore: "Cannot find dotnet tool 'ef'"
-
-**Causa**: Entity Framework Tools non installato.
-
-**Soluzione**:
 ```bash
 dotnet tool install --global dotnet-ef
-dotnet tool update --global dotnet-ef
+dotnet ef migrations add <Nome> --project src/DBEnigmistica.Infrastructure --startup-project src/DBEnigmistica.Console
 ```
 
----
+Le migrazioni scritte a mano (per esempio `VincoliRuoliERegistro`) non si rigenerano con EF: si modificano a mano.
 
-## 🎯 Checklist Setup Completa
+## 6. Fornitore AI e `dbe check-ai`
 
-Prima di iniziare ad usare l'applicazione, verifica:
+Il programma raggiunge l'AI tramite il **Fornitore AI**, configurato nella sezione `FornitoreAi`. Il predefinito è Claude Code non interattivo con l'abbonamento: non richiede chiavi API.
 
-- [ ] .NET 9 SDK installato (`dotnet --version`)
-- [ ] Docker Desktop avviato
-- [ ] PostgreSQL container running (`docker-compose ps`)
-- [ ] Tesseract OCR installato (`tesseract --version`)
-- [ ] `ita.traineddata` presente (`tesseract --list-langs`)
-- [ ] Account Anthropic creato e API key ottenuta
-- [ ] `appsettings.Development.json` configurato (o User Secrets)
-- [ ] Connection string con password corretta
-- [ ] Anthropic API key configurata
-- [ ] Tesseract path configurato correttamente
-- [ ] Migrazioni database applicate (`dotnet run -- migrate`)
-- [ ] Build successful (`dotnet build`)
-- [ ] Test comando help funzionante (`dotnet run -- --help`)
+| Chiave | Valore predefinito | Significato |
+|---|---|---|
+| `FornitoreAi:Tipo` | `claude-code` | `claude-code` oppure `api-anthropic` |
+| `FornitoreAi:Modello` | `claude-sonnet-5-5` in `appsettings.json` | Modello usato dal fornitore |
+| `FornitoreAi:ClaudeCode:Eseguibile` | `claude` | Nome o percorso dell'eseguibile di Claude Code |
+| `FornitoreAi:Api:ChiaveApi` | non impostata | Richiesta solo con `api-anthropic` |
 
----
+Per Claude Code, il controllo all'avvio verifica che l'eseguibile esista (nel PATH o al percorso indicato) e che Claude Code sia autenticato. L'autenticazione è valida se è impostata la variabile `CLAUDE_CODE_OAUTH_TOKEN`, oppure se hai già eseguito l'accesso con `claude` (le credenziali sono salvate nella cartella utente).
 
-## 📞 Supporto
+Per usare `api-anthropic` imposta, da variabile d'ambiente o user-secrets, `FornitoreAi:Api:ChiaveApi` e `FornitoreAi:Tipo=api-anthropic`. Questa modalità non è quella predefinita (vedi `docs/adr/004-fornitore-ai.md`).
 
-### Risorse
+Verifica la configurazione senza chiamate di rete:
 
-- **GitHub Issues**: [Repository Issues](link-to-your-repo/issues)
-- **Anthropic Docs**: [https://docs.anthropic.com](https://docs.anthropic.com)
-- **PostgreSQL Docs**: [https://www.postgresql.org/docs/](https://www.postgresql.org/docs/)
-- **Tesseract Wiki**: [https://github.com/tesseract-ocr/tesseract/wiki](https://github.com/tesseract-ocr/tesseract/wiki)
-
-### Logs e Debug
-
-Per abilitare logging dettagliato, modifica in `appsettings.Development.json`:
-
-```json
-"Logging": {
-  "LogLevel": {
-    "Default": "Debug",  // Aumenta a Trace per ancora più dettagli
-    "Microsoft.EntityFrameworkCore": "Information"
-  }
-}
+```bash
+dotnet run --project src/DBEnigmistica.Console -- check-ai
 ```
 
-I log vengono salvati in:
-- **Console**: output standard
-- **File** (se configurato): `./logs/app-{Date}.log`
+Con una configurazione valida il comando stampa il fornitore, il modello e `Configurazione valida.`. Con una configurazione incompleta termina con codice diverso da 0 e un messaggio che indica la chiave da impostare. La chiave API non viene mai stampata.
 
----
+Nota: oggi nessun adattatore del Fornitore AI è implementato. L'estrazione e la creazione arrivano dalla fase 1, e fino ad allora rispondono con un errore esplicito.
 
-## 🔐 Best Practices per Produzione
+## 7. Test
 
-### 1. Secret Management
+I test d'integrazione avviano un PostgreSQL 18 con Testcontainers. Docker deve essere in esecuzione.
 
-**NON usare** `appsettings.json` per produzione!
+```bash
+dotnet restore DBEnigmistica.slnx
+dotnet build DBEnigmistica.slnx --configuration Release --no-restore
+dotnet test DBEnigmistica.slnx --configuration Release --no-build
+```
 
-Usa uno di questi metodi:
-- **Azure Key Vault** (se su Azure)
-- **AWS Secrets Manager** (se su AWS)
-- **HashiCorp Vault**
-- **Variabili d'ambiente** (minimo)
+Per l'elenco delle categorie di test e i test di architettura vedi `tests/DBEnigmistica.Tests`. Se un test d'integrazione fallisce subito con un errore del container, controlla che Docker Desktop sia avviato.
 
-### 2. Database
+## 8. Hook gitleaks
 
-- ✅ Usa password forti (16+ caratteri, misti)
-- ✅ Abilita SSL per connessioni: `SSL Mode=Require`
-- ✅ Crea user dedicato con permessi limitati
-- ✅ Backup automatici configurati
-- ✅ Separare database dev/staging/prod
+Il progetto include un hook `pre-commit` in `.githooks/` che blocca il commit se gitleaks trova segreti nei file in staging. I valori trovati non vengono stampati.
 
-### 3. API Keys
+1. Installa gitleaks:
 
-- ✅ Rotazione periodica delle chiavi
-- ✅ Limiti di rate configurati
-- ✅ Monitoring utilizzo e costi
-- ✅ API key diverse per dev/prod
+   ```powershell
+   winget install gitleaks.gitleaks
+   ```
 
-### 4. Networking
+   Su macOS si usa `brew install gitleaks`.
 
-- ✅ Database NON esposto pubblicamente
-- ✅ Firewall rules appropriate
-- ✅ VPN per accesso remoto DB
+2. Attiva l'hook nel repository locale:
 
----
+   ```bash
+   git config core.hooksPath .githooks
+   ```
 
-## 📝 Note Finali
+   Il comando va eseguito una volta per clone. Senza questa impostazione git non esegue l'hook.
+3. Verifica: se gitleaks non è installato, il commit viene bloccato con un messaggio che lo dice.
 
-### File da NON Committare (già in .gitignore)
+La stessa scansione gira in GitHub Actions sull'intera storia git (lavoro "Controllo segreti" di `ci.yml`).
 
-- ❌ `appsettings.Development.json`
-- ❌ `appsettings.Production.json`
-- ❌ `.env`
-- ❌ Qualsiasi file con password, API key, connection string
+## 9. Risoluzione dei problemi
 
-### File da Committare
+**"Stringa di connessione al database mancante"**
+Imposta `ConnectionStrings__DefaultConnection` oppure, con `dotnet run`, la chiave `ConnectionStrings:DefaultConnection` nei user-secrets (sezione 4).
 
-- ✅ `appsettings.json` (template senza secret)
-- ✅ `appsettings.Development.json.template`
-- ✅ `.env.template`
-- ✅ `docker-compose.yml` (con valori placeholder o variabili)
-- ✅ Questo file `SETUP_INSTRUCTIONS.md`
+**Compose si ferma con "Imposta POSTGRES_... nel file .env"**
+Manca una variabile in `.env`. Copia `.env.template` e completa tutti i valori (sezione 3).
 
-### Condivisione con Team
+**`postgres` non diventa `healthy`**
+Controlla `docker compose logs postgres`. Se la porta 5432 è già usata da un altro PostgreSQL, fermalo o cambia la porta mappata in `docker-compose.yml`.
 
-Quando un nuovo sviluppatore clona il repository:
+**"Claude Code non trovato"**
+Installa Claude Code e verifica che `claude` sia nel PATH, oppure imposta `FornitoreAi:ClaudeCode:Eseguibile` con il percorso completo.
 
-1. Deve seguire questo documento
-2. Creare il proprio `appsettings.Development.json` dal template
-3. Ottenere le proprie API key Anthropic
-4. Configurare il proprio ambiente locale
+**"Claude Code non autenticato"**
+Esegui l'accesso con `claude`, oppure imposta `CLAUDE_CODE_OAUTH_TOKEN`.
 
-**NON condividere**:
-- La tua API key Anthropic
-- Password del database condiviso
-- File di configurazione con secret
+**"Chiave API mancante" (solo con `api-anthropic`)**
+Imposta `FornitoreAi:Api:ChiaveApi` da variabile d'ambiente o user-secrets.
 
----
+**"Comando disponibile dalla fase N" con codice 2**
+Il comando non è ancora implementato. Lo stato per fase è in `ROADMAP.md`.
 
-**Buon lavoro con DBEnigmistica! 🎯**
+**I test d'integrazione non partono**
+Docker Desktop deve essere in esecuzione. Testcontainers scarica `postgres:18-alpine` alla prima esecuzione: serve la connessione alla rete.
 
-Per domande o problemi, apri una issue su GitHub.
+**Il commit è bloccato dall'hook**
+Installa gitleaks (sezione 8). Se trova un segreto, rimuovilo dal file, ruota il segreto se era reale, e riprova. Non disattivare l'hook con `--no-verify`.

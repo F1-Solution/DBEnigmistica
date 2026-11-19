@@ -9,17 +9,17 @@ public enum SolutionType
     /// Soluzione nella stessa pagina del gioco
     /// </summary>
     InSamePage = 0,
-    
+
     /// <summary>
     /// Soluzione in un'altra pagina dello stesso numero
     /// </summary>
     InSameIssue = 1,
-    
+
     /// <summary>
     /// Soluzione nel numero successivo della rivista
     /// </summary>
     InNextIssue = 2,
-    
+
     /// <summary>
     /// Soluzione in fonte esterna (es: sito web, altro)
     /// </summary>

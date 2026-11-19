@@ -9,7 +9,9 @@ public static class HandlerRegistration
     public static IServiceCollection AddHandlers(this IServiceCollection services)
     {
         services.AddScoped<ListGamesHandler>();
+        services.AddScoped<CheckAiHandler>();
         services.AddScoped<MigrateHandler>();
+        services.AddScoped<VerifyIntegrityHandler>();
         services.AddScoped<ExportGamesHandler>();
         services.AddScoped<ExportSchemaHandler>();
         services.AddScoped<ExportStatsHandler>();

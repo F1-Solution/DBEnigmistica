@@ -44,4 +44,54 @@ public class MagazineRepository : Repository<Magazine>, IMagazineRepository
     {
         await _context.Set<Page>().AddAsync(page, cancellationToken);
     }
+
+    /// <summary>Rifiuta la cancellazione se una pagina è pagina-soluzione di un Gioco di un'altra Rivista.</summary>
+    public override async Task DeleteAsync(int id)
+    {
+        var rivista = await GetByIdAsync(id);
+        if (rivista is null)
+            return;
+
+        await VerificaPagineSoluzioneAsync(rivista);
+        _dbSet.Remove(rivista);
+    }
+
+    private async Task VerificaPagineSoluzioneAsync(Magazine rivista)
+    {
+        var pagine = await _context.Pages.AsNoTracking()
+            .Where(p => p.MagazineId == rivista.Id)
+            .ToDictionaryAsync(p => p.Id, p => p.PageNumber);
+        if (pagine.Count == 0)
+            return;
+
+        var ids = pagine.Keys.ToList();
+
+        var daGiochi = await _context.Games.AsNoTracking()
+            .Where(g => g.Page.MagazineId != rivista.Id && g.SolutionPageId != null && ids.Contains(g.SolutionPageId.Value))
+            .Select(g => new UsoPagina(g.SolutionPageId!.Value, g.Id, g.Title, g.Page.Magazine.Title, g.Page.Magazine.IssueNumber))
+            .ToListAsync();
+
+        var daSoluzioni = await _context.GameSolutions.AsNoTracking()
+            .Where(s => s.Game.Page.MagazineId != rivista.Id && s.SolutionPageId != null && ids.Contains(s.SolutionPageId.Value))
+            .Select(s => new UsoPagina(s.SolutionPageId!.Value, s.GameId, s.Game.Title, s.Game.Page.Magazine.Title, s.Game.Page.Magazine.IssueNumber))
+            .ToListAsync();
+
+        var usi = daGiochi.Concat(daSoluzioni).DistinctBy(u => (u.PaginaId, u.GiocoId)).ToList();
+        if (usi.Count == 0)
+            return;
+
+        var righe = usi.GroupBy(u => u.PaginaId).OrderBy(g => pagine[g.Key]).Select(g =>
+            $"La pagina {pagine[g.Key]} della Rivista «{rivista.Title}» è pagina-soluzione di: " +
+            string.Join(", ", g.OrderBy(u => u.GiocoId).Select(Descrivi)) + ".");
+        throw new PaginaSoluzioneInUsoException(string.Join(" ", righe));
+    }
+
+    private static string Descrivi(UsoPagina u)
+    {
+        var titolo = string.IsNullOrWhiteSpace(u.GiocoTitolo) ? string.Empty : $" «{u.GiocoTitolo}»";
+        var numero = string.IsNullOrWhiteSpace(u.RivistaNumero) ? string.Empty : $" n. {u.RivistaNumero}";
+        return $"Gioco {u.GiocoId}{titolo} (Rivista «{u.RivistaTitolo}»{numero})";
+    }
+
+    private sealed record UsoPagina(int PaginaId, int GiocoId, string? GiocoTitolo, string RivistaTitolo, string? RivistaNumero);
 }

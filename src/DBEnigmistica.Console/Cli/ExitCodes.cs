@@ -9,5 +9,7 @@ public static class ExitCodes
     public const int Configuration = 3;
     /// <summary>Limite dell'esecuzione o del fornitore raggiunto.</summary>
     public const int LimitReached = 4;
+    /// <summary>Catena delle impronte del registro alterata.</summary>
+    public const int RegistryTampered = 5;
     public const int Cancelled = 130;
 }

@@ -1,3 +1,4 @@
+using DBEnigmistica.Domain.Diritti;
 using DBEnigmistica.Domain.AI;
 using DBEnigmistica.Domain.Entities;
 using DBEnigmistica.Domain.Interfaces;
@@ -36,7 +37,7 @@ public class GameExtractionService
 
             // Step 1: Classify game type
             var classification = await _aiAnalyzer.ClassifyGameAsync(
-                ocrText, 
+                ocrText,
                 null,
                 cancellationToken);
 
@@ -44,7 +45,7 @@ public class GameExtractionService
             if (!Enum.TryParse<Domain.Enums.GameType>(classification.GameType, ignoreCase: true, out var gameType) ||
                 gameType == Domain.Enums.GameType.Unknown)
             {
-                _logger.LogWarning("Could not classify game type '{GameType}'. Confidence: {Confidence}", 
+                _logger.LogWarning("Could not classify game type '{GameType}'. Confidence: {Confidence}",
                     classification.GameType, classification.Confidence);
                 return new GameExtractionResult
                 {
@@ -60,6 +61,7 @@ public class GameExtractionService
             // Step 2: Create Game entity
             var game = new Game
             {
+                Origine = Origine.Rivista,
                 PageId = page.Id,
                 GameType = gameType,
                 Title = classification.GameTitle,
@@ -81,7 +83,7 @@ public class GameExtractionService
 
             if (extractionResult == null)
             {
-                _logger.LogWarning("Game data extraction returned null for {GameType}", 
+                _logger.LogWarning("Game data extraction returned null for {GameType}",
                     classification.GameType);
             }
 
@@ -103,9 +105,9 @@ public class GameExtractionService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, 
+            _logger.LogError(ex,
                 "Error extracting game from page {PageNumber}", page.PageNumber);
-            
+
             return new GameExtractionResult
             {
                 Success = false,
@@ -126,15 +128,15 @@ public class GameExtractionService
         {
             if (!ocrTexts.TryGetValue(region, out var ocrText))
             {
-                _logger.LogWarning("No OCR text found for region at ({X},{Y})", 
+                _logger.LogWarning("No OCR text found for region at ({X},{Y})",
                     region.BoundingBox.X, region.BoundingBox.Y);
                 continue;
             }
 
             var result = await ExtractAndSaveGameAsync(
-                page, 
-                region, 
-                ocrText, 
+                page,
+                region,
+                ocrText,
                 cancellationToken);
 
             results.Add(result);

@@ -24,7 +24,7 @@ public class GameExtractionServiceTests
         _aiAnalyzerMock = new Mock<IAiGameAnalyzer>();
         _gameRepositoryMock = new Mock<IGameRepository>();
         _loggerMock = new Mock<ILogger<GameExtractionService>>();
-        
+
         _service = new GameExtractionService(
             _aiAnalyzerMock.Object,
             _gameRepositoryMock.Object,
@@ -155,10 +155,10 @@ public class GameExtractionServiceTests
 
         _aiAnalyzerMock
             .Setup(x => x.ExtractGameDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DomainGameExtractionResult 
-            { 
-                GameType = "Crossword", 
-                Fields = new Dictionary<string, object?>() 
+            .ReturnsAsync(new DomainGameExtractionResult
+            {
+                GameType = "Crossword",
+                Fields = new Dictionary<string, object?>()
             });
 
         _gameRepositoryMock

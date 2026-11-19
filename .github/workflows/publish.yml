@@ -26,9 +26,24 @@ jobs:
     permissions:
       contents: read
 
+  # Nessuna immagine e nessuna release partono da un commit che non sta nella storia di main (tag e avvio manuale).
+  tag-da-main:
+    name: Commit da main
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (storia completa)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verifica che il commit discenda da main
+        run: bash .github/scripts/verifica-tag-da-main.sh "$GITHUB_SHA" origin/main
+
   version:
     name: Versione
-    needs: ci
+    needs: [ci, tag-da-main]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:

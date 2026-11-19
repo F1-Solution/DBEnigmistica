@@ -12,7 +12,7 @@ public class EnigmisticaDbContextFactory : IDesignTimeDbContextFactory<Enigmisti
     public EnigmisticaDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<EnigmisticaDbContext>();
-        
+
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
         if (string.IsNullOrWhiteSpace(connectionString))
         {

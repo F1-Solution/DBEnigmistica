@@ -1,3 +1,4 @@
+using DBEnigmistica.Domain.Diritti;
 using DBEnigmistica.Domain.Entities;
 using DBEnigmistica.Domain.Enums;
 using DBEnigmistica.Infrastructure.Repositories;
@@ -47,8 +48,8 @@ public class RepositoryIntegrationTests : IntegrationTestBase
         var (_, pageIds) = await SeedMagazineWithPagesAsync(magazine: NewMagazine(periodicity: MagazinePeriodicity.Weekly));
         await SeedGameAsync(pageIds[0], g => g.GameType = GameType.Rebus);
 
-        (await ScalarAsync<string>("SELECT \"Periodicity\" FROM magazines")).Should().Be("Weekly");
-        (await ScalarAsync<string>("SELECT \"GameType\" FROM games")).Should().Be("Rebus");
+        (await ScalarAsync<string>("SELECT \"Periodicity\" FROM riviste.magazines")).Should().Be("Weekly");
+        (await ScalarAsync<string>("SELECT \"GameType\" FROM riviste.games")).Should().Be("Rebus");
     }
 
     [Fact]
@@ -178,6 +179,7 @@ public class RepositoryIntegrationTests : IntegrationTestBase
         var (_, pageIds) = await SeedMagazineWithPagesAsync();
         var game = new Game
         {
+            Origine = Origine.Rivista,
             PageId = pageIds[0],
             GameType = GameType.Crossword,
             Title = "Cruciverba Facile",

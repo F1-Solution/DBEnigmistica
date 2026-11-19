@@ -1,0 +1,8 @@
+#!/bin/sh
+# Blocca il commit se gitleaks trova segreti nei file in staging; --redact evita di stampare i valori.
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "gitleaks non è installato: il commit è bloccato." >&2
+  echo "Installalo con 'winget install gitleaks.gitleaks' (Windows) o 'brew install gitleaks', poi riprova." >&2
+  exit 1
+fi
+exec gitleaks git --pre-commit --staged --redact --no-banner

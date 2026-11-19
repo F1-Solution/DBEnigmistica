@@ -36,6 +36,10 @@ public static class CliHost
         ConfigureLogging(builder, streams, verbose);
         ConfigureServices(builder.Services, builder.Configuration, requirements, streams);
 
+        // Un servizio irrisolvibile deve emergere alla costruzione, non al primo comando.
+        builder.ConfigureContainer(new DefaultServiceProviderFactory(
+            new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true }));
+
         return builder.Build();
     }
 
@@ -109,9 +113,10 @@ public static class CliHost
 
         if (requirements.HasFlag(HostRequirements.Ai))
         {
-            services.AddSingleton<IValidateOptions<AnthropicOptions>, AnthropicOptionsValidator>();
-            services.AddOptions<AnthropicOptions>()
-                .BindConfiguration(AnthropicOptions.SectionName)
+            services.AddSingleton<IAmbienteFornitoreAi, AmbienteFornitoreAi>();
+            services.AddSingleton<IValidateOptions<FornitoreAiOptions>, FornitoreAiOptionsValidator>();
+            services.AddOptions<FornitoreAiOptions>()
+                .BindConfiguration(FornitoreAiOptions.SectionName)
                 .ValidateOnStart();
         }
     }

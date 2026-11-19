@@ -48,10 +48,14 @@ jobs:
       - name: Ripristino
         run: dotnet restore "$SOLUTION"
 
-      - name: Compilazione (Release)
-        run: dotnet build "$SOLUTION" --configuration Release --no-restore -consoleLoggerParameters:Summary -v:minimal
+      # Prima della compilazione, per un errore rapido (fine riga e spazi: .editorconfig).
+      - name: Formato del codice
+        run: dotnet format "$SOLUTION" --verify-no-changes --no-restore
 
-      # I test d'integrazione usano Testcontainers (postgres:17-alpine): il Docker dei runner ubuntu basta.
+      - name: Compilazione (Release, avvisi come errori)
+        run: dotnet build "$SOLUTION" --configuration Release --no-restore -warnaserror -consoleLoggerParameters:Summary -v:minimal
+
+      # I test d'integrazione usano Testcontainers (postgres:18-alpine): il Docker dei runner ubuntu basta.
       - name: Test con copertura
         run: >
           dotnet test "$SOLUTION" --configuration Release --no-build
@@ -59,6 +63,10 @@ jobs:
           --logger "trx;LogFileName=test-results.trx"
           --logger "console;verbosity=normal"
           --results-directory "$RUNNER_TEMP/test-results"
+
+      # Copertura delle righe di Domain e Application: minimo 80% (ROADMAP, fase 0, criterio 11).
+      - name: Soglia di copertura
+        run: python3 .github/scripts/soglia-copertura.py "$RUNNER_TEMP/test-results" 80
 
       - name: Riepilogo test e copertura
         if: ${{ !cancelled() }}
@@ -113,13 +121,25 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
-      # Solo costruzione: nessuna pubblicazione (quella e' di publish.yml).
+      # Solo costruzione in locale: nessuna pubblicazione (quella e' di publish.yml).
       - name: Costruzione immagine (senza pubblicazione)
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: Dockerfile
           push: false
+          load: true
+          tags: dbe:ci
+
+      - name: Verifica versione dell'immagine
+        run: |
+          set -euo pipefail
+          versione="$(docker run --rm dbe:ci --version)"
+          echo "Versione stampata: $versione"
+          if [ "$versione" != "0.0.0" ]; then
+            echo "::error::Atteso 0.0.0 (VERSION predefinita), stampato '$versione'."
+            exit 1
+          fi
 
   vulnerabilities:
     name: Vulnerabilita pacchetti
