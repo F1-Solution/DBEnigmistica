@@ -146,6 +146,32 @@ public class FornitoreAiOptionsValidatorTests
         Fallimenti(ClaudeCode(percorso), new FakeAmbienteFornitoreAi { EWindows = true, Token = "t", File = { percorso } }).Should().BeEmpty();
     }
 
+    [Fact]
+    public void ClaudeCode_SuWindows_PercorsoConSlashEsistente_EValido()
+    {
+        var percorso = "C:/x/claude.exe";
+
+        Fallimenti(ClaudeCode(percorso), new FakeAmbienteFornitoreAi { EWindows = true, Token = "t", File = { percorso } }).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("C:\\x\\claude.cmd")]
+    [InlineData("C:/x/claude.cmd")]
+    public void ClaudeCode_SuWindows_PercorsoCmd_ERifiutatoConMessaggioExe(string percorso)
+    {
+        var ambiente = new FakeAmbienteFornitoreAi { EWindows = true, Token = "t", File = { percorso } };
+
+        Fallimenti(ClaudeCode(percorso), ambiente).Should().ContainSingle().Which.Should().Contain("(.exe)");
+    }
+
+    [Fact]
+    public void ClaudeCode_SuAmbienteNonWindows_PercorsoUnixEsistente_EValido()
+    {
+        var percorso = "/usr/bin/claude";
+
+        Fallimenti(ClaudeCode(percorso), new FakeAmbienteFornitoreAi { EWindows = false, Token = "t", File = { percorso } }).Should().BeEmpty();
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-5)]

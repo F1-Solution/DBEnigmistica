@@ -154,13 +154,13 @@ public sealed class FornitoreAiOptionsValidator(IAmbienteFornitoreAi ambiente) :
     }
 
     // Su Windows un nome senza estensione si risolve in .exe; qualsiasi altra estensione (.cmd, .bat, ...) è rifiutata.
-    private static bool EstensioneAmmessaSuWindows(string eseguibile)
+    private bool EstensioneAmmessaSuWindows(string eseguibile)
     {
-        var nomeFile = Path.GetFileName(eseguibile);
+        var nomeFile = NomeFile(eseguibile);
         if (nomeFile.EndsWith('.') || nomeFile.EndsWith(' '))
             return false;
 
-        var haPercorso = eseguibile.Contains(Path.DirectorySeparatorChar) || eseguibile.Contains(Path.AltDirectorySeparatorChar);
+        var haPercorso = HaPercorso(eseguibile);
         var estensione = Path.GetExtension(nomeFile);
         return estensione.Equals(".exe", StringComparison.OrdinalIgnoreCase) || (!haPercorso && estensione.Length == 0);
     }
@@ -170,11 +170,19 @@ public sealed class FornitoreAiOptionsValidator(IAmbienteFornitoreAi ambiente) :
         if (string.IsNullOrEmpty(eseguibile))
             return false;
 
-        var haPercorso = eseguibile.Contains(Path.DirectorySeparatorChar) || eseguibile.Contains(Path.AltDirectorySeparatorChar);
-        if (haPercorso)
+        if (HaPercorso(eseguibile))
             return ambiente.FileEsiste(eseguibile);
 
-        var nome = ambiente.EWindows && Path.GetExtension(eseguibile).Length == 0 ? eseguibile + ".exe" : eseguibile;
+        var nome = ambiente.EWindows && Path.GetExtension(NomeFile(eseguibile)).Length == 0 ? eseguibile + ".exe" : eseguibile;
         return ambiente.EseguibileNelPath(nome);
     }
+
+    // Con le regole Windows sia '\' sia '/' separano i percorsi, indipendentemente dal sistema che esegue il codice.
+    private bool HaPercorso(string valore) =>
+        ambiente.EWindows
+            ? valore.AsSpan().IndexOfAny('\\', '/') >= 0
+            : valore.Contains(Path.DirectorySeparatorChar) || valore.Contains(Path.AltDirectorySeparatorChar);
+
+    private string NomeFile(string valore) =>
+        ambiente.EWindows ? valore[(valore.AsSpan().LastIndexOfAny('\\', '/') + 1)..] : Path.GetFileName(valore);
 }
