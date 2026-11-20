@@ -1,7 +1,9 @@
 using DBEnigmistica.AI.Configuration;
 using DBEnigmistica.AI.Services;
 using DBEnigmistica.Console.Cli;
-using DBEnigmistica.Domain.Interfaces;
+using DBEnigmistica.Application.FornitoreAi;
+using DBEnigmistica.Console.Commands;
+using Microsoft.Extensions.Options;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,32 +45,115 @@ public class FornitoreAiCheckTests
     }
 
     [Fact]
-    public async Task CheckAi_ApiAnthropicConChiaveVuota_EsceConTreEDiceDiImpostareLaChiave()
+    public async Task CheckAi_ApiAnthropic_InFase1_EsceConTreEDiceDiUsareClaudeCode()
     {
         var result = await RunAsync(
             ["check-ai"],
             ("FornitoreAi:Tipo", "api-anthropic"),
             ("FornitoreAi:Modello", "claude-sonnet-5-5"),
-            ("FornitoreAi:Api:ChiaveApi", ""));
+            ("FornitoreAi:Api:ChiaveApi", "CHIAVE-SEGRETA-DI-PROVA"));
 
         result.ExitCode.Should().Be(ExitCodes.Configuration);
-        result.Error.Should().Contain("FornitoreAi__Api__ChiaveApi");
+        result.Error.Should().Contain("api-anthropic non è disponibile in fase 1").And.Contain("claude-code");
+        (result.Output + result.Error).Should().NotContain("CHIAVE-SEGRETA-DI-PROVA");
     }
 
     [Fact]
-    public async Task CheckAi_ConfigurazioneValida_StampaFornitoreEModelloSenzaLaChiaveEEsceConZero()
+    public void CheckAi_ConfigurazioneValida_ConAmbienteFintoDiClaudeCode_StampaFornitoreEModelloEEsceConZero()
     {
-        const string chiave = "CHIAVE-SEGRETA-DI-PROVA";
+        var streams = NewStreams();
+        var opzioni = OpzioniClaudeCode().Value;
+        var ambiente = new AmbienteConChiave(null) { Token = "t", EseguibileNelPathSempre = true };
 
-        var result = await RunAsync(
-            ["check-ai"],
-            ("FornitoreAi:Tipo", "api-anthropic"),
-            ("FornitoreAi:Modello", "modello-di-prova"),
-            ("FornitoreAi:Api:ChiaveApi", chiave));
+        new FornitoreAiOptionsValidator(ambiente).Validate(null, opzioni).Succeeded.Should().BeTrue();
+        var codice = new CheckAiHandler(Options.Create(opzioni), ambiente, streams).Execute();
 
-        result.ExitCode.Should().Be(ExitCodes.Success);
-        result.Output.Should().Contain("api-anthropic").And.Contain("modello-di-prova");
-        (result.Output + result.Error).Should().NotContain(chiave);
+        codice.Should().Be(ExitCodes.Success);
+        streams.Out.ToString()!.Should().Contain("claude-code").And.Contain("claude-sonnet-5-5").And.Contain("Configurazione valida.");
+    }
+
+    [Fact]
+    public void CheckAi_ConChiaveApiNellAmbiente_AvvisaCheNonVerraPassataAClaudeCode()
+    {
+        var streams = NewStreams();
+        var handler = new CheckAiHandler(OpzioniClaudeCode(), new AmbienteConChiave("CHIAVE-SEGRETA"), streams);
+
+        var codice = handler.Execute();
+
+        codice.Should().Be(ExitCodes.Success);
+        var output = streams.Out.ToString()!;
+        output.Should().Contain("Avviso: ANTHROPIC_API_KEY").And.Contain("non verrà passata a Claude Code");
+        output.Should().Contain("Configurazione valida.");
+        output.Should().NotContain("CHIAVE-SEGRETA");
+    }
+
+    [Fact]
+    public void CheckAi_SenzaChiaveApiNellAmbiente_NonStampaAvvisi()
+    {
+        var streams = NewStreams();
+        var handler = new CheckAiHandler(OpzioniClaudeCode(), new AmbienteConChiave(null), streams);
+
+        handler.Execute().Should().Be(ExitCodes.Success);
+
+        streams.Out.ToString()!.Should().NotContain("Avviso");
+    }
+
+    [Fact]
+    public void CheckAi_ApiAnthropic_NonAvvisaSullaChiaveDellAmbiente()
+    {
+        var streams = NewStreams();
+        var opzioni = Options.Create(new FornitoreAiOptions { Tipo = "api-anthropic", Modello = "m" });
+        var handler = new CheckAiHandler(opzioni, new AmbienteConChiave("x"), streams);
+
+        handler.Execute();
+
+        streams.Out.ToString()!.Should().NotContain("Avviso");
+    }
+
+    [Fact]
+    public void Contenitore_RisolveLaPortaDiEstrazioneConLaCatenaDeiDecoratori()
+    {
+        using var host = CliHost.Build(HostRequirements.None, NewStreams(), Impostazioni(
+            ("FornitoreAi:Tipo", "claude-code"),
+            ("FornitoreAi:Modello", "claude-sonnet-5-5"),
+            ("FornitoreAi:ClaudeCode:Eseguibile", "claude")));
+        using var scope = host.Services.CreateScope();
+
+        var fornitore = scope.ServiceProvider.GetRequiredService<IFornitoreAiEstrazione>();
+
+        fornitore.IdFornitore.Should().Be("claude-code");
+        fornitore.Modello.Should().Be("claude-sonnet-5-5");
+        scope.ServiceProvider.GetRequiredService<IRegistroChiamateAi>().Should().BeOfType<RegistroChiamateAiInMemoria>();
+    }
+
+    private static IOptions<FornitoreAiOptions> OpzioniClaudeCode() =>
+        Options.Create(new FornitoreAiOptions
+        {
+            Tipo = "claude-code",
+            Modello = "claude-sonnet-5-5",
+            ClaudeCode = new ClaudeCodeOptions { Eseguibile = "claude" },
+        });
+
+    private sealed class AmbienteConChiave(string? chiave) : IAmbienteFornitoreAi
+    {
+        public string? Token { get; init; }
+
+        public bool EseguibileNelPathSempre { get; init; }
+
+        public string CartellaUtente => "utente";
+
+        public bool EWindows => false;
+
+        public string? Variabile(string nome) => nome switch
+        {
+            "ANTHROPIC_API_KEY" => chiave,
+            "CLAUDE_CODE_OAUTH_TOKEN" => Token,
+            _ => null,
+        };
+
+        public bool FileEsiste(string percorso) => false;
+
+        public bool EseguibileNelPath(string nome) => EseguibileNelPathSempre;
     }
 
     [Theory]

@@ -1,3 +1,4 @@
+using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Domain.Diritti;
 using DBEnigmistica.Domain.AI;
 using DBEnigmistica.Domain.Entities;

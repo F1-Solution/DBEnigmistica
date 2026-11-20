@@ -6,15 +6,15 @@ Lo stato reale del progetto è in [ROADMAP.md](ROADMAP.md). Questo file descrive
 
 ## Stato
 
-**Fase 0 (Fondamenta) in chiusura, in attesa dell'approvazione del proprietario.** Le ondate 0.1-0.3 sono concluse e unite in `main`. La chiusura va con il tag `v0.1.1` dopo la PR (decisioni del 13/11/2026: `docs/fase-0-chiusura-decisioni.md`).
+**Fase 0 (Fondamenta) conclusa il 19/11/2026. Fase 1 (Motore di estrazione) in corso: ondata 1.1 (fondamenta).**
 
-Oggi la riga di comando funziona per la gestione del database, delle soluzioni e dell'esportazione, per la verifica della configurazione dell'AI e per la verifica dell'integrità del registro. La scansione delle Riviste e la creazione dei Giochi non sono ancora disponibili: arrivano dalla fase 1.
+Oggi la riga di comando funziona per la gestione del database, delle soluzioni e dell'esportazione, per la verifica della configurazione dell'AI (login di Claude Code compreso) e per la verifica dell'integrità del registro. La scansione delle Riviste e la creazione dei Giochi non sono ancora disponibili: arrivano dalla fase 1.
 
 ## Requisiti
 
 - .NET 10 SDK
 - Docker Desktop (per PostgreSQL in locale e per i test d'integrazione)
-- Claude Code installato e autenticato, per il Fornitore AI predefinito (vedi [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md))
+- Claude Code installato e autenticato con `claude` e `/login`, per il Fornitore AI predefinito (vedi [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md), sezione 6). Su Windows l'eseguibile deve essere `claude.exe`. Non serve una chiave API; `ANTHROPIC_API_KEY` non deve essere nell'ambiente.
 
 ## Avvio rapido
 
@@ -54,8 +54,20 @@ Il programma si chiama `dbe`. `dbe --help` elenca i comandi. Il flag `--verbose`
 | `verify-solution` | Verifica o rifiuta una soluzione | database |
 | `list-unsolved` | Elenca i Giochi senza soluzione | database |
 | `export-solutions` | Esporta le soluzioni in JSON o CSV | database |
-| `check-ai` | Verifica la configurazione del Fornitore AI, senza chiamate di rete | configurazione AI |
+| `check-ai` | Verifica la configurazione del Fornitore AI e il login di Claude Code, senza chiamate di rete: codice 0 se valida, codice 3 con il messaggio per ogni errore (login mancante, `api-anthropic` non disponibile in fase 1, eseguibile `.cmd` o `.bat`) | configurazione AI |
 | `verify-integrity` | Verifica la catena delle impronte del registro in sola aggiunta: codice 0 e "Registro integro: N eventi verificati.", oppure codice 5 con l'id del primo evento non valido su stderr; codice 1 per gli errori generici, per esempio database non raggiungibile | database |
+
+### Codici d'uscita
+
+| Codice | Significato |
+|---|---|
+| 0 | Riuscito |
+| 1 | Errore generico, per esempio database non raggiungibile |
+| 2 | Comando non ancora disponibile in questa fase |
+| 3 | Configurazione non valida |
+| 4 | Limite dell'esecuzione raggiunto (`FornitoreAi__LimiteChiamate`) |
+| 5 | Registro alterato (`verify-integrity`) |
+| 130 | Operazione annullata |
 
 ### In arrivo
 
@@ -85,7 +97,7 @@ src/
   DBEnigmistica.Domain/          Entità, valori, policy di pubblicazione, registro (nessuna dipendenza)
   DBEnigmistica.Application/     Casi d'uso e servizi (dipende dal Domain)
   DBEnigmistica.Infrastructure/  EF Core, Npgsql, migrazioni, repository, PDF
-  DBEnigmistica.AI/              Fornitore AI (segnaposto fino alla fase 1)
+  DBEnigmistica.AI/              Fornitore AI (adattatore Claude Code, fase 1)
   DBEnigmistica.Console/         Riga di comando dbe, configurazione, presentazione
 tests/
   DBEnigmistica.Tests/           Unit, Integration (PostgreSQL vero), Architecture, EndToEnd (CLI in processo)
@@ -99,6 +111,6 @@ Le direzioni delle dipendenze sono verificate dai test di architettura.
 ## Documenti
 
 - [ROADMAP.md](ROADMAP.md): fasi, stato, decisioni e domande aperte. È la fonte di verità.
-- [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md): preparazione dell'ambiente di sviluppo.
+- [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md): preparazione dell'ambiente di sviluppo, login di Claude Code, Archivio e verifica del rendering.
 - [docs/CI.md](docs/CI.md): flussi GitHub Actions, pubblicazione e creazione dei tag.
 - [docs/adr/README.md](docs/adr/README.md): indice delle decisioni di architettura.

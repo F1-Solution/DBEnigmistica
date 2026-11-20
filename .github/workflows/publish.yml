@@ -171,6 +171,8 @@ jobs:
           # La pubblicazione deve contenere la configurazione e l'eseguibile "dbe".
           test -f "publish/$RID/appsettings.json"
           if [ "$RID" = "win-x64" ]; then test -f "publish/$RID/dbe.exe"; else test -f "publish/$RID/dbe"; fi
+          # Deve esserci la libreria nativa di PDFium del sistema di destinazione.
+          if [ "$RID" = "win-x64" ]; then test -f "publish/$RID/pdfium.dll"; else test -f "publish/$RID/libpdfium.so"; fi
           mkdir -p dist
           name="dbenigmistica-console-${VERSION}-${RID}"
           if [ "$RID" = "win-x64" ]; then

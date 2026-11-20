@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:tipologie:meta:descrittore:1",
+  "title": "Descrittore di Tipologia",
+  "description": "Meta-schema dei descrittori tipologie/<id>/v<n>.json (ADR 002, ROADMAP 2.2). I controlli che JSON Schema non esprime sono elencati in .planning/phases/1/progetto-1.1.md, sezione 2.4.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "versione", "famiglia", "nome", "descrizione", "regole", "campi", "elenchi", "resa", "validatori"],
+  "properties": {
+    "$schema": { "type": "string", "maxLength": 200 },
+    "id": {
+      "description": "Identificativo della Tipologia: minuscole, cifre e trattini singoli, al massimo 30 caratteri.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30,
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "versione": {
+      "description": "Versione della struttura. Cambia quando cambiano campi, elenchi, resa o validatori.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999
+    },
+    "famiglia": {
+      "type": "string",
+      "enum": ["cruciverba", "gioco-breve", "crittografia", "rebus", "logico"]
+    },
+    "nome": {
+      "description": "Nome leggibile, per il prompt e per l'interfaccia.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "descrizione": {
+      "description": "Come si riconosce il Gioco su una pagina. Entra nel prompt di estrazione.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "regole": { "$ref": "#/$defs/regole" },
+    "campi": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 60,
+      "items": { "$ref": "#/$defs/campo" }
+    },
+    "elenchi": {
+      "type": "array",
+      "maxItems": 10,
+      "items": { "$ref": "#/$defs/elenco" }
+    },
+    "resa": { "$ref": "#/$defs/resa" },
+    "validatori": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/validatore" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "resa": { "properties": { "modello": { "const": "griglia" } } } } },
+      "then": {
+        "properties": {
+          "campi": {
+            "allOf": [
+              { "contains": { "$ref": "#/$defs/conRuolo_righe" } },
+              { "contains": { "$ref": "#/$defs/conRuolo_colonne" } },
+              { "contains": { "$ref": "#/$defs/conRuolo_griglia" } }
+            ]
+          },
+          "elenchi": {
+            "contains": {
+              "properties": {
+                "campi": {
+                  "allOf": [
+                    { "contains": { "$ref": "#/$defs/conRuolo_numero" } },
+                    { "contains": { "$ref": "#/$defs/conRuolo_direzione" } },
+                    { "contains": { "$ref": "#/$defs/conRuolo_definizione" } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "resa": { "properties": { "modello": { "const": "esposto_diagramma" } } } } },
+      "then": {
+        "properties": {
+          "campi": {
+            "allOf": [
+              { "contains": { "$ref": "#/$defs/conRuolo_esposto" } },
+              { "contains": { "$ref": "#/$defs/conRuolo_soluzione" } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "resa": { "properties": { "modello": { "const": "immagine_diagramma" } } } } },
+      "then": {
+        "properties": {
+          "campi": {
+            "allOf": [
+              { "contains": { "$ref": "#/$defs/conRuolo_immagine" } },
+              { "contains": { "$ref": "#/$defs/conRuolo_soluzione" } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "resa": { "properties": { "modello": { "const": "griglia_logica" } } } } },
+      "then": {
+        "properties": {
+          "campi": {
+            "allOf": [
+              { "contains": { "$ref": "#/$defs/conRuolo_righe" } },
+              { "contains": { "$ref": "#/$defs/conRuolo_colonne" } },
+              { "contains": { "$ref": "#/$defs/conRuolo_griglia" } }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "identificatore": {
+      "description": "Nome di campo: regex dell'ADR 002, punto 5, escluse le parole riservate di PostgreSQL, le colonne di sistema e i nomi usati dal generatore.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,40}$",
+      "not": { "$ref": "#/$defs/nomiVietati" }
+    },
+    "nomiVietati": {
+      "enum": [
+        "all", "analyse", "analyze", "and", "any", "array", "as", "asc", "asymmetric", "authorization",
+        "binary", "both", "case", "cast", "check", "collate", "collation", "column", "concurrently",
+        "constraint", "create", "cross", "current_catalog", "current_date", "current_role",
+        "current_schema", "current_time", "current_timestamp", "current_user", "default", "deferrable",
+        "desc", "distinct", "do", "else", "end", "except", "false", "fetch", "for", "foreign", "freeze",
+        "from", "full", "grant", "group", "having", "ilike", "in", "initially", "inner", "intersect",
+        "into", "is", "isnull", "join", "lateral", "leading", "left", "like", "limit", "localtime",
+        "localtimestamp", "natural", "not", "notnull", "null", "offset", "on", "only", "or", "order",
+        "outer", "overlaps", "placing", "primary", "references", "returning", "right", "select",
+        "session_user", "similar", "some", "symmetric", "system_user", "table", "tablesample", "then",
+        "to", "trailing", "true", "union", "unique", "user", "using", "variadic", "verbose", "when",
+        "where", "window", "with",
+        "oid", "tableoid", "xmin", "xmax", "cmin", "cmax", "ctid",
+        "id", "gioco_id", "posizione"
+      ]
+    },
+    "testoBreve": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "data": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "tipo": {
+      "description": "Lista chiusa dell'ADR 002, punto 4.",
+      "type": "string",
+      "enum": ["testo", "testo_lungo", "intero", "decimale", "booleano", "data", "enumerazione", "griglia", "immagine"]
+    },
+    "ruolo": {
+      "description": "Funzione del campo nella resa e nelle metriche. Un campo senza ruolo è un dato semplice.",
+      "type": "string",
+      "enum": ["righe", "colonne", "griglia", "numero", "direzione", "definizione", "esposto", "diagramma", "soluzione", "immagine"]
+    },
+    "validatore": {
+      "description": "Lista chiusa dei validatori strutturali, implementati in DBEnigmistica.Tipologie/Validatori.",
+      "type": "string",
+      "enum": [
+        "griglia-coerente-con-dimensioni",
+        "numerazione-coerente-con-griglia",
+        "lunghezze-coerenti",
+        "incroci-coerenti",
+        "diagramma-coerente-con-soluzione",
+        "anagramma-stesse-lettere",
+        "cambio-di-una-lettera"
+      ]
+    },
+    "regole": {
+      "description": "Regole del gioco: bozza di un agente, approvate dal proprietario con data e versione (ADR 002, punto 3).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["testo", "versione", "stato"],
+      "properties": {
+        "testo": { "type": "string", "minLength": 1, "maxLength": 8000 },
+        "versione": { "type": "integer", "minimum": 1 },
+        "stato": { "type": "string", "enum": ["bozza", "approvata"] },
+        "scritte_da": { "$ref": "#/$defs/testoBreve" },
+        "approvate_il": { "$ref": "#/$defs/data" },
+        "approvate_da": { "$ref": "#/$defs/testoBreve" }
+      },
+      "if": { "properties": { "stato": { "const": "approvata" } } },
+      "then": { "required": ["approvate_il", "approvate_da"] },
+      "else": {
+        "not": { "anyOf": [ { "required": ["approvate_il"] }, { "required": ["approvate_da"] } ] }
+      }
+    },
+    "campo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nome", "tipo"],
+      "properties": {
+        "nome": { "$ref": "#/$defs/identificatore" },
+        "etichetta": { "$ref": "#/$defs/testoBreve" },
+        "descrizione": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "tipo": { "$ref": "#/$defs/tipo" },
+        "obbligatorio": { "type": "boolean" },
+        "max": { "type": "integer", "minimum": 1, "maximum": 4000 },
+        "valori": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9_]{1,40}$" }
+        },
+        "indice": { "type": "boolean" },
+        "ruolo": { "$ref": "#/$defs/ruolo" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "tipo": { "const": "testo" } } },
+          "then": { "required": ["max"] },
+          "else": { "not": { "required": ["max"] } }
+        },
+        {
+          "if": { "properties": { "tipo": { "const": "enumerazione" } } },
+          "then": { "required": ["valori"] },
+          "else": { "not": { "required": ["valori"] } }
+        },
+        {
+          "if": { "required": ["indice"], "properties": { "indice": { "const": true } } },
+          "then": { "properties": { "tipo": { "enum": ["intero", "testo", "enumerazione", "data"] } } }
+        },
+        {
+          "if": { "required": ["ruolo"], "properties": { "ruolo": { "enum": ["righe", "colonne", "numero"] } } },
+          "then": { "properties": { "tipo": { "const": "intero" } } }
+        },
+        {
+          "if": { "required": ["ruolo"], "properties": { "ruolo": { "const": "griglia" } } },
+          "then": { "properties": { "tipo": { "const": "griglia" } } }
+        },
+        {
+          "if": { "required": ["ruolo"], "properties": { "ruolo": { "const": "direzione" } } },
+          "then": { "properties": { "tipo": { "const": "enumerazione" } } }
+        },
+        {
+          "if": { "required": ["ruolo"], "properties": { "ruolo": { "enum": ["definizione", "esposto"] } } },
+          "then": { "properties": { "tipo": { "enum": ["testo", "testo_lungo"] } } }
+        },
+        {
+          "if": { "required": ["ruolo"], "properties": { "ruolo": { "enum": ["diagramma", "soluzione"] } } },
+          "then": { "properties": { "tipo": { "const": "testo" } } }
+        },
+        {
+          "if": { "required": ["ruolo"], "properties": { "ruolo": { "const": "immagine" } } },
+          "then": { "properties": { "tipo": { "const": "immagine" } } }
+        }
+      ]
+    },
+    "elenco": {
+      "description": "Lista ripetuta di voci (per esempio le definizioni). Diventa una tabella figlia.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nome", "campi"],
+      "properties": {
+        "nome": {
+          "allOf": [
+            { "$ref": "#/$defs/identificatore" },
+            { "maxLength": 20 }
+          ]
+        },
+        "etichetta": { "$ref": "#/$defs/testoBreve" },
+        "descrizione": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "campi": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "allOf": [
+              { "$ref": "#/$defs/campo" },
+              { "properties": { "tipo": { "not": { "const": "griglia" } } } }
+            ]
+          }
+        }
+      }
+    },
+    "resa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modello"],
+      "properties": {
+        "modello": {
+          "description": "Modelli di resa del Lettore (ADR 002, punto 11).",
+          "type": "string",
+          "enum": ["griglia", "esposto_diagramma", "immagine_diagramma", "griglia_logica"]
+        }
+      }
+    },
+    "conRuolo_righe": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "righe" } } },
+    "conRuolo_colonne": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "colonne" } } },
+    "conRuolo_griglia": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "griglia" } } },
+    "conRuolo_numero": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "numero" } } },
+    "conRuolo_direzione": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "direzione" } } },
+    "conRuolo_definizione": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "definizione" } } },
+    "conRuolo_esposto": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "esposto" } } },
+    "conRuolo_soluzione": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "soluzione" } } },
+    "conRuolo_immagine": { "type": "object", "required": ["ruolo"], "properties": { "ruolo": { "const": "immagine" } } }
+  }
+}

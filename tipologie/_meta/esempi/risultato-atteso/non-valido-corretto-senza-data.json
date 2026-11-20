@@ -1,0 +1,156 @@
+{
+  "versione_formato": 1,
+  "pagina": {
+    "id": "s01",
+    "impronta": "3f0c5a1e9b7d2c4f6a8e0b1d3c5e7f9a2b4c6d8e0f1a3b5c7d9e1f2a4b6c8d0e",
+    "origine": "digitale"
+  },
+  "revisione": {
+    "stato": "corretto",
+    "bozza_da": null,
+    "corretto_da": "agente A, ondata 1.1",
+    "corretto_il": null
+  },
+  "contenuto_pagina": "giochi",
+  "giochi": [
+    {
+      "id": "g01",
+      "stato_tipologia": "nota",
+      "tipologia": "esempio-cruciverba",
+      "versione_tipologia": 1,
+      "titolo": "Cruciverba mini",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.1,
+        "larghezza": 0.84,
+        "altezza": 0.55
+      },
+      "dati": {
+        "righe": 5,
+        "colonne": 5,
+        "griglia": {
+          "righe": 5,
+          "colonne": 5,
+          "celle": [
+            "....#",
+            ".#...",
+            "...#.",
+            "#....",
+            "...#."
+          ],
+          "numeri": [
+            {
+              "riga": 1,
+              "colonna": 1,
+              "numero": 1
+            },
+            {
+              "riga": 1,
+              "colonna": 3,
+              "numero": 2
+            },
+            {
+              "riga": 1,
+              "colonna": 4,
+              "numero": 3
+            },
+            {
+              "riga": 2,
+              "colonna": 3,
+              "numero": 4
+            },
+            {
+              "riga": 2,
+              "colonna": 5,
+              "numero": 5
+            },
+            {
+              "riga": 3,
+              "colonna": 1,
+              "numero": 6
+            },
+            {
+              "riga": 3,
+              "colonna": 2,
+              "numero": 7
+            },
+            {
+              "riga": 4,
+              "colonna": 2,
+              "numero": 8
+            },
+            {
+              "riga": 5,
+              "colonna": 1,
+              "numero": 9
+            }
+          ]
+        },
+        "autore": "Anna Prova",
+        "definizioni": [
+          {
+            "numero": 1,
+            "direzione": "orizzontale",
+            "testo": "Si apre con la chiave",
+            "soluzione": null
+          },
+          {
+            "numero": 4,
+            "direzione": "orizzontale",
+            "testo": "Lo è il cielo senza nuvole",
+            "soluzione": null
+          },
+          {
+            "numero": 6,
+            "direzione": "orizzontale",
+            "testo": "L'opposto di sotto",
+            "soluzione": null
+          },
+          {
+            "numero": 8,
+            "direzione": "orizzontale",
+            "testo": "Fiume di una città inventata",
+            "soluzione": null
+          },
+          {
+            "numero": 9,
+            "direzione": "orizzontale",
+            "testo": "Iniziali di un autore immaginario",
+            "soluzione": null
+          },
+          {
+            "numero": 1,
+            "direzione": "verticale",
+            "testo": "Animale di fantasia con tre code",
+            "soluzione": null
+          },
+          {
+            "numero": 2,
+            "direzione": "verticale",
+            "testo": "Va e viene sulla spiaggia",
+            "soluzione": null
+          },
+          {
+            "numero": 3,
+            "direzione": "verticale",
+            "testo": "Nota musicale",
+            "soluzione": null
+          },
+          {
+            "numero": 5,
+            "direzione": "verticale",
+            "testo": "Parola di prova",
+            "soluzione": null
+          },
+          {
+            "numero": 7,
+            "direzione": "verticale",
+            "testo": "Pronome personale",
+            "soluzione": null
+          }
+        ]
+      }
+    }
+  ],
+  "note": null
+}

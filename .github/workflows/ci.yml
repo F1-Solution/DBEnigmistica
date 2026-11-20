@@ -141,6 +141,24 @@ jobs:
             exit 1
           fi
 
+      # Verifica 1 dell'ADR 009: PDFium funziona nell'immagine chiseled linux-x64.
+      - name: Rendering PDFium nell'immagine
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/png-render"
+          chmod 777 "$RUNNER_TEMP/png-render"
+          docker run --rm -v "$RUNNER_TEMP/png-render:/out" dbe:ci diagnostica-render --salva-png /out
+
+      # Verifica 2 dell'ADR 009: i PNG dei font non incorporati si confrontano a vista.
+      - name: Pubblica i PNG del rendering
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: png-render-chiseled
+          path: ${{ runner.temp }}/png-render
+          if-no-files-found: warn
+          retention-days: 14
+
   vulnerabilities:
     name: Vulnerabilita pacchetti
     runs-on: ubuntu-24.04

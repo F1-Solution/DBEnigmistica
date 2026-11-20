@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\DBEnigmistica.Application\DBEnigmistica.Application.csproj" />
     <ProjectReference Include="..\DBEnigmistica.Domain\DBEnigmistica.Domain.csproj" />
   </ItemGroup>
 
@@ -8,6 +9,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Corvus.Text.Json.Validator" />
   </ItemGroup>
 
   <PropertyGroup>

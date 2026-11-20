@@ -1,0 +1,56 @@
+using System.Diagnostics;
+using System.Text;
+using System.Text.Json;
+
+// Eseguibile finto di Claude Code: stampa risposte preparate in scenario.json e registra ogni invocazione in log.jsonl.
+var cartella = AppContext.BaseDirectory;
+using var lettoreStdin = new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(false));
+var stdin = lettoreStdin.ReadToEnd();
+
+var contatore = Path.Combine(cartella, "conteggio.txt");
+var indice = File.Exists(contatore) ? int.Parse(File.ReadAllText(contatore)) : 0;
+File.WriteAllText(contatore, (indice + 1).ToString());
+
+var cwd = Directory.GetCurrentDirectory();
+var png = Path.Combine(cwd, "pagina.png");
+var voce = new Dictionary<string, object?>
+{
+    ["args"] = args,
+    ["stdin"] = stdin,
+    ["pid"] = Environment.ProcessId,
+    ["cwd"] = cwd,
+    ["file"] = Directory.GetFiles(cwd).Select(Path.GetFileName).ToArray(),
+    ["lunghezzaPng"] = File.Exists(png) ? new FileInfo(png).Length : -1,
+    ["chiaveApi"] = Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY") is not null,
+    ["tokenAuth"] = Environment.GetEnvironmentVariable("ANTHROPIC_AUTH_TOKEN") is not null,
+    ["baseUrl"] = Environment.GetEnvironmentVariable("ANTHROPIC_BASE_URL") is not null,
+};
+File.AppendAllText(Path.Combine(cartella, "log.jsonl"), JsonSerializer.Serialize(voce) + "\n");
+
+var passi = JsonDocument.Parse(File.ReadAllText(Path.Combine(cartella, "scenario.json"))).RootElement;
+var passo = passi[Math.Min(indice, passi.GetArrayLength() - 1)];
+
+if (passo.TryGetProperty("sleepMs", out var sonno))
+    Thread.Sleep(sonno.GetInt32());
+
+// Un nipote che eredita stdout e stderr e vive oltre l'uscita del processo tiene aperte le pipe del chiamante.
+if (passo.TryGetProperty("nipote", out var nipote) && nipote.GetBoolean())
+{
+    var avvioNipote = OperatingSystem.IsWindows() ? new ProcessStartInfo("ping", "-n 10 127.0.0.1") : new ProcessStartInfo("sleep", "10");
+    avvioNipote.UseShellExecute = false;
+    avvioNipote.CreateNoWindow = true;
+    avvioNipote.RedirectStandardInput = true;
+    Process.Start(avvioNipote);
+}
+
+var utf8 = new UTF8Encoding(false);
+using (var uscita = Console.OpenStandardOutput())
+{
+    var testo = passo.TryGetProperty("stdout", out var o) ? o.GetString() ?? "" : "";
+    uscita.Write(utf8.GetBytes(testo));
+}
+
+if (passo.TryGetProperty("stderr", out var e))
+    Console.Error.Write(e.GetString());
+
+return passo.TryGetProperty("exit", out var codice) ? codice.GetInt32() : 0;

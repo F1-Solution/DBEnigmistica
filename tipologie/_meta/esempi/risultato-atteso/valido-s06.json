@@ -1,0 +1,56 @@
+{
+  "versione_formato": 1,
+  "pagina": {
+    "id": "s06",
+    "impronta": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+    "origine": "scansione"
+  },
+  "revisione": {
+    "stato": "bozza",
+    "bozza_da": {
+      "fornitore": "finto",
+      "modello": "finto-1",
+      "versione_prompt": "estrazione-v1-0123456789ab"
+    },
+    "corretto_da": null,
+    "corretto_il": null
+  },
+  "contenuto_pagina": "giochi",
+  "giochi": [
+    {
+      "id": "g01",
+      "stato_tipologia": "nota",
+      "tipologia": "esempio-anagramma",
+      "versione_tipologia": 1,
+      "titolo": "Anagramma",
+      "riquadro": {
+        "x": 0.05,
+        "y": 0.06,
+        "larghezza": 0.42,
+        "altezza": 0.12
+      },
+      "dati": {
+        "esposto": "Il pittore distratto, col pennello in mano, cerca la tela e trova un sorriso.",
+        "diagramma": "5 = 5",
+        "soluzione": null,
+        "autore": null
+      },
+      "campi_non_valutati": [
+        "autore"
+      ]
+    },
+    {
+      "id": "g02",
+      "stato_tipologia": "proposta",
+      "famiglia": "gioco-breve",
+      "titolo": "Scarto",
+      "riquadro": {
+        "x": 0.52,
+        "y": 0.06,
+        "larghezza": 0.43,
+        "altezza": 0.14
+      }
+    }
+  ],
+  "note": "Pagina inventata per l'esempio."
+}

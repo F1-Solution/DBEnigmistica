@@ -1,5 +1,5 @@
+using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Domain.AI;
-using DBEnigmistica.Domain.Interfaces;
 
 namespace DBEnigmistica.AI.Services;
 

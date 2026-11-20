@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:tipologie:meta:risultato-atteso:1",
+  "title": "Risultato atteso di una pagina",
+  "description": "Un file per pagina di un set (Set sintetico o Set di riferimento). I 'dati' hanno la stessa forma della risposta del Fornitore AI e si controllano anche con lo schema derivato dal descrittore. Le definizioni 'riquadro' e 'griglia' devono restare identiche a quelle di risposta-pagina.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["versione_formato", "pagina", "revisione", "contenuto_pagina", "giochi", "note"],
+  "properties": {
+    "versione_formato": { "const": 1 },
+    "pagina": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "impronta", "origine"],
+      "properties": {
+        "id": {
+          "description": "Identificativo della pagina nel set, uguale al nome del file senza estensione.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+        },
+        "impronta": {
+          "description": "Impronta SHA-256 della pagina, in esadecimale minuscolo. È la stessa della chiave delle Registrazioni.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "origine": {
+          "description": "Gruppo di aggregazione delle metriche.",
+          "type": "string",
+          "enum": ["digitale", "scansione"]
+        }
+      }
+    },
+    "revisione": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stato", "bozza_da", "corretto_da", "corretto_il"],
+      "properties": {
+        "stato": { "type": "string", "enum": ["bozza", "corretto"] },
+        "bozza_da": {
+          "description": "Registrazione da cui dbe eval draft ha prodotto la bozza, oppure null se scritto a mano.",
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["fornitore", "modello", "versione_prompt"],
+              "properties": {
+                "fornitore": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,39}$" },
+                "modello": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9._-]{0,98}[a-z0-9])?$" },
+                "versione_prompt": { "type": "string", "pattern": "^estrazione-v[0-9]{1,3}-[0-9a-f]{12}$" }
+              }
+            }
+          ]
+        },
+        "corretto_da": { "anyOf": [ { "type": "null" }, { "type": "string", "minLength": 1, "maxLength": 100 } ] },
+        "corretto_il": {
+          "anyOf": [ { "type": "null" }, { "type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$" } ]
+        }
+      },
+      "if": { "properties": { "stato": { "const": "corretto" } } },
+      "then": {
+        "properties": {
+          "corretto_da": { "type": "string" },
+          "corretto_il": { "type": "string" }
+        }
+      },
+      "else": {
+        "properties": {
+          "corretto_da": { "type": "null" },
+          "corretto_il": { "type": "null" }
+        }
+      }
+    },
+    "contenuto_pagina": {
+      "type": "string",
+      "enum": ["giochi", "soluzioni", "copertina", "indice", "pubblicita", "altro"]
+    },
+    "giochi": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "anyOf": [ { "$ref": "#/$defs/attesoNoto" }, { "$ref": "#/$defs/attesoProposto" } ] }
+    },
+    "note": { "anyOf": [ { "type": "null" }, { "type": "string", "minLength": 1, "maxLength": 2000 } ] }
+  },
+  "$defs": {
+    "idGioco": {
+      "description": "Identificativo del Gioco atteso nella pagina, usato nei rapporti.",
+      "type": "string",
+      "pattern": "^g[0-9]{2}$"
+    },
+    "titolo": { "anyOf": [ { "type": "null" }, { "type": "string", "minLength": 1, "maxLength": 200 } ] },
+    "riquadro": {
+      "description": "Riquadro normalizzato: origine in alto a sinistra, valori tra 0 e 1 rispetto a larghezza e altezza della pagina.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "larghezza", "altezza"],
+      "properties": {
+        "x": { "type": "number", "minimum": 0, "maximum": 1 },
+        "y": { "type": "number", "minimum": 0, "maximum": 1 },
+        "larghezza": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "altezza": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+      }
+    },
+    "griglia": {
+      "description": "Valore del tipo 'griglia'. Una stringa per riga: '#' casella nera, '.' casella bianca vuota, 'A'-'Z' lettera stampata, '?' casella illeggibile. Numeri con riga e colonna da 1.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["righe", "colonne", "celle", "numeri"],
+      "properties": {
+        "righe": { "type": "integer", "minimum": 1, "maximum": 60 },
+        "colonne": { "type": "integer", "minimum": 1, "maximum": 60 },
+        "celle": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 60,
+          "items": { "type": "string", "minLength": 1, "maxLength": 60, "pattern": "^[#.?A-Z]+$" }
+        },
+        "numeri": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["riga", "colonna", "numero"],
+            "properties": {
+              "riga": { "type": "integer", "minimum": 1, "maximum": 60 },
+              "colonna": { "type": "integer", "minimum": 1, "maximum": 60 },
+              "numero": { "type": "integer", "minimum": 1, "maximum": 999 }
+            }
+          }
+        }
+      }
+    },
+    "attesoNoto": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "stato_tipologia", "tipologia", "versione_tipologia", "titolo", "riquadro", "dati"],
+      "properties": {
+        "id": { "$ref": "#/$defs/idGioco" },
+        "stato_tipologia": { "const": "nota" },
+        "tipologia": { "type": "string", "maxLength": 30, "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+        "versione_tipologia": { "type": "integer", "minimum": 1, "maximum": 999 },
+        "titolo": { "$ref": "#/$defs/titolo" },
+        "riquadro": { "$ref": "#/$defs/riquadro" },
+        "dati": {
+          "description": "Stessa forma di 'dati' nella risposta derivata dal descrittore.",
+          "type": "object"
+        },
+        "campi_non_valutati": {
+          "description": "Campi o elenchi illeggibili anche per il proprietario: restano fuori da CER, caselle e campi esatti.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,40}$" }
+        }
+      }
+    },
+    "attesoProposto": {
+      "description": "Gioco di Tipologia non prevista: conta per richiamo e precisione, non per i dati.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "stato_tipologia", "famiglia", "titolo", "riquadro"],
+      "properties": {
+        "id": { "$ref": "#/$defs/idGioco" },
+        "stato_tipologia": { "const": "proposta" },
+        "famiglia": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "string", "enum": ["cruciverba", "gioco-breve", "crittografia", "rebus", "logico"] }
+          ]
+        },
+        "titolo": { "$ref": "#/$defs/titolo" },
+        "riquadro": { "$ref": "#/$defs/riquadro" }
+      }
+    }
+  }
+}

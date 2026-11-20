@@ -1,6 +1,6 @@
 using DBEnigmistica.Domain.AI;
 
-namespace DBEnigmistica.Domain.Interfaces;
+namespace DBEnigmistica.Application.FornitoreAi;
 
 /// <summary>
 /// Servizio per l'interazione con AI per analisi giochi enigmistici

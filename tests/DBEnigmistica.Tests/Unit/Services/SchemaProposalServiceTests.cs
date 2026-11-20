@@ -1,3 +1,4 @@
+using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Application.Services.Schema;
 using DBEnigmistica.Domain.AI;
 using DBEnigmistica.Domain.Interfaces;
