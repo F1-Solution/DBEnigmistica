@@ -1,0 +1,662 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:risposta-pagina:catalogo",
+  "title": "Risposta per pagina, derivata dal catalogo dei descrittori",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versione_formato",
+    "contenuto_pagina",
+    "rivista",
+    "giochi",
+    "avvisi"
+  ],
+  "properties": {
+    "versione_formato": {
+      "const": 1
+    },
+    "contenuto_pagina": {
+      "$ref": "#/$defs/contenutoPagina"
+    },
+    "rivista": {
+      "description": "Metadati della Rivista se la pagina li mostra (di solito la copertina), altrimenti null.",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/metadatiRivista"
+        }
+      ]
+    },
+    "giochi": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/gioco_esempio_anagramma"
+          },
+          {
+            "$ref": "#/$defs/gioco_esempio_cruciverba"
+          },
+          {
+            "$ref": "#/$defs/giocoProposto"
+          }
+        ]
+      }
+    },
+    "avvisi": {
+      "$ref": "#/$defs/avvisi"
+    }
+  },
+  "$defs": {
+    "contenutoPagina": {
+      "type": "string",
+      "enum": [
+        "giochi",
+        "soluzioni",
+        "copertina",
+        "indice",
+        "pubblicita",
+        "altro"
+      ]
+    },
+    "famiglia": {
+      "type": "string",
+      "enum": [
+        "cruciverba",
+        "gioco-breve",
+        "crittografia",
+        "rebus",
+        "logico"
+      ]
+    },
+    "testoONull": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      ]
+    },
+    "metadatiRivista": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "testata",
+        "numero",
+        "anno",
+        "data_pubblicazione",
+        "periodicita"
+      ],
+      "properties": {
+        "testata": {
+          "$ref": "#/$defs/testoONull"
+        },
+        "numero": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
+            }
+          ]
+        },
+        "anno": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 1900,
+              "maximum": 2100
+            }
+          ]
+        },
+        "data_pubblicazione": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+            }
+          ]
+        },
+        "periodicita": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "settimanale",
+                "quindicinale",
+                "mensile",
+                "bimestrale",
+                "trimestrale",
+                "altra"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "riquadro": {
+      "description": "Riquadro normalizzato: origine in alto a sinistra, valori tra 0 e 1 rispetto a larghezza e altezza della pagina.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y",
+        "larghezza",
+        "altezza"
+      ],
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "larghezza": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "altezza": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "griglia": {
+      "description": "Valore del tipo 'griglia'. Una stringa per riga: '#' casella nera, '.' casella bianca vuota, 'A'-'Z' lettera stampata, '?' casella illeggibile. Numeri con riga e colonna da 1.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "righe",
+        "colonne",
+        "celle",
+        "numeri"
+      ],
+      "properties": {
+        "righe": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "colonne": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "celle": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 60,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "pattern": "^[#.?A-Z]+$"
+          }
+        },
+        "numeri": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "riga",
+              "colonna",
+              "numero"
+            ],
+            "properties": {
+              "riga": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60
+              },
+              "colonna": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60
+              },
+              "numero": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 999
+              }
+            }
+          }
+        }
+      }
+    },
+    "probabilita": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "avvisi": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    },
+    "giocoProposto": {
+      "description": "Gioco di una Tipologia non presente nel catalogo: si salva come nuova tipologia proposta (criterio 7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stato_tipologia",
+        "tipologia_proposta",
+        "titolo",
+        "riquadro",
+        "trascrizione",
+        "confidenza",
+        "avvisi"
+      ],
+      "properties": {
+        "stato_tipologia": {
+          "const": "proposta"
+        },
+        "tipologia_proposta": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "nome",
+            "famiglia",
+            "descrizione"
+          ],
+          "properties": {
+            "nome": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "famiglia": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/famiglia"
+                }
+              ]
+            },
+            "descrizione": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          }
+        },
+        "titolo": {
+          "$ref": "#/$defs/testoONull"
+        },
+        "riquadro": {
+          "$ref": "#/$defs/riquadro"
+        },
+        "trascrizione": {
+          "description": "Testo visibile del Gioco, riga per riga, senza risolverlo.",
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8000
+            }
+          ]
+        },
+        "confidenza": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gioco",
+            "tipologia"
+          ],
+          "properties": {
+            "gioco": {
+              "$ref": "#/$defs/probabilita"
+            },
+            "tipologia": {
+              "$ref": "#/$defs/probabilita"
+            }
+          }
+        },
+        "avvisi": {
+          "$ref": "#/$defs/avvisi"
+        }
+      }
+    },
+    "gioco_esempio_anagramma": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stato_tipologia",
+        "tipologia",
+        "versione_tipologia",
+        "titolo",
+        "riquadro",
+        "dati",
+        "confidenza",
+        "avvisi"
+      ],
+      "properties": {
+        "stato_tipologia": {
+          "const": "nota"
+        },
+        "tipologia": {
+          "const": "esempio-anagramma"
+        },
+        "versione_tipologia": {
+          "const": 1
+        },
+        "titolo": {
+          "$ref": "#/$defs/testoONull"
+        },
+        "riquadro": {
+          "$ref": "#/$defs/riquadro"
+        },
+        "dati": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "esposto",
+            "diagramma",
+            "soluzione",
+            "autore"
+          ],
+          "properties": {
+            "esposto": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "diagramma": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            },
+            "soluzione": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            },
+            "autore": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            }
+          }
+        },
+        "confidenza": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gioco",
+            "tipologia",
+            "campi",
+            "elenchi"
+          ],
+          "properties": {
+            "gioco": {
+              "$ref": "#/$defs/probabilita"
+            },
+            "tipologia": {
+              "$ref": "#/$defs/probabilita"
+            },
+            "campi": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "esposto",
+                "diagramma",
+                "soluzione",
+                "autore"
+              ],
+              "properties": {
+                "esposto": {
+                  "$ref": "#/$defs/probabilita"
+                },
+                "diagramma": {
+                  "$ref": "#/$defs/probabilita"
+                },
+                "soluzione": {
+                  "$ref": "#/$defs/probabilita"
+                },
+                "autore": {
+                  "$ref": "#/$defs/probabilita"
+                }
+              }
+            },
+            "elenchi": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [],
+              "properties": {}
+            }
+          }
+        },
+        "avvisi": {
+          "$ref": "#/$defs/avvisi"
+        }
+      }
+    },
+    "gioco_esempio_cruciverba": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stato_tipologia",
+        "tipologia",
+        "versione_tipologia",
+        "titolo",
+        "riquadro",
+        "dati",
+        "confidenza",
+        "avvisi"
+      ],
+      "properties": {
+        "stato_tipologia": {
+          "const": "nota"
+        },
+        "tipologia": {
+          "const": "esempio-cruciverba"
+        },
+        "versione_tipologia": {
+          "const": 1
+        },
+        "titolo": {
+          "$ref": "#/$defs/testoONull"
+        },
+        "riquadro": {
+          "$ref": "#/$defs/riquadro"
+        },
+        "dati": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "righe",
+            "colonne",
+            "griglia",
+            "autore",
+            "definizioni"
+          ],
+          "properties": {
+            "righe": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60
+            },
+            "colonne": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60
+            },
+            "griglia": {
+              "$ref": "#/$defs/griglia"
+            },
+            "autore": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              ]
+            },
+            "definizioni": {
+              "type": "array",
+              "maxItems": 500,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "numero",
+                  "direzione",
+                  "testo",
+                  "soluzione"
+                ],
+                "properties": {
+                  "numero": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 999
+                  },
+                  "direzione": {
+                    "type": "string",
+                    "enum": [
+                      "orizzontale",
+                      "verticale"
+                    ]
+                  },
+                  "testo": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "soluzione": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "confidenza": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gioco",
+            "tipologia",
+            "campi",
+            "elenchi"
+          ],
+          "properties": {
+            "gioco": {
+              "$ref": "#/$defs/probabilita"
+            },
+            "tipologia": {
+              "$ref": "#/$defs/probabilita"
+            },
+            "campi": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "righe",
+                "colonne",
+                "griglia",
+                "autore"
+              ],
+              "properties": {
+                "righe": {
+                  "$ref": "#/$defs/probabilita"
+                },
+                "colonne": {
+                  "$ref": "#/$defs/probabilita"
+                },
+                "griglia": {
+                  "$ref": "#/$defs/probabilita"
+                },
+                "autore": {
+                  "$ref": "#/$defs/probabilita"
+                }
+              }
+            },
+            "elenchi": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "definizioni"
+              ],
+              "properties": {
+                "definizioni": {
+                  "$ref": "#/$defs/probabilita"
+                }
+              }
+            }
+          }
+        },
+        "avvisi": {
+          "$ref": "#/$defs/avvisi"
+        }
+      }
+    }
+  }
+}

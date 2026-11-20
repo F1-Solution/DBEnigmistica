@@ -111,13 +111,14 @@ public static class CliHost
                 .ValidateOnStart();
         }
 
+        // Le opzioni e l'ambiente sono sempre registrati per il contenitore; la validazione parte solo con il requisito Ai.
+        services.AddSingleton<IAmbienteFornitoreAi, AmbienteFornitoreAi>();
+        var opzioniAi = services.AddOptions<FornitoreAiOptions>().BindConfiguration(FornitoreAiOptions.SectionName);
+
         if (requirements.HasFlag(HostRequirements.Ai))
         {
-            services.AddSingleton<IAmbienteFornitoreAi, AmbienteFornitoreAi>();
             services.AddSingleton<IValidateOptions<FornitoreAiOptions>, FornitoreAiOptionsValidator>();
-            services.AddOptions<FornitoreAiOptions>()
-                .BindConfiguration(FornitoreAiOptions.SectionName)
-                .ValidateOnStart();
+            opzioniAi.ValidateOnStart();
         }
     }
 }

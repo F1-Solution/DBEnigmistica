@@ -15,7 +15,10 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="bblanchon.PDFium.Linux" />
+    <PackageReference Include="bblanchon.PDFium.Win32" />
     <PackageReference Include="PdfPig" />
+    <PackageReference Include="PDFiumCore" />
   </ItemGroup>
 
   <PropertyGroup>

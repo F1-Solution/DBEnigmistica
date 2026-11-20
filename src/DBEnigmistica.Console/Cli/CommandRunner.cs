@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using DBEnigmistica.Application.FornitoreAi;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -35,6 +36,11 @@ public sealed class CommandRunner(CliStreams streams, Action<IConfigurationBuild
                 streams.Error.WriteLine(failure);
 
             return ExitCodes.Configuration;
+        }
+        catch (Exception ex) when (Flatten(ex).OfType<LimiteEsecuzioneRaggiuntoException>().Any())
+        {
+            streams.Error.WriteLine("Limite dell'esecuzione raggiunto");
+            return ExitCodes.LimitReached;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

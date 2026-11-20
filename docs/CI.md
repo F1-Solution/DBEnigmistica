@@ -17,7 +17,8 @@ Test e pubblicazione avvengono solo tramite GitHub Actions. Non serve alcun segr
   I test end-to-end della CLI (categoria `EndToEnd`) girano in questo stesso passo, contro PostgreSQL 18. I risultati dei test e la copertura compaiono nel riepilogo del lavoro e nell'artefatto `test-results` (14 giorni).
 - **Vulnerabilita pacchetti** (lavoro "Vulnerabilita pacchetti"): `dotnet list package --vulnerable --include-transitive`, anche per le dipendenze transitive. Il comando esce con 0 anche quando trova vulnerabilità, quindi lo script controlla il testo del rapporto e fallisce se trova qualcosa.
 - **Controllo segreti** (lavoro "Controllo segreti"): gitleaks sull'intera storia git, con i valori oscurati nei log (`--redact`). Si usa il programma da riga di comando, verificato con checksum, perché l'azione ufficiale richiede una licenza nei repository di organizzazione. In locale lo stesso controllo gira come hook `pre-commit` (sezione "Hook locale" più sotto).
-- **Build immagine Docker** (lavoro "Build immagine Docker"): costruisce il `Dockerfile` senza pubblicarlo e verifica che `--version` stampi `0.0.0`, la versione predefinita.
+- **Build immagine Docker** (lavoro "Build immagine Docker"): costruisce il `Dockerfile` senza pubblicarlo e verifica che `--version` stampi `0.0.0`, la versione predefinita. Poi esegue `diagnostica-render --salva-png` nell'immagine, per verificare PDFium, e pubblica i PNG come artefatto `png-render-chiseled` (14 giorni). Il lavoro è rosso se il rendering fallisce.
+  - Il `Dockerfile` ammette una sola libreria nativa nella pubblicazione: `libpdfium.so` per linux-x64. Ogni altro file nativo (`.so`, `.dylib`, `pdfium.dll` o cartelle `runtimes/*/native`) fa fallire la build.
 
 ### Publish (`.github/workflows/publish.yml`)
 
@@ -27,7 +28,7 @@ Test e pubblicazione avvengono solo tramite GitHub Actions. Non serve alcun segr
   2. **Commit da main**: verifica che il commit discenda da `origin/main` (`.github/scripts/verifica-tag-da-main.sh`). Un tag su un commit fuori da `main` fa fallire il flusso prima di pubblicare.
   3. **Versione**: il tag deve essere `vX.Y.Z` o `vX.Y.Z-suffisso`. L'avvio manuale produce la versione `0.0.0-manual.<sha>`.
   4. **Immagine console (GHCR)**: costruisce il `Dockerfile` con `VERSION` e lo pubblica su `ghcr.io/f1-solution/dbenigmistica` con i tag `X.Y.Z`, `sha-<7 caratteri>` e `latest`. `latest` non va alle versioni con suffisso e agli avvii manuali da rami diversi da `main`.
-  5. **Eseguibile console** (`win-x64` e `linux-x64`): pubblicazione autonoma, con verifica che l'archivio contenga `appsettings.json` e l'eseguibile `dbe` (`dbe.exe` su Windows).
+  5. **Eseguibile console** (`win-x64` e `linux-x64`): pubblicazione autonoma, con verifica che l'archivio contenga `appsettings.json`, l'eseguibile `dbe` (`dbe.exe` su Windows) e la libreria PDFium (`pdfium.dll` su Windows, `libpdfium.so` su Linux).
   6. **GitHub Release** (solo da tag): crea la release con note generate, gli archivi `dbenigmistica-console-X.Y.Z-win-x64.zip` e `dbenigmistica-console-X.Y.Z-linux-x64.tar.gz`. Le versioni con suffisso sono marcate come prerelease. L'avvio manuale non crea release.
 
 ### Dependabot (`.github/dependabot.yml`)
@@ -48,11 +49,14 @@ Senza questa impostazione git non esegue l'hook. Se gitleaks non è installato, 
 
 Nel container la configurazione arriva solo da variabili d'ambiente (gli user-secrets valgono solo in Development, con `dotnet run`); l'immagine non contiene segreti. Le chiavi sono quelle della sezione `FornitoreAi` (`docs/adr/004-fornitore-ai.md`):
 
-- `FornitoreAi__Tipo`: `claude-code` (predefinito) oppure `api-anthropic`.
+- `FornitoreAi__Tipo`: `claude-code`, l'unico valore disponibile in fase 1.
 - `FornitoreAi__Modello`: modello usato dal fornitore.
-- `FornitoreAi__ClaudeCode__Eseguibile`: eseguibile di Claude Code.
-- `FornitoreAi__Api__ChiaveApi`: solo con `api-anthropic`.
-- `CLAUDE_CODE_OAUTH_TOKEN`: token di Claude Code, in alternativa all'accesso con `claude`.
+- `FornitoreAi__ClaudeCode__Eseguibile`: eseguibile di Claude Code. Su Windows deve essere `claude.exe`.
+- `FornitoreAi__ClaudeCode__TimeoutSecondi`: tempo massimo di una chiamata, da 1 a 3600 secondi (predefinito 300).
+- `FornitoreAi__LimiteChiamate`: numero massimo di chiamate reali per esecuzione, almeno 1 (predefinito: nessun limite). Al limite il comando esce con codice 4.
+- `FornitoreAi__Registrazioni__Modalita` e `FornitoreAi__Registrazioni__Cartella`: Registrazioni delle risposte per pagina (sezione 6.2 di `SETUP_INSTRUCTIONS.md`). Con `riproduci` non serve Claude Code.
+- `Archivio__Cartella`: cartella assoluta dell'Archivio.
+- `Estrazione__Dpi`: risoluzione del rendering, numero intero da 150 a 300 (predefinito 200).
 
 Per la connessione al database: `ConnectionStrings__DefaultConnection`.
 
@@ -62,9 +66,15 @@ docker run --rm \
   ghcr.io/f1-solution/dbenigmistica:latest --help
 ```
 
-L'immagine oggi non contiene Claude Code. Con il fornitore predefinito, i comandi che usano l'AI nel container falliscono la validazione finché la fase 1 non porta l'eseguibile nel container (`docs/adr/004-fornitore-ai.md`).
+Non usare chiavi API. In fase 1 il login di Claude Code si fa con `/login` su Windows (`docs/adr/010-estrazione-dal-vivo-con-claude-code.md`, `SETUP_INSTRUCTIONS.md` sezione 6.1). `CLAUDE_CODE_OAUTH_TOKEN` non va usato in fase 1: la decisione del proprietario è ancora aperta.
+
+L'immagine non contiene Claude Code. L'estrazione dal vivo gira su Windows con il login di Claude Code: nel container il fornitore predefinito fallisce la validazione, con codice 3.
 
 Per scaricare l'immagine serve un account con accesso al pacchetto (`docker login ghcr.io` con un token che ha `read:packages`).
+
+## Rami di lavoro
+
+Ogni ondata della fase 1 lavora su un ramo `fase-1/ondata-1.<n>`, creato da `main` aggiornato. La ondata si chiude con una pull request verso `main`. La CI parte su ogni pull request.
 
 ## Creare una versione
 
@@ -75,7 +85,7 @@ git tag -a v1.0.0 -m "Versione 1.0.0"
 git push origin v1.0.0
 ```
 
-Il tag fa partire Publish. Se un tag è stato creato per errore, eliminarlo (`git push origin :refs/tags/v1.0.0`) prima che la pubblicazione termini, e cancellare l'eventuale release.
+Il tag fa partire Publish. Un tag con suffisso (per esempio `v0.2.0-prova.1`) crea una pre-release: la release è marcata come prerelease e l'immagine non riceve il tag `latest`. Il tag deve puntare a un commit già unito in `main`, altrimenti Publish si ferma. Se un tag è stato creato per errore, eliminarlo (`git push origin :refs/tags/v1.0.0`) prima che la pubblicazione termini, e cancellare l'eventuale release.
 
 ## Impostazioni da fare a mano su GitHub
 

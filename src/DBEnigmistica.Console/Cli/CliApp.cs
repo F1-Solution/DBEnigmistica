@@ -63,6 +63,7 @@ public static class CliApp
         root.Subcommands.Add(new ExportSolutionsCommand(runner));
         root.Subcommands.Add(new CheckAiCommand(runner));
         root.Subcommands.Add(new VerifyIntegrityCommand(runner));
+        root.Subcommands.Add(new DiagnosticaRenderCommand(runner));
 
         root.SetAction(_ =>
         {

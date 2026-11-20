@@ -1,4 +1,4 @@
-using DBEnigmistica.Console.Configuration;
+using DBEnigmistica.AI.Configuration;
 using FluentAssertions;
 
 namespace DBEnigmistica.Tests.Unit.Cli;
@@ -78,7 +78,7 @@ public class FornitoreAiOptionsValidatorTests
         var ambiente = new FakeAmbienteFornitoreAi { NelPath = { "claude" } };
 
         Fallimenti(ClaudeCode(), ambiente).Should().ContainSingle().Which.Should().Be(
-            "Claude Code non autenticato: imposta CLAUDE_CODE_OAUTH_TOKEN oppure esegui l'accesso con claude.");
+            "Claude Code non autenticato: esegui claude e poi /login");
     }
 
     [Fact]
@@ -108,36 +108,109 @@ public class FornitoreAiOptionsValidatorTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void ApiAnthropic_ConChiaveVuota_ChiedeDiImpostareLaChiave(string? chiave)
+    [InlineData("chiave-di-prova")]
+    public void ApiAnthropic_InFase1_ERifiutatoConUnMessaggioChiaro(string? chiave)
     {
-        Fallimenti(Api(chiave), new FakeAmbienteFornitoreAi()).Should()
-            .ContainSingle().Which.Should().Be("Chiave API mancante: imposta FornitoreAi__Api__ChiaveApi.");
+        Fallimenti(Api(chiave), new FakeAmbienteFornitoreAi()).Should().ContainSingle().Which.Should().Be(
+            "Il Fornitore AI api-anthropic non è disponibile in fase 1: imposta FornitoreAi__Tipo=claude-code.");
+    }
+
+    [Theory]
+    [InlineData("claude.cmd")]
+    [InlineData("claude.bat")]
+    [InlineData("C:\\x\\claude.cmd")]
+    [InlineData("C:\\x\\claude")]
+    [InlineData("C:\\x\\claude.cmd.")]
+    public void ClaudeCode_SuWindows_AccettaSoloExe(string eseguibile)
+    {
+        var ambiente = new FakeAmbienteFornitoreAi { EWindows = true, Token = "t", File = { eseguibile }, NelPath = { eseguibile } };
+
+        Fallimenti(ClaudeCode(eseguibile), ambiente).Should().ContainSingle().Which.Should().StartWith("Serve l'eseguibile nativo di Claude Code (.exe)");
     }
 
     [Fact]
-    public void ApiAnthropic_ConChiave_EValido()
+    public void ClaudeCode_SuWindows_NomeSenzaEstensioneCercaSoloExeNelPath()
     {
-        Fallimenti(Api("chiave-di-prova"), new FakeAmbienteFornitoreAi()).Should().BeEmpty();
+        var soloCmd = new FakeAmbienteFornitoreAi { EWindows = true, Token = "t", NelPath = { "claude.cmd", "claude" } };
+        var conExe = new FakeAmbienteFornitoreAi { EWindows = true, Token = "t", NelPath = { "claude.exe" } };
+
+        Fallimenti(ClaudeCode("claude"), soloCmd).Should().ContainSingle().Which.Should().StartWith("Claude Code non trovato");
+        Fallimenti(ClaudeCode("claude"), conExe).Should().BeEmpty();
     }
 
     [Fact]
-    public void ApiAnthropic_NonRichiedeClaudeCode()
+    public void ClaudeCode_SuWindows_PercorsoExeEsistente_EValido()
     {
-        Fallimenti(Api("chiave-di-prova"), new FakeAmbienteFornitoreAi()).Should()
-            .NotContain(f => f.Contains("Claude Code"));
+        var percorso = "C:\\x\\CLAUDE.EXE";
+
+        Fallimenti(ClaudeCode(percorso), new FakeAmbienteFornitoreAi { EWindows = true, Token = "t", File = { percorso } }).Should().BeEmpty();
     }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    [InlineData(3601)]
+    public void Timeout_FuoriIntervallo_ERifiutato(int secondi)
+    {
+        var options = ClaudeCode();
+        options.ClaudeCode.TimeoutSecondi = secondi;
+
+        Fallimenti(options, Valido()).Should().ContainSingle().Which.Should().Contain("TimeoutSecondi").And.Contain("3600");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(1)]
+    [InlineData(3600)]
+    public void Timeout_Valido_EAccettato(int? secondi)
+    {
+        var options = ClaudeCode();
+        options.ClaudeCode.TimeoutSecondi = secondi;
+
+        Fallimenti(options, Valido()).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void LimiteChiamate_SottoUno_ERifiutato(int limite)
+    {
+        var options = ClaudeCode();
+        options.LimiteChiamate = limite;
+
+        Fallimenti(options, Valido()).Should().ContainSingle().Which.Should().Contain("LimiteChiamate");
+    }
+
+    [Fact]
+    public void Riproduzione_NonRichiedeEseguibileNeLogin()
+    {
+        var options = ClaudeCode();
+        options.Registrazioni = new RegistrazioniOptions { Modalita = "riproduci", Cartella = "c:\\reg" };
+
+        Fallimenti(options, new FakeAmbienteFornitoreAi()).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Registrazioni_SonoValidateAncheSeClaudeCodeNonVa()
+    {
+        var options = ClaudeCode();
+        options.Registrazioni = new RegistrazioniOptions { Modalita = "registra", Cartella = null };
+
+        Fallimenti(options, new FakeAmbienteFornitoreAi()).Should().Contain(f => f.StartsWith("Cartella delle Registrazioni mancante"))
+            .And.Contain(f => f.StartsWith("Claude Code non trovato"));
+    }
+
+    private static FakeAmbienteFornitoreAi Valido() => new() { Token = "t", NelPath = { "claude" } };
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     public void Modello_Vuoto_ChiedeDiImpostareFornitoreAiModello(string? modello)
     {
-        var options = Api("chiave-di-prova");
+        var options = ClaudeCode();
         options.Modello = modello;
 
-        Fallimenti(options, new FakeAmbienteFornitoreAi()).Should()
+        Fallimenti(options, Valido()).Should()
             .ContainSingle().Which.Should().Be("Modello del Fornitore AI mancante: imposta FornitoreAi__Modello.");
     }
 
@@ -149,20 +222,9 @@ public class FornitoreAiOptionsValidatorTests
         Fallimenti(options, new FakeAmbienteFornitoreAi()).Should().HaveCount(3);
     }
 
-    [Fact]
-    public void LaChiaveApi_NonCompareNeiMessaggi()
-    {
-        const string chiave = "CHIAVE-SEGRETA-DI-PROVA";
-        var options = Api(chiave);
-        options.Modello = "";
-
-        var messaggi = string.Join('\n', Fallimenti(options, new FakeAmbienteFornitoreAi()));
-
-        messaggi.Should().NotContain(chiave);
-    }
-
     private sealed class FakeAmbienteFornitoreAi : IAmbienteFornitoreAi
     {
+        public bool EWindows { get; init; }
         public string? Token { get; init; }
         public HashSet<string> NelPath { get; } = [];
         public HashSet<string> File { get; } = [];

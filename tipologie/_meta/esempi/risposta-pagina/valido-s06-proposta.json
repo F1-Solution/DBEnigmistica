@@ -1,0 +1,67 @@
+{
+  "versione_formato": 1,
+  "contenuto_pagina": "giochi",
+  "rivista": {
+    "testata": "La Settimana di Prova",
+    "numero": "12",
+    "anno": 2026,
+    "data_pubblicazione": null,
+    "periodicita": "settimanale"
+  },
+  "giochi": [
+    {
+      "stato_tipologia": "nota",
+      "tipologia": "esempio-anagramma",
+      "versione_tipologia": 1,
+      "titolo": "Anagramma",
+      "riquadro": {
+        "x": 0.05,
+        "y": 0.06,
+        "larghezza": 0.42,
+        "altezza": 0.12
+      },
+      "dati": {
+        "esposto": "Il pittore distratto, col pennello in mano, cerca la tela e trova un sorriso.",
+        "diagramma": "5 = 5",
+        "soluzione": null,
+        "autore": null
+      },
+      "confidenza": {
+        "gioco": 0.9,
+        "tipologia": 0.88,
+        "campi": {
+          "esposto": 0.96,
+          "diagramma": 0.92,
+          "soluzione": 1,
+          "autore": 1
+        },
+        "elenchi": {}
+      },
+      "avvisi": [
+        "Diagramma stampato in corpo molto piccolo."
+      ]
+    },
+    {
+      "stato_tipologia": "proposta",
+      "tipologia_proposta": {
+        "nome": "Scarto di prova",
+        "famiglia": "gioco-breve",
+        "descrizione": "Una parola perde una lettera e ne diventa un'altra."
+      },
+      "titolo": "Scarto",
+      "riquadro": {
+        "x": 0.52,
+        "y": 0.06,
+        "larghezza": 0.43,
+        "altezza": 0.14
+      },
+      "trascrizione": "SCARTO (6/5)\nIl marinaio lascia la nave e resta a terra.",
+      "confidenza": {
+        "gioco": 0.85,
+        "tipologia": 0.6
+      },
+      "avvisi": []
+    }
+  ],
+  "avvisi": []
+}

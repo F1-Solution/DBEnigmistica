@@ -1,0 +1,25 @@
+{
+  "$schema": "../../descrittore.schema.json",
+  "id": "esempio-anagramma",
+  "versione": 1,
+  "famiglia": "gioco-breve",
+  "nome": "Anagramma di esempio",
+  "descrizione": "Breve testo in versi o in prosa con un diagramma tra parentesi, per esempio (5 = 5): la soluzione usa le stesse lettere della parola nascosta.",
+  "regole": {
+    "testo": "Esempio inventato per i test. La seconda parola contiene esattamente le lettere della prima, in un altro ordine.",
+    "versione": 2,
+    "stato": "approvata",
+    "scritte_da": "agente A, ondata 1.1",
+    "approvate_il": "2026-11-20",
+    "approvate_da": "proprietario"
+  },
+  "campi": [
+    { "nome": "esposto", "etichetta": "Esposto", "tipo": "testo", "max": 1000, "obbligatorio": true, "ruolo": "esposto" },
+    { "nome": "diagramma", "etichetta": "Diagramma", "descrizione": "Il diagramma tra parentesi, senza parentesi.", "tipo": "testo", "max": 100, "ruolo": "diagramma" },
+    { "nome": "soluzione", "etichetta": "Soluzione", "descrizione": "Solo se stampata sulla pagina.", "tipo": "testo", "max": 100, "ruolo": "soluzione" },
+    { "nome": "autore", "etichetta": "Autore", "tipo": "testo", "max": 100, "indice": true }
+  ],
+  "elenchi": [],
+  "resa": { "modello": "esposto_diagramma" },
+  "validatori": ["diagramma-coerente-con-soluzione", "anagramma-stesse-lettere"]
+}

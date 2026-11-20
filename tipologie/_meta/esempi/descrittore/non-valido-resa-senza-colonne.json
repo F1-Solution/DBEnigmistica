@@ -1,0 +1,85 @@
+{
+  "$schema": "../../descrittore.schema.json",
+  "id": "esempio-cruciverba",
+  "versione": 1,
+  "famiglia": "cruciverba",
+  "nome": "Cruciverba di esempio",
+  "descrizione": "Griglia rettangolare di caselle bianche e nere con i numeri delle definizioni, seguita dalle definizioni orizzontali e verticali.",
+  "regole": {
+    "testo": "Esempio inventato per i test. Ogni parola occupa le caselle bianche consecutive di una riga o di una colonna. Le caselle nere separano le parole.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente A, ondata 1.1"
+  },
+  "campi": [
+    {
+      "nome": "righe",
+      "etichetta": "Righe",
+      "tipo": "intero",
+      "obbligatorio": true,
+      "ruolo": "righe"
+    },
+    {
+      "nome": "griglia",
+      "etichetta": "Griglia",
+      "tipo": "griglia",
+      "obbligatorio": true,
+      "ruolo": "griglia"
+    },
+    {
+      "nome": "autore",
+      "etichetta": "Autore",
+      "descrizione": "Firma dell'autore, se stampata.",
+      "tipo": "testo",
+      "max": 100,
+      "indice": true
+    }
+  ],
+  "elenchi": [
+    {
+      "nome": "definizioni",
+      "etichetta": "Definizioni",
+      "campi": [
+        {
+          "nome": "numero",
+          "tipo": "intero",
+          "obbligatorio": true,
+          "ruolo": "numero"
+        },
+        {
+          "nome": "direzione",
+          "tipo": "enumerazione",
+          "valori": [
+            "orizzontale",
+            "verticale"
+          ],
+          "obbligatorio": true,
+          "ruolo": "direzione"
+        },
+        {
+          "nome": "testo",
+          "tipo": "testo",
+          "max": 300,
+          "obbligatorio": true,
+          "ruolo": "definizione"
+        },
+        {
+          "nome": "soluzione",
+          "descrizione": "Solo se stampata sulla pagina.",
+          "tipo": "testo",
+          "max": 40,
+          "ruolo": "soluzione"
+        }
+      ]
+    }
+  ],
+  "resa": {
+    "modello": "griglia"
+  },
+  "validatori": [
+    "griglia-coerente-con-dimensioni",
+    "numerazione-coerente-con-griglia",
+    "lunghezze-coerenti",
+    "incroci-coerenti"
+  ]
+}
