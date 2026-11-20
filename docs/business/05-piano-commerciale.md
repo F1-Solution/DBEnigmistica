@@ -265,12 +265,14 @@ Lo scenario ottimista non comprende la vendita di un format di successo: è un'o
 | # | Prova | Periodo | Ore | Euro | Misura | Soglia |
 |---|---|---|---|---|---|---|
 | 0 | **Parere legale** (prerequisito) | gen - feb 2027 | 3 | 500-1.000 € | Risposte scritte alle domande della sezione 12, rischio 2 | Nessun sito online prima del parere |
-| 1 | **Costo di creazione**: il proprietario genera e rivede 15 candidati per ciascuna delle 3 tipologie (più 15 anagrammi come riserva), cronometrando | feb 2027 | 15 | 20-40 € di AI | Minuti mediani di revisione, quota accettata, errori trovati da un secondo controllo | G1 |
+| 1 | **Costo di creazione**: il proprietario genera e rivede 5 candidati per ciascuna delle 6 famiglie, cronometrando | feb 2027 | 14 | 0 € di API (abbonamento Claude) | Minuti mediani di revisione, quota accettata, errori trovati da un secondo controllo | G1 |
 | 2 | **Gradimento del formato**: gruppo di 20-30 persone, almeno metà sopra i 55 anni, gioca alla cieca 2-3 candidati per il gioco del giorno e il format | fine feb 2027 | 6 | 0 € | Completamento, tempo, voto da 1 a 5, "lo rigiocheresti domani?" | Si sceglie il formato con il completamento più alto e un voto di almeno 3,5 |
 | 3 | **Abitudine**: sito online con gioco del giorno, condivisione e newsletter | mar - mag 2027 | 20 (canali e comunità) | 0-150 € di promozione | Iscritti, ritorno settimanale, partite completate | G2 |
 | 4 | **Disponibilità a pagare dei solutori**: raccolta PDF da 50 giochi a 4,99 € e questionario sul prezzo (almeno 60 risposte) | apr - mag 2027 | 8 | 0-30 € | Vendite, conversione dalla newsletter, prezzo "troppo caro" mediano | Almeno 25 vendite; il questionario fissa il prezzo di L4 (regola del documento 03, esperimento 1) |
 | 5 | **Disponibilità a pagare dei compratori**: campionario di 20 giochi, listino, dossier di paternità e demo; prime 10 proposte | mag 2027 (poi fino ad agosto) | 12 entro M6 | 0 € | Risposte, richieste di prezzo, obiezioni | Entro M6: almeno 2 risposte su 10. Poi G3 |
-| | **Totale nei primi 6 mesi** | | **circa 64 ore** (dentro le ore di contenuti e mercato) | **520-1.220 €** | | |
+| | **Totale nei primi 6 mesi** | | **circa 63 ore** (dentro le ore di contenuti e mercato) | **500-1.180 €** | | |
+
+*Aggiornato il 20/11/2026 per allinearsi al ROADMAP: la prova 1 misura sei famiglie con 5 candidati ciascuna, senza spesa API (abbonamento Claude). Le ore passano da 15 a 14, come nella fase 1b (`docs/fase-1b-decisioni.md`).*
 
 ---
 
