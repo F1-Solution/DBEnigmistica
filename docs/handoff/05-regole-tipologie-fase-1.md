@@ -9,7 +9,7 @@ Approvare il testo delle regole di quattro Tipologie: `cruciverba-classico`, `an
 
 ## Scadenza
 
-**20 dicembre 2026**, fine dell'ondata 1.2 (PLAN di fase 1). La ondata 1b.2 aspetta almeno le regole di `cruciverba-classico` e `anagramma`.
+Le bozze arrivano entro il 27/11/2026. L'approvazione di tutte e 4 le regole è entro il **4 dicembre 2026**. La ondata 1b.2 aspetta almeno le regole di `cruciverba-classico` e `anagramma`.
 
 ## Tempo stimato
 
