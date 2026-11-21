@@ -28,6 +28,7 @@ public sealed record ChiamataAi(
     byte[]? RispostaSha256)
 {
     public const string UsoEstrazione = "estrazione";
+    public const string UsoCreazione = "creazione";
     public const string CostoAddebitato = "addebitato";
     public const string CostoIndicativo = "indicativo";
     public const int MassimoMessaggioErrore = 1000;

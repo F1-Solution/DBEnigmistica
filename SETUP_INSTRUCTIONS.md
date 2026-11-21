@@ -14,6 +14,7 @@ Questa guida porta un PC Windows (o Linux) dallo stato di repository clonato a u
 8. Test
 9. Hook gitleaks
 10. Risoluzione dei problemi
+11. Prototipo di revisione dei Giochi originali
 
 ## 1. Prerequisiti
 
@@ -290,3 +291,63 @@ Docker Desktop deve essere in esecuzione. Testcontainers scarica `postgres:18-al
 
 **Il commit è bloccato dall'hook**
 Installa gitleaks (sezione 9). Se trova un segreto, rimuovilo dal file, ruota il segreto se era reale, e riprova. Non disattivare l'hook con `--no-verify`.
+
+## 11. Prototipo di revisione dei Giochi originali
+
+Il prototipo è un host web locale per rivedere i Giochi originali. Gira solo sul PC Windows, dall'archivio `win-x64` pubblicato dalla CI. Non è nell'immagine Docker: lì `dbe prototipo` risponde con codice 2.
+
+### 11.1 Prerequisiti
+
+1. PostgreSQL in esecuzione (sezione 3) e stringa di connessione impostata (sezione 4).
+2. Migrazioni applicate: `dbe migrate` (sezione 5).
+3. Cartella dei descrittori delle Tipologie. Il predefinito è la cartella `tipologie` accanto all'eseguibile, già presente nell'archivio. Per usarne un'altra, imposta `Prototipo:CartellaTipologie` (variabile `Prototipo__CartellaTipologie`). Un valore relativo si risolve dalla cartella corrente.
+4. Modello di creazione: `FornitoreAi:Creazione:Modello` (variabile `FornitoreAi__Creazione__Modello`), predefinito `claude-opus-5-5` in `appsettings.json`. Il modello dell'estrazione non cambia.
+5. Registrazioni di creazione: `FornitoreAi:Creazione:Registrazioni`, con `Modalita` e `Cartella` (variabili `FornitoreAi__Creazione__Registrazioni__Modalita` e `FornitoreAi__Creazione__Registrazioni__Cartella`).
+
+### 11.2 Avvio
+
+Estrai l'archivio `dbenigmistica-console-X.Y.Z-win-x64.zip` e, in un terminale nella cartella estratta, esegui:
+
+```powershell
+.\dbe.exe prototipo
+```
+
+Il programma applica la configurazione, porta a errore le generazioni rimaste interrotte e stampa l'indirizzo di ascolto, per esempio `http://127.0.0.1:5180`. Ctrl+C lo termina con codice 0.
+
+Se manca una chiave richiesta o un valore non è valido, il programma esce con codice 3.
+
+**Sviluppo dai sorgenti.** Con la configurazione impostata, lo stesso comando funziona da sorgente, dalla radice del repository:
+
+```powershell
+dotnet run --project src\DBEnigmistica.Console -- prototipo
+```
+
+L'archivio `win-x64` resta la via per il proprietario.
+
+### 11.3 Indirizzo e porta
+
+- Il prototipo ascolta solo su `127.0.0.1`. L'indirizzo è fisso e non si cambia da configurazione, URL o variabili d'ambiente.
+- La porta predefinita è `5180`. Si cambia con `Prototipo:Porta` (variabile `Prototipo__Porta`).
+- Le richieste con un nome host diverso da `127.0.0.1` o `localhost` ricevono 421.
+- Non c'è una pagina alla radice. Le API stanno sotto `/api/prototipo`. Per verificare che l'host risponda, apri `http://127.0.0.1:5180/api/prototipo/salute`: deve comparire `{"stato":"ok"}`.
+
+### 11.4 Creazione dal vivo
+
+Finché la prova reale di Claude Code non è registrata (riga `PHASE:1 WAVE:1.1-prova STATUS:complete` in `PROGRESS.md`), la creazione usa solo le Registrazioni in riproduzione. Nessuna chiamata a Claude Code parte dal prototipo.
+
+### 11.5 Risoluzione dei problemi
+
+**Codice 2 con "Il prototipo non è incluso in questa pubblicazione"**
+Stai usando l'immagine Docker. Usa l'archivio `win-x64` (sezione 11.2).
+
+**Codice 3 all'avvio**
+Controlla le chiavi elencate in 11.1, in particolare la stringa di connessione e la cartella dei descrittori. Se il messaggio dice che il login del database non può usare `dbe_creazione`, il login deve poter eseguire `SET ROLE dbe_creazione` (superutente o membro del ruolo). Cambia utente in `ConnectionStrings__DefaultConnection`.
+
+**Risposta 421**
+La richiesta usa un nome host diverso. Usa `http://127.0.0.1:<porta>`.
+
+**Risposta 403**
+La richiesta arriva da un'altra origine o dichiara un contesto cross-site. Chiama l'API direttamente da `127.0.0.1` o `localhost`.
+
+**Risposta 415**
+Una POST o una PUT non dichiara `Content-Type: application/json`. Aggiungi l'intestazione.

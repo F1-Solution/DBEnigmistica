@@ -1,0 +1,24 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "sudoku",
+  "versione": 0,
+  "famiglia": "logico",
+  "nome": "Sudoku",
+  "descrizione": "Griglia 9x9 divisa in nove riquadri 3x3, con alcune cifre già scritte.",
+  "regole": {
+    "testo": "Griglia di 9 righe e 9 colonne, divisa in 9 riquadri di 3x3 caselle. Alcune caselle contengono già una cifra da 1 a 9 (indizi). Si completa la griglia in modo che ogni riga, ogni colonna e ogni riquadro contenga tutte le cifre da 1 a 9, ciascuna una sola volta. Lo schema ha una e una sola soluzione. La difficoltà va da 1 a 5 e dipende dalle tecniche di ragionamento necessarie: ai livelli da 1 a 4 si risolve senza tentativi; il livello 5 richiede di fare un'ipotesi e verificarla.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente A, ondata 1b.1"
+  },
+  "campi": [
+    { "nome": "righe", "etichetta": "Righe", "tipo": "intero", "obbligatorio": true, "ruolo": "righe" },
+    { "nome": "colonne", "etichetta": "Colonne", "tipo": "intero", "obbligatorio": true, "ruolo": "colonne" },
+    { "nome": "griglia", "etichetta": "Schema", "descrizione": "Griglia da giocare: '.' casella vuota, cifra = indizio.", "tipo": "griglia", "obbligatorio": true, "ruolo": "griglia" },
+    { "nome": "soluzione_griglia", "etichetta": "Soluzione", "descrizione": "Griglia completa, solo cifre.", "tipo": "griglia", "obbligatorio": true },
+    { "nome": "difficolta", "etichetta": "Difficoltà", "descrizione": "Livello stimato da 1 a 5.", "tipo": "intero", "obbligatorio": true, "indice": true }
+  ],
+  "elenchi": [],
+  "resa": { "modello": "griglia_logica" },
+  "validatori": ["griglia-coerente-con-dimensioni"]
+}

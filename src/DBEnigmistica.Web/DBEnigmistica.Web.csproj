@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DBEnigmistica.Application\DBEnigmistica.Application.csproj" />
+    <ProjectReference Include="..\DBEnigmistica.Domain\DBEnigmistica.Domain.csproj" />
+    <ProjectReference Include="..\DBEnigmistica.Infrastructure\DBEnigmistica.Infrastructure.csproj" />
+    <ProjectReference Include="..\DBEnigmistica.AI\DBEnigmistica.AI.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- CTJ001 (Corvus) chiede letterali UTF-8 anche per System.Text.Json: qui i nomi sono letterali normali. -->
+    <NoWarn>$(NoWarn);CTJ001</NoWarn>
+  </PropertyGroup>
+
+</Project>

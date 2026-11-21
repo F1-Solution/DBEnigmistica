@@ -1,0 +1,391 @@
+{
+  "versione_formato": 1,
+  "righe": 9,
+  "colonne": 9,
+  "celle": [
+    "..#......",
+    ".........",
+    "#....#...",
+    "..#..#...",
+    ".........",
+    "...#..#..",
+    "...#....#",
+    ".........",
+    "......#.."
+  ],
+  "numeri": [
+    {
+      "riga": 1,
+      "colonna": 1,
+      "numero": 1
+    },
+    {
+      "riga": 1,
+      "colonna": 2,
+      "numero": 2
+    },
+    {
+      "riga": 1,
+      "colonna": 4,
+      "numero": 3
+    },
+    {
+      "riga": 1,
+      "colonna": 5,
+      "numero": 4
+    },
+    {
+      "riga": 1,
+      "colonna": 6,
+      "numero": 5
+    },
+    {
+      "riga": 1,
+      "colonna": 7,
+      "numero": 6
+    },
+    {
+      "riga": 1,
+      "colonna": 8,
+      "numero": 7
+    },
+    {
+      "riga": 1,
+      "colonna": 9,
+      "numero": 8
+    },
+    {
+      "riga": 2,
+      "colonna": 1,
+      "numero": 9
+    },
+    {
+      "riga": 2,
+      "colonna": 3,
+      "numero": 10
+    },
+    {
+      "riga": 3,
+      "colonna": 2,
+      "numero": 11
+    },
+    {
+      "riga": 3,
+      "colonna": 7,
+      "numero": 12
+    },
+    {
+      "riga": 4,
+      "colonna": 1,
+      "numero": 13
+    },
+    {
+      "riga": 4,
+      "colonna": 4,
+      "numero": 14
+    },
+    {
+      "riga": 4,
+      "colonna": 7,
+      "numero": 15
+    },
+    {
+      "riga": 5,
+      "colonna": 1,
+      "numero": 16
+    },
+    {
+      "riga": 5,
+      "colonna": 3,
+      "numero": 17
+    },
+    {
+      "riga": 5,
+      "colonna": 6,
+      "numero": 18
+    },
+    {
+      "riga": 6,
+      "colonna": 1,
+      "numero": 19
+    },
+    {
+      "riga": 6,
+      "colonna": 5,
+      "numero": 20
+    },
+    {
+      "riga": 6,
+      "colonna": 8,
+      "numero": 21
+    },
+    {
+      "riga": 7,
+      "colonna": 1,
+      "numero": 22
+    },
+    {
+      "riga": 7,
+      "colonna": 5,
+      "numero": 23
+    },
+    {
+      "riga": 7,
+      "colonna": 7,
+      "numero": 24
+    },
+    {
+      "riga": 8,
+      "colonna": 1,
+      "numero": 25
+    },
+    {
+      "riga": 8,
+      "colonna": 4,
+      "numero": 26
+    },
+    {
+      "riga": 8,
+      "colonna": 9,
+      "numero": 27
+    },
+    {
+      "riga": 9,
+      "colonna": 1,
+      "numero": 28
+    },
+    {
+      "riga": 9,
+      "colonna": 8,
+      "numero": 29
+    }
+  ],
+  "parole": [
+    {
+      "numero": 1,
+      "direzione": "orizzontale",
+      "riga": 1,
+      "colonna": 1,
+      "lunghezza": 2
+    },
+    {
+      "numero": 3,
+      "direzione": "orizzontale",
+      "riga": 1,
+      "colonna": 4,
+      "lunghezza": 6
+    },
+    {
+      "numero": 9,
+      "direzione": "orizzontale",
+      "riga": 2,
+      "colonna": 1,
+      "lunghezza": 9
+    },
+    {
+      "numero": 11,
+      "direzione": "orizzontale",
+      "riga": 3,
+      "colonna": 2,
+      "lunghezza": 4
+    },
+    {
+      "numero": 12,
+      "direzione": "orizzontale",
+      "riga": 3,
+      "colonna": 7,
+      "lunghezza": 3
+    },
+    {
+      "numero": 13,
+      "direzione": "orizzontale",
+      "riga": 4,
+      "colonna": 1,
+      "lunghezza": 2
+    },
+    {
+      "numero": 14,
+      "direzione": "orizzontale",
+      "riga": 4,
+      "colonna": 4,
+      "lunghezza": 2
+    },
+    {
+      "numero": 15,
+      "direzione": "orizzontale",
+      "riga": 4,
+      "colonna": 7,
+      "lunghezza": 3
+    },
+    {
+      "numero": 16,
+      "direzione": "orizzontale",
+      "riga": 5,
+      "colonna": 1,
+      "lunghezza": 9
+    },
+    {
+      "numero": 19,
+      "direzione": "orizzontale",
+      "riga": 6,
+      "colonna": 1,
+      "lunghezza": 3
+    },
+    {
+      "numero": 20,
+      "direzione": "orizzontale",
+      "riga": 6,
+      "colonna": 5,
+      "lunghezza": 2
+    },
+    {
+      "numero": 21,
+      "direzione": "orizzontale",
+      "riga": 6,
+      "colonna": 8,
+      "lunghezza": 2
+    },
+    {
+      "numero": 22,
+      "direzione": "orizzontale",
+      "riga": 7,
+      "colonna": 1,
+      "lunghezza": 3
+    },
+    {
+      "numero": 23,
+      "direzione": "orizzontale",
+      "riga": 7,
+      "colonna": 5,
+      "lunghezza": 4
+    },
+    {
+      "numero": 25,
+      "direzione": "orizzontale",
+      "riga": 8,
+      "colonna": 1,
+      "lunghezza": 9
+    },
+    {
+      "numero": 28,
+      "direzione": "orizzontale",
+      "riga": 9,
+      "colonna": 1,
+      "lunghezza": 6
+    },
+    {
+      "numero": 29,
+      "direzione": "orizzontale",
+      "riga": 9,
+      "colonna": 8,
+      "lunghezza": 2
+    },
+    {
+      "numero": 1,
+      "direzione": "verticale",
+      "riga": 1,
+      "colonna": 1,
+      "lunghezza": 2
+    },
+    {
+      "numero": 2,
+      "direzione": "verticale",
+      "riga": 1,
+      "colonna": 2,
+      "lunghezza": 9
+    },
+    {
+      "numero": 3,
+      "direzione": "verticale",
+      "riga": 1,
+      "colonna": 4,
+      "lunghezza": 5
+    },
+    {
+      "numero": 4,
+      "direzione": "verticale",
+      "riga": 1,
+      "colonna": 5,
+      "lunghezza": 9
+    },
+    {
+      "numero": 5,
+      "direzione": "verticale",
+      "riga": 1,
+      "colonna": 6,
+      "lunghezza": 2
+    },
+    {
+      "numero": 6,
+      "direzione": "verticale",
+      "riga": 1,
+      "colonna": 7,
+      "lunghezza": 5
+    },
+    {
+      "numero": 7,
+      "direzione": "verticale",
+      "riga": 1,
+      "colonna": 8,
+      "lunghezza": 9
+    },
+    {
+      "numero": 8,
+      "direzione": "verticale",
+      "riga": 1,
+      "colonna": 9,
+      "lunghezza": 6
+    },
+    {
+      "numero": 10,
+      "direzione": "verticale",
+      "riga": 2,
+      "colonna": 3,
+      "lunghezza": 2
+    },
+    {
+      "numero": 13,
+      "direzione": "verticale",
+      "riga": 4,
+      "colonna": 1,
+      "lunghezza": 6
+    },
+    {
+      "numero": 17,
+      "direzione": "verticale",
+      "riga": 5,
+      "colonna": 3,
+      "lunghezza": 5
+    },
+    {
+      "numero": 18,
+      "direzione": "verticale",
+      "riga": 5,
+      "colonna": 6,
+      "lunghezza": 5
+    },
+    {
+      "numero": 24,
+      "direzione": "verticale",
+      "riga": 7,
+      "colonna": 7,
+      "lunghezza": 2
+    },
+    {
+      "numero": 26,
+      "direzione": "verticale",
+      "riga": 8,
+      "colonna": 4,
+      "lunghezza": 2
+    },
+    {
+      "numero": 27,
+      "direzione": "verticale",
+      "riga": 8,
+      "colonna": 9,
+      "lunghezza": 2
+    }
+  ],
+  "seme": 4242,
+  "versione_generatore": "schema-cruciverba-riferimento"
+}

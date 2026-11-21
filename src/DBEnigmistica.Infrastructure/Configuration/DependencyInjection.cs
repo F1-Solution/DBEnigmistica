@@ -3,6 +3,7 @@ using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Application.Registro;
 using DBEnigmistica.Domain.Interfaces;
 using DBEnigmistica.Infrastructure.Data;
+using DBEnigmistica.Infrastructure.Prototipo;
 using DBEnigmistica.Infrastructure.Repositories;
 using DBEnigmistica.Infrastructure.Services.Archivio;
 using DBEnigmistica.Infrastructure.Services.Pdf;
@@ -37,6 +38,7 @@ public static class DependencyInjection
         services.AddSingleton<IRenderPagine, PdfRenderPagine>();
         services.AddSingleton<IArchivio, ArchivioFileSystem>();
         services.AddSingleton<IFabbricaArchivioRegistrazioni, FabbricaArchivioRegistrazioniFileSystem>();
+        services.AddSingleton<IFabbricaArchivioRegistrazioniCreazione, FabbricaArchivioRegistrazioniCreazioneFileSystem>();
         services.AddSingleton<IValidateOptions<ArchivioOptions>, ArchivioOptionsValidator>();
         services.AddSingleton<IValidateOptions<EstrazioneOptions>, EstrazioneOptionsValidator>();
         services.AddOptions<ArchivioOptions>()

@@ -1,0 +1,110 @@
+{
+  "versione_formato": 1,
+  "tipologia": "futoshiki",
+  "versione_tipologia": 0,
+  "titolo": null,
+  "dati": {
+    "righe": 5,
+    "colonne": 5,
+    "griglia": {
+      "righe": 5,
+      "colonne": 5,
+      "celle": [
+        ".....",
+        ".....",
+        ".....",
+        ".....",
+        "....."
+      ],
+      "numeri": []
+    },
+    "soluzione_griglia": {
+      "righe": 5,
+      "colonne": 5,
+      "celle": [
+        "12453",
+        "41532",
+        "54321",
+        "23145",
+        "35214"
+      ],
+      "numeri": []
+    },
+    "difficolta": 3,
+    "segni": [
+      {
+        "riga": 1,
+        "colonna": 1,
+        "verso": "sopra",
+        "segno": "minore"
+      },
+      {
+        "riga": 1,
+        "colonna": 2,
+        "verso": "destra",
+        "segno": "minore"
+      },
+      {
+        "riga": 1,
+        "colonna": 3,
+        "verso": "sotto",
+        "segno": "minore"
+      },
+      {
+        "riga": 1,
+        "colonna": 4,
+        "verso": "sotto",
+        "segno": "maggiore"
+      },
+      {
+        "riga": 2,
+        "colonna": 1,
+        "verso": "sotto",
+        "segno": "minore"
+      },
+      {
+        "riga": 2,
+        "colonna": 4,
+        "verso": "destra",
+        "segno": "maggiore"
+      },
+      {
+        "riga": 3,
+        "colonna": 2,
+        "verso": "sotto",
+        "segno": "maggiore"
+      },
+      {
+        "riga": 3,
+        "colonna": 3,
+        "verso": "destra",
+        "segno": "maggiore"
+      },
+      {
+        "riga": 3,
+        "colonna": 4,
+        "verso": "destra",
+        "segno": "maggiore"
+      },
+      {
+        "riga": 3,
+        "colonna": 4,
+        "verso": "sotto",
+        "segno": "minore"
+      },
+      {
+        "riga": 4,
+        "colonna": 1,
+        "verso": "sotto",
+        "segno": "minore"
+      },
+      {
+        "riga": 4,
+        "colonna": 2,
+        "verso": "sotto",
+        "segno": "minore"
+      }
+    ]
+  },
+  "avvisi": []
+}

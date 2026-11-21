@@ -1,0 +1,43 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "nonogramma",
+  "versione": 0,
+  "famiglia": "logico",
+  "nome": "Nonogramma",
+  "descrizione": "Griglia vuota da 10 a 15 righe e colonne, con numeri accanto a ogni riga e sopra ogni colonna; riempiendo le caselle giuste appare un disegno.",
+  "regole": {
+    "testo": "Griglia da 10 a 15 righe e da 10 a 15 colonne, all'inizio tutta vuota. Accanto a ogni riga e sopra ogni colonna ci sono dei numeri: danno, nell'ordine, le lunghezze dei blocchi di caselle piene consecutive di quella linea. Tra due blocchi c'è almeno una casella vuota. Lo 0 indica una linea senza caselle piene. Riempiendo le caselle giuste appare un disegno. Lo schema ha una e una sola soluzione. La difficoltà va da 1 a 5 e dipende dalle tecniche di ragionamento necessarie: ai livelli da 1 a 4 si risolve senza tentativi multipli; il livello 5 richiede più ipotesi insieme.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente A, ondata 1b.1"
+  },
+  "campi": [
+    { "nome": "righe", "etichetta": "Righe", "tipo": "intero", "obbligatorio": true, "ruolo": "righe" },
+    { "nome": "colonne", "etichetta": "Colonne", "tipo": "intero", "obbligatorio": true, "ruolo": "colonne" },
+    { "nome": "griglia", "etichetta": "Schema", "descrizione": "Griglia di partenza, tutta '.'.", "tipo": "griglia", "obbligatorio": true, "ruolo": "griglia" },
+    { "nome": "soluzione_griglia", "etichetta": "Disegno", "descrizione": "Soluzione: '#' casella piena, '.' vuota.", "tipo": "griglia", "obbligatorio": true },
+    { "nome": "difficolta", "etichetta": "Difficoltà", "descrizione": "Livello stimato da 1 a 5.", "tipo": "intero", "obbligatorio": true, "indice": true }
+  ],
+  "elenchi": [
+    {
+      "nome": "indizi_righe",
+      "etichetta": "Indizi delle righe",
+      "descrizione": "Una voce per riga, dall'alto.",
+      "campi": [
+        { "nome": "indice", "etichetta": "Riga", "tipo": "intero", "obbligatorio": true },
+        { "nome": "blocchi", "etichetta": "Blocchi", "descrizione": "Lunghezze dei blocchi separate da uno spazio; 0 per una linea vuota.", "tipo": "testo", "max": 40, "obbligatorio": true }
+      ]
+    },
+    {
+      "nome": "indizi_colonne",
+      "etichetta": "Indizi delle colonne",
+      "descrizione": "Una voce per colonna, da sinistra.",
+      "campi": [
+        { "nome": "indice", "etichetta": "Colonna", "tipo": "intero", "obbligatorio": true },
+        { "nome": "blocchi", "etichetta": "Blocchi", "descrizione": "Lunghezze dei blocchi separate da uno spazio; 0 per una linea vuota.", "tipo": "testo", "max": 40, "obbligatorio": true }
+      ]
+    }
+  ],
+  "resa": { "modello": "griglia_logica" },
+  "validatori": ["griglia-coerente-con-dimensioni"]
+}

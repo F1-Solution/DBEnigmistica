@@ -1,0 +1,370 @@
+{
+  "versione_formato": 1,
+  "tipologia": "esempio-cruciverba",
+  "versione_tipologia": 1,
+  "titolo": null,
+  "dati": {
+    "righe": 9,
+    "colonne": 9,
+    "griglia": {
+      "righe": 9,
+      "colonne": 9,
+      "celle": [
+        "ITAPPEUER",
+        "PRRCNPOER",
+        "#ANNT#PPA",
+        "MR#UM#POT",
+        "ELAAACSAN",
+        "CON#MA#SO",
+        "PRR#SOLO#",
+        "COPRUANSC",
+        "EICMUE#ML"
+      ],
+      "numeri": [
+        {
+          "riga": 1,
+          "colonna": 1,
+          "numero": 1
+        },
+        {
+          "riga": 1,
+          "colonna": 2,
+          "numero": 2
+        },
+        {
+          "riga": 1,
+          "colonna": 4,
+          "numero": 3
+        },
+        {
+          "riga": 1,
+          "colonna": 5,
+          "numero": 4
+        },
+        {
+          "riga": 1,
+          "colonna": 6,
+          "numero": 5
+        },
+        {
+          "riga": 1,
+          "colonna": 7,
+          "numero": 6
+        },
+        {
+          "riga": 1,
+          "colonna": 8,
+          "numero": 7
+        },
+        {
+          "riga": 1,
+          "colonna": 9,
+          "numero": 8
+        },
+        {
+          "riga": 2,
+          "colonna": 1,
+          "numero": 9
+        },
+        {
+          "riga": 2,
+          "colonna": 3,
+          "numero": 10
+        },
+        {
+          "riga": 3,
+          "colonna": 2,
+          "numero": 11
+        },
+        {
+          "riga": 3,
+          "colonna": 7,
+          "numero": 12
+        },
+        {
+          "riga": 4,
+          "colonna": 1,
+          "numero": 13
+        },
+        {
+          "riga": 4,
+          "colonna": 4,
+          "numero": 14
+        },
+        {
+          "riga": 4,
+          "colonna": 7,
+          "numero": 15
+        },
+        {
+          "riga": 5,
+          "colonna": 1,
+          "numero": 16
+        },
+        {
+          "riga": 5,
+          "colonna": 3,
+          "numero": 17
+        },
+        {
+          "riga": 5,
+          "colonna": 6,
+          "numero": 18
+        },
+        {
+          "riga": 6,
+          "colonna": 1,
+          "numero": 19
+        },
+        {
+          "riga": 6,
+          "colonna": 5,
+          "numero": 20
+        },
+        {
+          "riga": 6,
+          "colonna": 8,
+          "numero": 21
+        },
+        {
+          "riga": 7,
+          "colonna": 1,
+          "numero": 22
+        },
+        {
+          "riga": 7,
+          "colonna": 5,
+          "numero": 23
+        },
+        {
+          "riga": 7,
+          "colonna": 7,
+          "numero": 24
+        },
+        {
+          "riga": 8,
+          "colonna": 1,
+          "numero": 25
+        },
+        {
+          "riga": 8,
+          "colonna": 4,
+          "numero": 26
+        },
+        {
+          "riga": 8,
+          "colonna": 9,
+          "numero": 27
+        },
+        {
+          "riga": 9,
+          "colonna": 1,
+          "numero": 28
+        },
+        {
+          "riga": 9,
+          "colonna": 8,
+          "numero": 29
+        }
+      ]
+    },
+    "autore": null,
+    "definizioni": [
+      {
+        "numero": 1,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 1 orizzontale",
+        "soluzione": "IT"
+      },
+      {
+        "numero": 3,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 3 orizzontale",
+        "soluzione": "PPEUER"
+      },
+      {
+        "numero": 9,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 9 orizzontale",
+        "soluzione": "PRRCNPOER"
+      },
+      {
+        "numero": 11,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 11 orizzontale",
+        "soluzione": "ANNT"
+      },
+      {
+        "numero": 12,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 12 orizzontale",
+        "soluzione": "PPA"
+      },
+      {
+        "numero": 13,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 13 orizzontale",
+        "soluzione": "MR"
+      },
+      {
+        "numero": 14,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 14 orizzontale",
+        "soluzione": "UM"
+      },
+      {
+        "numero": 15,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 15 orizzontale",
+        "soluzione": "POT"
+      },
+      {
+        "numero": 16,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 16 orizzontale",
+        "soluzione": "ELAAACSAN"
+      },
+      {
+        "numero": 19,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 19 orizzontale",
+        "soluzione": "CON"
+      },
+      {
+        "numero": 20,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 20 orizzontale",
+        "soluzione": "MA"
+      },
+      {
+        "numero": 21,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 21 orizzontale",
+        "soluzione": "SO"
+      },
+      {
+        "numero": 22,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 22 orizzontale",
+        "soluzione": "PRR"
+      },
+      {
+        "numero": 23,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 23 orizzontale",
+        "soluzione": "SOLO"
+      },
+      {
+        "numero": 25,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 25 orizzontale",
+        "soluzione": "COPRUANSC"
+      },
+      {
+        "numero": 28,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 28 orizzontale",
+        "soluzione": "EICMUE"
+      },
+      {
+        "numero": 29,
+        "direzione": "orizzontale",
+        "testo": "Definizione di prova 29 orizzontale",
+        "soluzione": "ML"
+      },
+      {
+        "numero": 1,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 1 verticale",
+        "soluzione": "IP"
+      },
+      {
+        "numero": 2,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 2 verticale",
+        "soluzione": "TRARLOROI"
+      },
+      {
+        "numero": 3,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 3 verticale",
+        "soluzione": "PCNUA"
+      },
+      {
+        "numero": 4,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 4 verticale",
+        "soluzione": "PNTMAMSUU"
+      },
+      {
+        "numero": 5,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 5 verticale",
+        "soluzione": "EP"
+      },
+      {
+        "numero": 6,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 6 verticale",
+        "soluzione": "UOPPS"
+      },
+      {
+        "numero": 7,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 7 verticale",
+        "soluzione": "EEPOASOSM"
+      },
+      {
+        "numero": 8,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 8 verticale",
+        "soluzione": "RRATNO"
+      },
+      {
+        "numero": 10,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 10 verticale",
+        "soluzione": "RN"
+      },
+      {
+        "numero": 13,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 13 verticale",
+        "soluzione": "MECPCE"
+      },
+      {
+        "numero": 17,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 17 verticale",
+        "soluzione": "ANRPC"
+      },
+      {
+        "numero": 18,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 18 verticale",
+        "soluzione": "CAOAE"
+      },
+      {
+        "numero": 24,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 24 verticale",
+        "soluzione": "LN"
+      },
+      {
+        "numero": 26,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 26 verticale",
+        "soluzione": "RM"
+      },
+      {
+        "numero": 27,
+        "direzione": "verticale",
+        "testo": "Definizione di prova 27 verticale",
+        "soluzione": "CL"
+      }
+    ]
+  },
+  "avvisi": [
+    "Esempio inventato per i test: lettere casuali, valido solo per lo schema."
+  ]
+}

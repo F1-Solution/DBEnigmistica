@@ -1,0 +1,28 @@
+{
+  "versione_formato": 1,
+  "tipologia": "rebus",
+  "versione_tipologia": 0,
+  "titolo": null,
+  "dati": {
+    "esposto": "Uno stagno con le ninfee. A sinistra, su una foglia, una rana; a destra, sulla riva, una dea greca.",
+    "diagramma": "6 4",
+    "prima_lettura": "ST RANA I DEA",
+    "soluzione": "STRANA IDEA",
+    "spiegazione": "ST + RANA = STRANA; I + DEA = IDEA.",
+    "vignette": [
+      {
+        "vignetta": 1,
+        "descrizione": "Una rana verde seduta su una foglia di ninfea",
+        "lettere": "ST",
+        "parola": "RANA"
+      },
+      {
+        "vignetta": 1,
+        "descrizione": "Una dea greca in tunica bianca, con una corona d'alloro",
+        "lettere": "I",
+        "parola": "DEA"
+      }
+    ]
+  },
+  "avvisi": []
+}

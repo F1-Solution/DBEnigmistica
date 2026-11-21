@@ -1,0 +1,15 @@
+{
+  "versione_formato": 1,
+  "tipologia": "esempio-anagramma",
+  "versione_tipologia": 1,
+  "titolo": "Sulla riva",
+  "dati": {
+    "esposto": "D'estate lo cerco con lo sguardo dalla riva;\nd'inverno, rimescolato, luccica rossiccio nelle pentole della nonna.",
+    "diagramma": "4 = 4",
+    "soluzione": "mare = rame",
+    "autore": null
+  },
+  "avvisi": [
+    "Il tema del mare è nella prima parola."
+  ]
+}

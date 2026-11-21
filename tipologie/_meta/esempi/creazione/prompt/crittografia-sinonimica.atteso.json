@@ -1,0 +1,21 @@
+{
+  "tipologia": "crittografia-breve",
+  "versione_tipologia": 0,
+  "brief": {
+    "versione_formato": 1,
+    "codice": "crit-sin-01",
+    "tipologia": "crittografia-breve",
+    "versione_tipologia": 0,
+    "famiglia": "crittografia",
+    "tema": "la cucina",
+    "vincoli": [
+      "Esposto di al massimo 3 parole"
+    ],
+    "difficolta": 2,
+    "dimensioni": null,
+    "sottotipo": "sinonimica",
+    "variante": 1
+  },
+  "versione_prompt": "creazione-v1-4d68b029ae5c",
+  "impronta_richiesta": "b49b8ddad1cbc11f2cf7ce6bebf4171759310b6e0b1fe911625a27f62bfa42c8"
+}

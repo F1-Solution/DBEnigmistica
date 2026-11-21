@@ -1,8 +1,10 @@
+using DBEnigmistica.Application.Creazione;
 using DBEnigmistica.Domain.Catalogo;
 using DBEnigmistica.Domain.Diritti;
 using DBEnigmistica.Domain.Entities;
 using DBEnigmistica.Domain.Registro;
 using DBEnigmistica.Infrastructure.Data.Mappings;
+using DBEnigmistica.Infrastructure.Prototipo;
 using Microsoft.EntityFrameworkCore;
 
 namespace DBEnigmistica.Infrastructure.Data;
@@ -36,6 +38,10 @@ public class EnigmisticaDbContext : DbContext
     // Schema registro
     public DbSet<EventoRegistro> EventiRegistro => Set<EventoRegistro>();
 
+    // Schema prototipo
+    public DbSet<Candidato> Candidati => Set<Candidato>();
+    public DbSet<ChiamataAiPrototipoRiga> ChiamateAiPrototipo => Set<ChiamataAiPrototipoRiga>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -47,5 +53,6 @@ public class EnigmisticaDbContext : DbContext
         modelBuilder.ConfiguraTipologie();
         modelBuilder.ConfiguraCatalogo();
         modelBuilder.ConfiguraRegistro();
+        modelBuilder.ConfiguraPrototipo();
     }
 }

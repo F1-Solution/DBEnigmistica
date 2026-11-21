@@ -14,7 +14,8 @@ RUN --mount=type=cache,target=/root/.nuget/packages \
       --self-contained false \
       --output /app \
       -p:Version=${VERSION} \
-      -p:UseAppHost=false
+      -p:UseAppHost=false \
+      -p:IncludePrototipo=false
 # La pubblicazione deve contenere la configurazione di base.
 RUN test -f /app/appsettings.json
 # Elenco ammesso delle librerie native: solo PDFium per linux-x64. Qualsiasi altro file nativo, per nome o per primi byte ELF, fa fallire la build.

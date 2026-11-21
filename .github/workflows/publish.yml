@@ -171,6 +171,11 @@ jobs:
           # La pubblicazione deve contenere la configurazione e l'eseguibile "dbe".
           test -f "publish/$RID/appsettings.json"
           if [ "$RID" = "win-x64" ]; then test -f "publish/$RID/dbe.exe"; else test -f "publish/$RID/dbe"; fi
+          # L'archivio deve contenere l'host del prototipo (dbe prototipo) con il runtime di ASP.NET Core.
+          test -f "publish/$RID/DBEnigmistica.Web.dll"
+          test -f "publish/$RID/Microsoft.AspNetCore.dll"
+          # E i descrittori delle Tipologie che l'host legge accanto all'eseguibile.
+          for id in crittografia-breve rebus sudoku futoshiki nonogramma; do test -f "publish/$RID/tipologie/$id/v0.json"; done
           # Deve esserci la libreria nativa di PDFium del sistema di destinazione.
           if [ "$RID" = "win-x64" ]; then test -f "publish/$RID/pdfium.dll"; else test -f "publish/$RID/libpdfium.so"; fi
           mkdir -p dist

@@ -1,0 +1,26 @@
+{
+  "versione_formato": 1,
+  "uso": "creazione",
+  "chiave": {
+    "impronta_richiesta": "b49b8ddad1cbc11f2cf7ce6bebf4171759310b6e0b1fe911625a27f62bfa42c8",
+    "versione_prompt": "creazione-v1-4d68b029ae5c",
+    "fornitore": "claude-code",
+    "modello": "claude-opus-5-5"
+  },
+  "registrata_il": "2026-11-20T10:00:00.000000Z",
+  "tipologia": "crittografia-breve",
+  "versione_tipologia": 0,
+  "esito": "riuscita",
+  "risposta_grezza": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"result\":\"\",\"structured_output\":{\"versione_formato\":1,\"tipologia\":\"crittografia-breve\",\"versione_tipologia\":0,\"titolo\":null,\"dati\":{\"sottotipo\":\"sinonimica\",\"esposto\":\"CENA SOVRANO\",\"diagramma\":\"5 2 = 7\",\"prima_lettura\":\"PASTO RE\",\"soluzione\":\"PASTORE\",\"spiegazione\":\"CENA = PASTO; SOVRANO = RE; PASTO RE = PASTORE.\"},\"avvisi\":[]},\"total_cost_usd\":0.0312,\"usage\":{\"input_tokens\":2120,\"output_tokens\":910}}",
+  "risposta_sha256": "d90f4225535391cea61359c99c3e99ff13aafa977173106adf0155bad5a2dded",
+  "metadati": {
+    "durata_ms": 41230,
+    "token_ingresso": 2120,
+    "token_uscita": 910,
+    "token_cache_creazione": null,
+    "token_cache_lettura": null,
+    "costo": "0.031200",
+    "costo_valuta": "USD",
+    "costo_tipo": "indicativo"
+  }
+}

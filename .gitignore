@@ -52,7 +52,7 @@ tmp/
 
 # Strumenti e risultati locali
 .playwright-mcp/
-.planning/
+.claude/worktrees/
 .claude/settings.local.json
 coverage*/
 *.cobertura.xml

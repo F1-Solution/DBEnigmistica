@@ -16,9 +16,9 @@
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
     },
     "versione": {
-      "description": "Versione della struttura. Cambia quando cambiano campi, elenchi, resa o validatori.",
+      "description": "Versione della struttura. Cambia quando cambiano campi, elenchi, resa o validatori. La versione 0 è un prototipo (fase 1b): il generatore SQL la salta.",
       "type": "integer",
-      "minimum": 1,
+      "minimum": 0,
       "maximum": 999
     },
     "famiglia": {

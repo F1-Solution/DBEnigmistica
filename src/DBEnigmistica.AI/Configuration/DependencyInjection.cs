@@ -29,6 +29,13 @@ public static class DependencyInjection
             p.GetRequiredService<ContatoreChiamateAi>(),
             p.GetRequiredService<IFabbricaArchivioRegistrazioni>(),
             p.GetRequiredService<IInterpreteRispostaGrezza>()));
+        services.TryAddSingleton<IFornitoreAiCreazione>(p => CreaFornitoreCreazione(
+            p.GetRequiredService<IOptions<FornitoreAiOptions>>().Value,
+            p.GetRequiredService<IValidatoreSchemaJson>(),
+            p.GetRequiredService<IRegistroChiamateAi>(),
+            p.GetRequiredService<ContatoreChiamateAi>(),
+            p.GetRequiredService<IFabbricaArchivioRegistrazioniCreazione>(),
+            p.GetRequiredService<IInterpreteRispostaGrezza>()));
 
         return services;
     }
@@ -71,6 +78,47 @@ public static class DependencyInjection
             fornitore = new FornitoreAiRegistra(fornitore, archivio!);
 
         return new FornitoreAiConLimite(new FornitoreAiConRegistroChiamate(fornitore, registro), opzioni.LimiteChiamate, contatore);
+    }
+
+    // Stessa catena dell'estrazione, con il modello e le Registrazioni di creazione.
+    private static IFornitoreAiCreazione CreaFornitoreCreazione(
+        FornitoreAiOptions opzioni,
+        IValidatoreSchemaJson validatore,
+        IRegistroChiamateAi registro,
+        ContatoreChiamateAi contatore,
+        IFabbricaArchivioRegistrazioniCreazione fabbrica,
+        IInterpreteRispostaGrezza interprete)
+    {
+        if (opzioni.Tipo?.Trim() != FornitoreAiOptions.TipoClaudeCode)
+            throw ErroreConfigurazione("Il Fornitore AI api-anthropic non è disponibile in fase 1: imposta FornitoreAi__Tipo=claude-code.");
+
+        var modello = opzioni.Creazione.Modello ?? string.Empty;
+        var registrazioni = opzioni.Creazione.Registrazioni;
+        var modalita = registrazioni.Modalita?.Trim();
+        IArchivioRegistrazioniCreazione? archivio = null;
+        if (!string.IsNullOrEmpty(modalita))
+        {
+            if (modalita is not (RegistrazioniOptions.ModalitaRegistra or RegistrazioniOptions.ModalitaRiproduci))
+                throw ErroreConfigurazione("Modalità delle Registrazioni non valida: imposta FornitoreAi__Creazione__Registrazioni__Modalita (registra o riproduci).");
+
+            if (string.IsNullOrWhiteSpace(registrazioni.Cartella))
+                throw ErroreConfigurazione("Cartella delle Registrazioni mancante: imposta FornitoreAi__Creazione__Registrazioni__Cartella.");
+
+            archivio = fabbrica.Apri(registrazioni.Cartella);
+        }
+
+        if (modalita == RegistrazioniOptions.ModalitaRiproduci)
+            return new FornitoreAiCreazioneRiproduci(FornitoreClaudeCode.Id, modello, archivio!, interprete, validatore);
+
+        var impostazioni = new ImpostazioniClaudeCode(
+            opzioni.ClaudeCode.Eseguibile ?? "claude",
+            modello,
+            TimeSpan.FromSeconds(opzioni.ClaudeCode.TimeoutSecondi ?? 300));
+        IFornitoreAiCreazione fornitore = new FornitoreClaudeCodeCreazione(impostazioni, validatore);
+        if (modalita == RegistrazioniOptions.ModalitaRegistra)
+            fornitore = new FornitoreAiCreazioneRegistra(fornitore, archivio!);
+
+        return new FornitoreAiCreazioneConLimite(new FornitoreAiCreazioneConRegistroChiamate(fornitore, registro), opzioni.LimiteChiamate, contatore);
     }
 
     private static OptionsValidationException ErroreConfigurazione(string messaggio) =>

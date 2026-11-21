@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../brief.schema.json",
+  "versione_formato": 1,
+  "codice": "rebus-01",
+  "tipologia": "rebus",
+  "versione_tipologia": 0,
+  "famiglia": "rebus",
+  "tema": null,
+  "vincoli": [
+    "Una sola vignetta",
+    "Al massimo 3 figure"
+  ],
+  "difficolta": 2,
+  "dimensioni": null,
+  "sottotipo": null,
+  "variante": 2
+}
