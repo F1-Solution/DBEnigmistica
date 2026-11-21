@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../brief.schema.json",
+  "versione_formato": 1,
+  "codice": "crit-sin-01",
+  "tipologia": "crittografia-breve",
+  "versione_tipologia": 0,
+  "famiglia": "crittografia",
+  "tema": "la cucina",
+  "vincoli": [
+    "Esposto di al massimo 3 parole"
+  ],
+  "difficolta": 6,
+  "dimensioni": null,
+  "sottotipo": "sinonimica",
+  "variante": 1
+}

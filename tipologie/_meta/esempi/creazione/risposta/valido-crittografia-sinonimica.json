@@ -1,0 +1,15 @@
+{
+  "versione_formato": 1,
+  "tipologia": "crittografia-breve",
+  "versione_tipologia": 0,
+  "titolo": null,
+  "dati": {
+    "sottotipo": "sinonimica",
+    "esposto": "CENA SOVRANO",
+    "diagramma": "5 2 = 7",
+    "prima_lettura": "PASTO RE",
+    "soluzione": "PASTORE",
+    "spiegazione": "CENA = PASTO; SOVRANO = RE; PASTO RE = PASTORE."
+  },
+  "avvisi": []
+}

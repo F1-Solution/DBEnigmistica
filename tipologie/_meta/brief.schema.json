@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:tipologie:meta:brief:1",
+  "title": "Brief di un candidato",
+  "description": "Richiesta del proprietario per generare un candidato nel prototipo della fase 1b. Regole e controlli fuori dallo schema: .planning/phases/1b/progetto-1b.1.md, sezione 2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["versione_formato", "tipologia", "versione_tipologia", "famiglia", "tema", "vincoli", "difficolta", "dimensioni", "sottotipo"],
+  "properties": {
+    "$schema": { "type": "string", "maxLength": 200 },
+    "versione_formato": { "const": 1 },
+    "codice": {
+      "description": "Codice del brief tipo, per il rapporto.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "tipologia": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30,
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "versione_tipologia": { "type": "integer", "minimum": 0, "maximum": 999 },
+    "famiglia": {
+      "type": "string",
+      "enum": ["cruciverba", "gioco-breve", "crittografia", "rebus", "logico"]
+    },
+    "tema": {
+      "description": "Tema del Gioco, oppure null per un tema libero.",
+      "anyOf": [ { "type": "null" }, { "$ref": "#/$defs/testoRiga200" } ]
+    },
+    "vincoli": {
+      "description": "Vincoli in frasi brevi, per esempio 'nessuna parola straniera'.",
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/testoRiga300" }
+    },
+    "difficolta": {
+      "description": "Difficoltà voluta: 1 molto facile, 2 facile, 3 media, 4 difficile, 5 molto difficile.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "dimensioni": {
+      "anyOf": [ { "type": "null" }, { "$ref": "#/$defs/dimensioni" } ]
+    },
+    "sottotipo": {
+      "description": "Solo per la crittografia breve (D1b-5).",
+      "anyOf": [ { "type": "null" }, { "type": "string", "enum": ["sinonimica", "perifrastica"] } ]
+    },
+    "variante": {
+      "description": "Numero progressivo dei candidati generati con lo stesso brief; lo scrive il programma.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999
+    }
+  },
+  "allOf": [
+    {
+      "if": { "required": ["famiglia"], "properties": { "famiglia": { "const": "crittografia" } } },
+      "then": { "properties": { "sottotipo": { "type": "string" }, "dimensioni": { "type": "null" } } },
+      "else": { "properties": { "sottotipo": { "type": "null" } } }
+    },
+    {
+      "if": { "required": ["famiglia"], "properties": { "famiglia": { "const": "gioco-breve" } } },
+      "then": { "properties": { "tema": { "type": "string" }, "dimensioni": { "type": "null" } } }
+    },
+    {
+      "if": { "required": ["famiglia"], "properties": { "famiglia": { "const": "rebus" } } },
+      "then": { "properties": { "dimensioni": { "type": "null" } } }
+    },
+    {
+      "if": { "required": ["famiglia"], "properties": { "famiglia": { "const": "cruciverba" } } },
+      "then": {
+        "properties": {
+          "dimensioni": {
+            "anyOf": [
+              { "$ref": "#/$defs/quadrato9" },
+              { "$ref": "#/$defs/quadrato10" },
+              { "$ref": "#/$defs/quadrato11" },
+              { "$ref": "#/$defs/quadrato12" },
+              { "$ref": "#/$defs/quadrato13" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": { "required": ["famiglia"], "properties": { "famiglia": { "const": "logico" } } },
+      "then": { "properties": { "tema": { "type": "null" }, "vincoli": { "maxItems": 0 } } }
+    },
+    {
+      "if": { "required": ["tipologia"], "properties": { "tipologia": { "const": "sudoku" } } },
+      "then": { "properties": { "famiglia": { "const": "logico" }, "dimensioni": { "$ref": "#/$defs/quadrato9" } } }
+    },
+    {
+      "if": { "required": ["tipologia"], "properties": { "tipologia": { "const": "futoshiki" } } },
+      "then": {
+        "properties": {
+          "famiglia": { "const": "logico" },
+          "dimensioni": {
+            "anyOf": [
+              { "$ref": "#/$defs/quadrato5" },
+              { "$ref": "#/$defs/quadrato6" },
+              { "$ref": "#/$defs/quadrato7" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": { "required": ["tipologia"], "properties": { "tipologia": { "const": "nonogramma" } } },
+      "then": {
+        "properties": {
+          "famiglia": { "const": "logico" },
+          "dimensioni": {
+            "type": "object",
+            "properties": {
+              "righe": { "minimum": 10, "maximum": 15 },
+              "colonne": { "minimum": 10, "maximum": 15 }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "testoRiga200": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
+    },
+    "testoRiga300": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
+    },
+    "dimensioni": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["righe", "colonne"],
+      "properties": {
+        "righe": { "type": "integer", "minimum": 1, "maximum": 60 },
+        "colonne": { "type": "integer", "minimum": 1, "maximum": 60 }
+      }
+    },
+    "quadrato5": { "type": "object", "properties": { "righe": { "const": 5 }, "colonne": { "const": 5 } } },
+    "quadrato6": { "type": "object", "properties": { "righe": { "const": 6 }, "colonne": { "const": 6 } } },
+    "quadrato7": { "type": "object", "properties": { "righe": { "const": 7 }, "colonne": { "const": 7 } } },
+    "quadrato9": { "type": "object", "properties": { "righe": { "const": 9 }, "colonne": { "const": 9 } } },
+    "quadrato10": { "type": "object", "properties": { "righe": { "const": 10 }, "colonne": { "const": 10 } } },
+    "quadrato11": { "type": "object", "properties": { "righe": { "const": 11 }, "colonne": { "const": 11 } } },
+    "quadrato12": { "type": "object", "properties": { "righe": { "const": 12 }, "colonne": { "const": 12 } } },
+    "quadrato13": { "type": "object", "properties": { "righe": { "const": 13 }, "colonne": { "const": 13 } } }
+  }
+}

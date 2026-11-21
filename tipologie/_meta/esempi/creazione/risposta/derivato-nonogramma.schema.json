@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:risposta-creazione:nonogramma:v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versione_formato",
+    "tipologia",
+    "versione_tipologia",
+    "titolo",
+    "dati",
+    "avvisi"
+  ],
+  "properties": {
+    "versione_formato": {
+      "const": 1
+    },
+    "tipologia": {
+      "const": "nonogramma"
+    },
+    "versione_tipologia": {
+      "const": 0
+    },
+    "titolo": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      ]
+    },
+    "dati": {
+      "$ref": "#/$defs/dati"
+    },
+    "avvisi": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    }
+  },
+  "$defs": {
+    "dati": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "righe",
+        "colonne",
+        "griglia",
+        "soluzione_griglia",
+        "difficolta",
+        "indizi_righe",
+        "indizi_colonne"
+      ],
+      "properties": {
+        "righe": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "colonne": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "griglia": {
+          "$ref": "#/$defs/griglia"
+        },
+        "soluzione_griglia": {
+          "$ref": "#/$defs/griglia"
+        },
+        "difficolta": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "indizi_righe": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 500,
+          "items": {
+            "$ref": "#/$defs/voce_indizi_righe"
+          }
+        },
+        "indizi_colonne": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 500,
+          "items": {
+            "$ref": "#/$defs/voce_indizi_colonne"
+          }
+        }
+      }
+    },
+    "voce_indizi_righe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "indice",
+        "blocchi"
+      ],
+      "properties": {
+        "indice": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "blocchi": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        }
+      }
+    },
+    "voce_indizi_colonne": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "indice",
+        "blocchi"
+      ],
+      "properties": {
+        "indice": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "blocchi": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        }
+      }
+    },
+    "griglia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "righe",
+        "colonne",
+        "celle",
+        "numeri"
+      ],
+      "properties": {
+        "righe": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "colonne": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "celle": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 60,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "pattern": "^[.#1-9]+$"
+          }
+        },
+        "numeri": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "riga",
+              "colonna",
+              "numero"
+            ],
+            "properties": {
+              "riga": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60
+              },
+              "colonna": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60
+              },
+              "numero": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 999
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

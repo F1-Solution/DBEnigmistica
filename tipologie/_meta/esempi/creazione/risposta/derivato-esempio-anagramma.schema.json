@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:risposta-creazione:esempio-anagramma:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versione_formato",
+    "tipologia",
+    "versione_tipologia",
+    "titolo",
+    "dati",
+    "avvisi"
+  ],
+  "properties": {
+    "versione_formato": {
+      "const": 1
+    },
+    "tipologia": {
+      "const": "esempio-anagramma"
+    },
+    "versione_tipologia": {
+      "const": 1
+    },
+    "titolo": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      ]
+    },
+    "dati": {
+      "$ref": "#/$defs/dati"
+    },
+    "avvisi": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    }
+  },
+  "$defs": {
+    "dati": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "esposto",
+        "diagramma",
+        "soluzione",
+        "autore"
+      ],
+      "properties": {
+        "esposto": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "diagramma": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          ]
+        },
+        "soluzione": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "autore": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -55,6 +55,16 @@ jobs:
       - name: Compilazione (Release, avvisi come errori)
         run: dotnet build "$SOLUTION" --configuration Release --no-restore -warnaserror -consoleLoggerParameters:Summary -v:minimal
 
+      # La pubblicazione autonoma deve portare l'host del prototipo e i descrittori (l'immagine Docker no: IncludePrototipo=false).
+      - name: Pubblicazione di controllo (prototipo)
+        run: |
+          set -euo pipefail
+          dotnet publish src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release \
+            --runtime linux-x64 --self-contained true --output "$RUNNER_TEMP/pub-prototipo"
+          test -f "$RUNNER_TEMP/pub-prototipo/DBEnigmistica.Web.dll"
+          test -f "$RUNNER_TEMP/pub-prototipo/Microsoft.AspNetCore.dll"
+          for id in crittografia-breve rebus sudoku futoshiki nonogramma; do test -f "$RUNNER_TEMP/pub-prototipo/tipologie/$id/v0.json"; done
+
       # I test d'integrazione usano Testcontainers (postgres:18-alpine): il Docker dei runner ubuntu basta.
       - name: Test con copertura
         run: >

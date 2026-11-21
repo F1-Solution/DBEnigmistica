@@ -6,6 +6,19 @@
     <ProjectReference Include="..\DBEnigmistica.AI\DBEnigmistica.AI.csproj" />
   </ItemGroup>
 
+  <!-- L'host del prototipo richiede ASP.NET Core e i descrittori: l'immagine Docker (solo runtime) li esclude con IncludePrototipo=false. -->
+  <PropertyGroup>
+    <IncludePrototipo Condition="'$(IncludePrototipo)' == ''">true</IncludePrototipo>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IncludePrototipo)' != 'false'">
+    <ProjectReference Include="..\DBEnigmistica.Web\DBEnigmistica.Web.csproj" />
+    <Content Include="..\..\tipologie\**\v*.json" Exclude="..\..\tipologie\_meta\**" Link="tipologie\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">

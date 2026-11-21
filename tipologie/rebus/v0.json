@@ -1,0 +1,36 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "rebus",
+  "versione": 0,
+  "famiglia": "rebus",
+  "nome": "Rebus",
+  "descrizione": "Una o più vignette con figure su cui sono scritte alcune lettere, seguite da un diagramma numerico tra parentesi. Nel prototipo le vignette sono descritte a parole: nessuna immagine.",
+  "regole": {
+    "testo": "Il rebus è una vignetta, o una serie di al massimo 3 vignette, con figure su cui sono scritte alcune lettere. Nel prototipo le vignette non sono disegnate: ogni figura è descritta a parole, in modo che un illustratore possa disegnarla senza dubbi. Si legge da sinistra a destra e da una vignetta alla successiva: per ogni figura si leggono le lettere scritte su di essa o accanto, poi il nome di ciò che la figura rappresenta o di ciò che fa. La sequenza di lettere e nomi è la prima lettura. La soluzione è una frase italiana di senso compiuto con le stesse lettere della prima lettura, nello stesso ordine, divise in parole diverse. Il diagramma dà il numero di lettere di ogni parola della soluzione, per esempio 2 5 1 6. Spazi, apostrofi e accenti non contano come lettere. Ogni figura è un oggetto, un animale, una persona generica o un'azione che un adulto riconosce senza conoscenze particolari. Il nome letto è quello più comune; un'azione si legge al presente indicativo. Su una figura ci sono al massimo 3 lettere. La soluzione non ripete tali e quali le parole lette sulle figure. Niente marchi, persone reali, volgarità o temi offensivi.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente A, ondata 1b.1"
+  },
+  "campi": [
+    { "nome": "esposto", "etichetta": "Scena", "descrizione": "Descrizione complessiva delle vignette: ambiente e disposizione delle figure.", "tipo": "testo", "max": 1000, "obbligatorio": true, "ruolo": "esposto" },
+    { "nome": "diagramma", "etichetta": "Diagramma", "descrizione": "Lettere di ogni parola della soluzione, senza parentesi, per esempio 2 5 1 6.", "tipo": "testo", "max": 60, "obbligatorio": true, "ruolo": "diagramma" },
+    { "nome": "prima_lettura", "etichetta": "Prima lettura", "descrizione": "Lettere e nomi delle figure nell'ordine di lettura, separati da spazi.", "tipo": "testo", "max": 300, "obbligatorio": true },
+    { "nome": "soluzione", "etichetta": "Soluzione", "tipo": "testo", "max": 200, "obbligatorio": true, "ruolo": "soluzione" },
+    { "nome": "spiegazione", "etichetta": "Spiegazione", "descrizione": "Passaggi dalla prima lettura alla soluzione, per chi rivede. Non si stampa.", "tipo": "testo", "max": 1000 }
+  ],
+  "elenchi": [
+    {
+      "nome": "vignette",
+      "etichetta": "Figure delle vignette",
+      "descrizione": "Una voce per figura, nell'ordine di lettura.",
+      "campi": [
+        { "nome": "vignetta", "etichetta": "Vignetta", "descrizione": "Numero della vignetta, da 1 a 3.", "tipo": "intero", "obbligatorio": true },
+        { "nome": "descrizione", "etichetta": "Descrizione", "descrizione": "Che cosa si vede, senza dire la parola da leggere se non è necessario.", "tipo": "testo", "max": 300, "obbligatorio": true },
+        { "nome": "lettere", "etichetta": "Lettere", "descrizione": "Lettere scritte sulla figura o accanto, al massimo 3; null se non ce ne sono.", "tipo": "testo", "max": 10 },
+        { "nome": "parola", "etichetta": "Parola letta", "descrizione": "Nome o azione della figura, come si legge nella prima lettura.", "tipo": "testo", "max": 40, "obbligatorio": true }
+      ]
+    }
+  ],
+  "resa": { "modello": "esposto_diagramma" },
+  "validatori": ["diagramma-coerente-con-soluzione"]
+}

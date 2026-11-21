@@ -1,0 +1,36 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "futoshiki",
+  "versione": 0,
+  "famiglia": "logico",
+  "nome": "Futoshiki",
+  "descrizione": "Griglia quadrata da 5x5 a 7x7 con segni di maggiore e minore tra alcune caselle vicine e qualche cifra già scritta.",
+  "regole": {
+    "testo": "Griglia quadrata di lato da 5 a 7. In ogni casella va una cifra da 1 al lato della griglia, in modo che ogni riga e ogni colonna contenga ogni cifra una sola volta. Tra alcune caselle vicine, nella stessa riga o nella stessa colonna, c'è un segno di maggiore o di minore: le due cifre devono rispettarlo. Alcune caselle possono contenere già la cifra. Lo schema ha una e una sola soluzione. La difficoltà va da 1 a 5 e dipende dalle tecniche di ragionamento necessarie: ai livelli da 1 a 4 si risolve senza tentativi; il livello 5 richiede di fare un'ipotesi e verificarla.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente A, ondata 1b.1"
+  },
+  "campi": [
+    { "nome": "righe", "etichetta": "Righe", "tipo": "intero", "obbligatorio": true, "ruolo": "righe" },
+    { "nome": "colonne", "etichetta": "Colonne", "tipo": "intero", "obbligatorio": true, "ruolo": "colonne" },
+    { "nome": "griglia", "etichetta": "Schema", "descrizione": "Griglia da giocare: '.' casella vuota, cifra = indizio.", "tipo": "griglia", "obbligatorio": true, "ruolo": "griglia" },
+    { "nome": "soluzione_griglia", "etichetta": "Soluzione", "descrizione": "Griglia completa, solo cifre.", "tipo": "griglia", "obbligatorio": true },
+    { "nome": "difficolta", "etichetta": "Difficoltà", "descrizione": "Livello stimato da 1 a 5.", "tipo": "intero", "obbligatorio": true, "indice": true }
+  ],
+  "elenchi": [
+    {
+      "nome": "segni",
+      "etichetta": "Segni",
+      "descrizione": "Segni tra caselle vicine, per riga, colonna e verso.",
+      "campi": [
+        { "nome": "riga", "etichetta": "Riga", "descrizione": "Riga della prima casella, da 1.", "tipo": "intero", "obbligatorio": true },
+        { "nome": "colonna", "etichetta": "Colonna", "descrizione": "Colonna della prima casella, da 1.", "tipo": "intero", "obbligatorio": true },
+        { "nome": "verso", "etichetta": "Verso", "descrizione": "destra: confronto con la casella a destra; sotto: con la casella sotto.", "tipo": "enumerazione", "valori": ["destra", "sotto"], "obbligatorio": true },
+        { "nome": "segno", "etichetta": "Segno", "descrizione": "maggiore: la prima casella è maggiore della vicina; minore: è minore.", "tipo": "enumerazione", "valori": ["maggiore", "minore"], "obbligatorio": true }
+      ]
+    }
+  ],
+  "resa": { "modello": "griglia_logica" },
+  "validatori": ["griglia-coerente-con-dimensioni"]
+}

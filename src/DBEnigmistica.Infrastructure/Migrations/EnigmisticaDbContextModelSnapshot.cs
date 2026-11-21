@@ -18,11 +18,178 @@ namespace DBEnigmistica.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.14")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "btree_gist");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("DBEnigmistica.Application.Creazione.Candidato", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Brief")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("brief");
+
+                    b.Property<string>("ContenutoFinale")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("contenuto_finale");
+
+                    b.Property<string>("ContenutoGenerato")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("contenuto_generato");
+
+                    b.Property<string>("Differenze")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("differenze");
+
+                    b.Property<string>("Famiglia")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("famiglia");
+
+                    b.Property<DateTime>("GeneratoIl")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("generato_il");
+
+                    b.Property<byte[]>("ImprontaRichiesta")
+                        .HasColumnType("bytea")
+                        .HasColumnName("impronta_richiesta");
+
+                    b.Property<string>("Messaggio")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("messaggio");
+
+                    b.Property<string>("Modo")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("modo");
+
+                    b.Property<string>("MotivoScarto")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("motivo_scarto");
+
+                    b.Property<string>("NotaScarto")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("nota_scarto");
+
+                    b.Property<int>("OrdineGenerazione")
+                        .HasColumnType("integer")
+                        .HasColumnName("ordine_generazione");
+
+                    b.Property<string>("Origine")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("origine");
+
+                    b.Property<DateTime?>("RevisioneConclusaIl")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revisione_conclusa_il");
+
+                    b.Property<DateTime?>("RevisioneIniziataIl")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revisione_iniziata_il");
+
+                    b.Property<string>("SchemaCaselle")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("schema_caselle");
+
+                    b.Property<long?>("Seme")
+                        .HasColumnType("bigint")
+                        .HasColumnName("seme");
+
+                    b.Property<string>("Stato")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("stato");
+
+                    b.Property<long>("TempoAttivoMs")
+                        .HasColumnType("bigint")
+                        .HasColumnName("tempo_attivo_ms");
+
+                    b.Property<string>("Tipologia")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("tipologia");
+
+                    b.Property<DateTime?>("UltimaAttivitaIl")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ultima_attivita_il");
+
+                    b.Property<string>("VersioneGeneratore")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("versione_generatore");
+
+                    b.Property<string>("VersionePrompt")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("versione_prompt");
+
+                    b.Property<int>("VersioneTipologia")
+                        .HasColumnType("integer")
+                        .HasColumnName("versione_tipologia");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Tipologia", "OrdineGenerazione")
+                        .IsUnique()
+                        .HasDatabaseName("ux_candidati__tipologia_ordine");
+
+                    b.HasIndex("Tipologia", "Stato", "OrdineGenerazione")
+                        .HasDatabaseName("ix_candidati__tipologia_stato_ordine");
+
+                    b.ToTable("candidati", "prototipo", t =>
+                        {
+                            t.HasCheckConstraint("ck_candidati_accettato_finale", "stato <> 'accettato' OR contenuto_finale IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_candidati_contenuto_generato", "(contenuto_generato IS NOT NULL) = (stato IN ('da_rivedere', 'in_revisione', 'accettato', 'scartato'))");
+
+                            t.HasCheckConstraint("ck_candidati_famiglia", "famiglia IN ('cruciverba', 'gioco-breve', 'crittografia', 'rebus', 'logico')");
+
+                            t.HasCheckConstraint("ck_candidati_impronta_ai", "(modo = 'ai') = (impronta_richiesta IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_candidati_impronta_lunghezza", "impronta_richiesta IS NULL OR octet_length(impronta_richiesta) = 32");
+
+                            t.HasCheckConstraint("ck_candidati_modo", "modo IN ('ai', 'algoritmo')");
+
+                            t.HasCheckConstraint("ck_candidati_motivo_scarto", "(stato = 'scartato') = (motivo_scarto IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_candidati_motivo_scarto_valori", "motivo_scarto IS NULL OR motivo_scarto IN ('soluzione_errata', 'regole_non_rispettate', 'incroci_incoerenti', 'qualita_insufficiente', 'banale_o_troppo_facile', 'contenuto_inadatto', 'altro')");
+
+                            t.HasCheckConstraint("ck_candidati_ordine", "ordine_generazione >= 1");
+
+                            t.HasCheckConstraint("ck_candidati_origine", "origine = 'originale'");
+
+                            t.HasCheckConstraint("ck_candidati_prompt_ai", "(modo = 'ai') = (versione_prompt IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_candidati_revisione_conclusa", "(revisione_conclusa_il IS NOT NULL) = (stato IN ('accettato', 'scartato'))");
+
+                            t.HasCheckConstraint("ck_candidati_seme_algoritmo", "modo <> 'algoritmo' OR seme IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_candidati_stato", "stato IN ('in_generazione', 'non_valido_schema', 'errore_generazione', 'da_rivedere', 'in_revisione', 'accettato', 'scartato')");
+
+                            t.HasCheckConstraint("ck_candidati_tempo_attivo", "tempo_attivo_ms >= 0");
+
+                            t.HasCheckConstraint("ck_candidati_versione_generatore", "(seme IS NULL) = (versione_generatore IS NULL)");
+
+                            t.HasCheckConstraint("ck_candidati_versione_generatore_formato", "versione_generatore IS NULL OR versione_generatore ~ '^[a-z0-9][a-z0-9.-]{0,39}$'");
+
+                            t.HasCheckConstraint("ck_candidati_versione_tipologia", "versione_tipologia >= 0");
+                        });
+                });
 
             modelBuilder.Entity("DBEnigmistica.Domain.Catalogo.GiocoOriginale", b =>
                 {
@@ -774,6 +941,152 @@ namespace DBEnigmistica.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DBEnigmistica.Infrastructure.Prototipo.ChiamataAiPrototipoRiga", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("AvviataIl")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("avviata_il");
+
+                    b.Property<Guid>("CandidatoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("candidato_id");
+
+                    b.Property<int?>("CodiceUscita")
+                        .HasColumnType("integer")
+                        .HasColumnName("codice_uscita");
+
+                    b.Property<bool>("Correzione")
+                        .HasColumnType("boolean")
+                        .HasColumnName("correzione");
+
+                    b.Property<decimal?>("Costo")
+                        .HasColumnType("numeric(12,6)")
+                        .HasColumnName("costo");
+
+                    b.Property<string>("CostoTipo")
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("costo_tipo");
+
+                    b.Property<string>("CostoValuta")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("costo_valuta");
+
+                    b.Property<int>("DurataMs")
+                        .HasColumnType("integer")
+                        .HasColumnName("durata_ms");
+
+                    b.Property<string>("Esito")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("esito");
+
+                    b.Property<string>("Fornitore")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("fornitore");
+
+                    b.Property<byte[]>("ImprontaRichiesta")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("impronta_richiesta");
+
+                    b.Property<string>("MessaggioErrore")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("messaggio_errore");
+
+                    b.Property<string>("Modello")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("modello");
+
+                    b.Property<DateTime?>("RipresaIl")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ripresa_il");
+
+                    b.Property<string>("RispostaGrezza")
+                        .HasColumnType("text")
+                        .HasColumnName("risposta_grezza");
+
+                    b.Property<byte[]>("RispostaSha256")
+                        .HasColumnType("bytea")
+                        .HasColumnName("risposta_sha256");
+
+                    b.Property<int>("Tentativo")
+                        .HasColumnType("integer")
+                        .HasColumnName("tentativo");
+
+                    b.Property<int?>("TokenCacheCreazione")
+                        .HasColumnType("integer")
+                        .HasColumnName("token_cache_creazione");
+
+                    b.Property<int?>("TokenCacheLettura")
+                        .HasColumnType("integer")
+                        .HasColumnName("token_cache_lettura");
+
+                    b.Property<int?>("TokenIngresso")
+                        .HasColumnType("integer")
+                        .HasColumnName("token_ingresso");
+
+                    b.Property<int?>("TokenUscita")
+                        .HasColumnType("integer")
+                        .HasColumnName("token_uscita");
+
+                    b.Property<string>("Uso")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("uso");
+
+                    b.Property<string>("VersionePrompt")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("versione_prompt");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AvviataIl")
+                        .HasDatabaseName("ix_chiamate_ai__avviata_il");
+
+                    b.HasIndex("CandidatoId")
+                        .HasDatabaseName("ix_chiamate_ai__candidato_id");
+
+                    b.ToTable("chiamate_ai", "prototipo", t =>
+                        {
+                            t.HasCheckConstraint("ck_chiamate_ai_costo", "costo IS NULL OR costo >= 0");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_costo_tipo", "(costo IS NULL) = (costo_tipo IS NULL) AND (costo_tipo IS NULL OR costo_tipo IN ('addebitato', 'indicativo'))");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_costo_valuta", "(costo IS NULL) = (costo_valuta IS NULL) AND (costo_valuta IS NULL OR costo_valuta ~ '^[A-Z]{3}$')");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_durata", "durata_ms >= 0");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_esito", "esito IN ('riuscita', 'risposta_non_valida', 'finestra_esaurita', 'errore_transitorio', 'errore_definitivo')");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_fornitore", "fornitore ~ '^[a-z][a-z0-9-]{0,39}$'");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_impronta", "octet_length(impronta_richiesta) = 32");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_risposta_sha256", "risposta_sha256 IS NULL OR octet_length(risposta_sha256) = 32");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_tentativo", "tentativo >= 1");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_token", "(token_ingresso IS NULL OR token_ingresso >= 0) AND (token_uscita IS NULL OR token_uscita >= 0) AND (token_cache_creazione IS NULL OR token_cache_creazione >= 0) AND (token_cache_lettura IS NULL OR token_cache_lettura >= 0)");
+
+                            t.HasCheckConstraint("ck_chiamate_ai_uso", "uso = 'creazione'");
+                        });
+                });
+
             modelBuilder.Entity("DBEnigmistica.Domain.Catalogo.GiocoOriginale", b =>
                 {
                     b.HasOne("DBEnigmistica.Domain.Diritti.Soggetto", null)
@@ -901,6 +1214,15 @@ namespace DBEnigmistica.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("DBEnigmistica.Infrastructure.Prototipo.ChiamataAiPrototipoRiga", b =>
+                {
+                    b.HasOne("DBEnigmistica.Application.Creazione.Candidato", null)
+                        .WithMany()
+                        .HasForeignKey("CandidatoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DBEnigmistica.Domain.Catalogo.GiocoOriginale", b =>

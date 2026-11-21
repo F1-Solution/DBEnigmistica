@@ -1,0 +1,25 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "crittografia-breve",
+  "versione": 0,
+  "famiglia": "crittografia",
+  "nome": "Crittografia breve",
+  "descrizione": "Esposto di poche lettere o parole, seguito da un diagramma numerico tra parentesi, per esempio (5 2 = 7). La soluzione è una frase con le stesse lettere della prima lettura, divise in modo diverso.",
+  "regole": {
+    "testo": "La crittografia breve ha un esposto, un diagramma e una soluzione. L'esposto ha al massimo 6 parole, oppure poche lettere. La prima lettura è una frase che descrive l'esposto. La soluzione è una parola o una frase di senso compiuto con le stesse lettere della prima lettura, nello stesso ordine, divise in parole diverse. Il diagramma dà il numero di lettere di ogni parola: prima quelle della prima lettura, poi il segno =, poi quelle della soluzione, per esempio 5 2 = 7. Spazi, apostrofi e accenti non contano come lettere; un apostrofo si scrive nel diagramma come nella frase, per esempio 1'5. Crittografia sinonimica: la prima lettura sostituisce le parole dell'esposto con sinonimi, oppure legge alla lettera una parte dell'esposto (una lettera, una sigla, una posizione). Crittografia perifrastica: almeno una parola o un gruppo di parole dell'esposto è una perifrasi, e la prima lettura la sostituisce con la parola che la perifrasi descrive. La prima lettura deve essere corretta in italiano, anche se forzata. La soluzione è italiana e di uso comune, presente in un buon dizionario, oppure un nome proprio molto noto. Nessuna parola della soluzione compare nell'esposto. Niente volgarità, temi offensivi o persone private.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente A, ondata 1b.1"
+  },
+  "campi": [
+    { "nome": "sottotipo", "etichetta": "Sottotipo", "descrizione": "Il sottotipo scelto nel brief.","tipo": "enumerazione", "valori": ["sinonimica", "perifrastica"], "obbligatorio": true, "indice": true },
+    { "nome": "esposto", "etichetta": "Esposto", "descrizione": "Le lettere o le parole mostrate al solutore.", "tipo": "testo", "max": 120, "obbligatorio": true, "ruolo": "esposto" },
+    { "nome": "diagramma", "etichetta": "Diagramma", "descrizione": "Lettere di ogni parola della prima lettura, il segno =, lettere di ogni parola della soluzione; senza parentesi, per esempio 5 2 = 7.", "tipo": "testo", "max": 60, "obbligatorio": true, "ruolo": "diagramma" },
+    { "nome": "prima_lettura", "etichetta": "Prima lettura", "descrizione": "La frase che descrive l'esposto, con le stesse lettere della soluzione.", "tipo": "testo", "max": 200, "obbligatorio": true },
+    { "nome": "soluzione", "etichetta": "Soluzione", "tipo": "testo", "max": 200, "obbligatorio": true, "ruolo": "soluzione" },
+    { "nome": "spiegazione", "etichetta": "Spiegazione", "descrizione": "Passaggi dall'esposto alla prima lettura, per chi rivede. Non si stampa.", "tipo": "testo", "max": 1000 }
+  ],
+  "elenchi": [],
+  "resa": { "modello": "esposto_diagramma" },
+  "validatori": ["diagramma-coerente-con-soluzione"]
+}

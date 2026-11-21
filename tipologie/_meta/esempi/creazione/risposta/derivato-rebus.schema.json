@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:risposta-creazione:rebus:v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versione_formato",
+    "tipologia",
+    "versione_tipologia",
+    "titolo",
+    "dati",
+    "avvisi"
+  ],
+  "properties": {
+    "versione_formato": {
+      "const": 1
+    },
+    "tipologia": {
+      "const": "rebus"
+    },
+    "versione_tipologia": {
+      "const": 0
+    },
+    "titolo": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      ]
+    },
+    "dati": {
+      "$ref": "#/$defs/dati"
+    },
+    "avvisi": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    }
+  },
+  "$defs": {
+    "dati": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "esposto",
+        "diagramma",
+        "prima_lettura",
+        "soluzione",
+        "spiegazione",
+        "vignette"
+      ],
+      "properties": {
+        "esposto": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "diagramma": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "prima_lettura": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "soluzione": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "spiegazione": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          ]
+        },
+        "vignette": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 500,
+          "items": {
+            "$ref": "#/$defs/voce_vignette"
+          }
+        }
+      }
+    },
+    "voce_vignette": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vignetta",
+        "descrizione",
+        "lettere",
+        "parola"
+      ],
+      "properties": {
+        "vignetta": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "descrizione": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "lettere": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10
+            }
+          ]
+        },
+        "parola": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        }
+      }
+    }
+  }
+}

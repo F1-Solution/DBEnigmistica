@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:risposta-creazione:crittografia-breve:v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versione_formato",
+    "tipologia",
+    "versione_tipologia",
+    "titolo",
+    "dati",
+    "avvisi"
+  ],
+  "properties": {
+    "versione_formato": {
+      "const": 1
+    },
+    "tipologia": {
+      "const": "crittografia-breve"
+    },
+    "versione_tipologia": {
+      "const": 0
+    },
+    "titolo": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      ]
+    },
+    "dati": {
+      "$ref": "#/$defs/dati"
+    },
+    "avvisi": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    }
+  },
+  "$defs": {
+    "dati": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sottotipo",
+        "esposto",
+        "diagramma",
+        "prima_lettura",
+        "soluzione",
+        "spiegazione"
+      ],
+      "properties": {
+        "sottotipo": {
+          "const": "sinonimica"
+        },
+        "esposto": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "diagramma": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "prima_lettura": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "soluzione": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "spiegazione": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          ]
+        }
+      }
+    }
+  }
+}

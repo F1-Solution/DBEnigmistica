@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
@@ -28,6 +32,7 @@
     <ProjectReference Include="..\..\src\DBEnigmistica.Infrastructure\DBEnigmistica.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\DBEnigmistica.AI\DBEnigmistica.AI.csproj" />
     <ProjectReference Include="..\..\src\DBEnigmistica.Console\DBEnigmistica.Console.csproj" />
+    <ProjectReference Include="..\..\src\DBEnigmistica.Web\DBEnigmistica.Web.csproj" />
   </ItemGroup>
 
 </Project>

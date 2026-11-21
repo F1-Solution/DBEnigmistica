@@ -19,8 +19,19 @@ public sealed class FornitoreAiOptions
 
     public RegistrazioniOptions Registrazioni { get; set; } = new();
 
+    /// <summary>Impostazioni della creazione: modello proprio (Opus) e Registrazioni proprie.</summary>
+    public CreazioneOptions Creazione { get; set; } = new();
+
     /// <summary>Numero massimo di chiamate reali per esecuzione; vuoto significa nessun limite.</summary>
     public int? LimiteChiamate { get; set; }
+}
+
+/// <summary>Sezione <c>FornitoreAi:Creazione</c>: il modello della creazione è separato da quello dell'estrazione (D1b-6).</summary>
+public sealed class CreazioneOptions
+{
+    public string? Modello { get; set; }
+
+    public RegistrazioniOptions Registrazioni { get; set; } = new();
 }
 
 /// <summary>Registrazioni delle risposte per pagina: <c>Modalita</c> è <c>registra</c> o <c>riproduci</c>, vuota per spenta.</summary>

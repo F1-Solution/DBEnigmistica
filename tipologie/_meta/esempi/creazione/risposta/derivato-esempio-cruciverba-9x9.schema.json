@@ -1,0 +1,818 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dbenigmistica:risposta-creazione:esempio-cruciverba:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versione_formato",
+    "tipologia",
+    "versione_tipologia",
+    "titolo",
+    "dati",
+    "avvisi"
+  ],
+  "properties": {
+    "versione_formato": {
+      "const": 1
+    },
+    "tipologia": {
+      "const": "esempio-cruciverba"
+    },
+    "versione_tipologia": {
+      "const": 1
+    },
+    "titolo": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      ]
+    },
+    "dati": {
+      "$ref": "#/$defs/dati"
+    },
+    "avvisi": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    }
+  },
+  "$defs": {
+    "dati": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "righe",
+        "colonne",
+        "griglia",
+        "autore",
+        "definizioni"
+      ],
+      "properties": {
+        "righe": {
+          "const": 9
+        },
+        "colonne": {
+          "const": 9
+        },
+        "griglia": {
+          "$ref": "#/$defs/griglia"
+        },
+        "autore": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          ]
+        },
+        "definizioni": {
+          "type": "array",
+          "minItems": 32,
+          "maxItems": 32,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 1
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 3
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{6}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 9
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{9}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 11
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{4}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 12
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 13
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 14
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 15
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 16
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{9}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 19
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 20
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 21
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 22
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 23
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{4}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 25
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{9}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 28
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{6}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 29
+                },
+                "direzione": {
+                  "const": "orizzontale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 1
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 2
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{9}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 3
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{5}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 4
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{9}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 5
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 6
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{5}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 7
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{9}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 8
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{6}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 10
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 13
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{6}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 17
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{5}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 18
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{5}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 24
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 26
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/voce_definizioni",
+              "properties": {
+                "numero": {
+                  "const": 27
+                },
+                "direzione": {
+                  "const": "verticale"
+                },
+                "soluzione": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              }
+            }
+          ],
+          "items": false
+        }
+      }
+    },
+    "voce_definizioni": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "numero",
+        "direzione",
+        "testo",
+        "soluzione"
+      ],
+      "properties": {
+        "numero": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999
+        },
+        "direzione": {
+          "type": "string",
+          "enum": [
+            "orizzontale",
+            "verticale"
+          ]
+        },
+        "testo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "soluzione": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        }
+      }
+    },
+    "griglia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "righe",
+        "colonne",
+        "celle",
+        "numeri"
+      ],
+      "properties": {
+        "righe": {
+          "const": 9
+        },
+        "colonne": {
+          "const": 9
+        },
+        "celle": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "prefixItems": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{2}#[A-Z]{6}$"
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{9}$"
+            },
+            {
+              "type": "string",
+              "pattern": "^#[A-Z]{4}#[A-Z]{3}$"
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{2}#[A-Z]{2}#[A-Z]{3}$"
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{9}$"
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{3}#[A-Z]{2}#[A-Z]{2}$"
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{3}#[A-Z]{4}#$"
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{9}$"
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{6}#[A-Z]{2}$"
+            }
+          ],
+          "items": false
+        },
+        "numeri": {
+          "const": [
+            {
+              "riga": 1,
+              "colonna": 1,
+              "numero": 1
+            },
+            {
+              "riga": 1,
+              "colonna": 2,
+              "numero": 2
+            },
+            {
+              "riga": 1,
+              "colonna": 4,
+              "numero": 3
+            },
+            {
+              "riga": 1,
+              "colonna": 5,
+              "numero": 4
+            },
+            {
+              "riga": 1,
+              "colonna": 6,
+              "numero": 5
+            },
+            {
+              "riga": 1,
+              "colonna": 7,
+              "numero": 6
+            },
+            {
+              "riga": 1,
+              "colonna": 8,
+              "numero": 7
+            },
+            {
+              "riga": 1,
+              "colonna": 9,
+              "numero": 8
+            },
+            {
+              "riga": 2,
+              "colonna": 1,
+              "numero": 9
+            },
+            {
+              "riga": 2,
+              "colonna": 3,
+              "numero": 10
+            },
+            {
+              "riga": 3,
+              "colonna": 2,
+              "numero": 11
+            },
+            {
+              "riga": 3,
+              "colonna": 7,
+              "numero": 12
+            },
+            {
+              "riga": 4,
+              "colonna": 1,
+              "numero": 13
+            },
+            {
+              "riga": 4,
+              "colonna": 4,
+              "numero": 14
+            },
+            {
+              "riga": 4,
+              "colonna": 7,
+              "numero": 15
+            },
+            {
+              "riga": 5,
+              "colonna": 1,
+              "numero": 16
+            },
+            {
+              "riga": 5,
+              "colonna": 3,
+              "numero": 17
+            },
+            {
+              "riga": 5,
+              "colonna": 6,
+              "numero": 18
+            },
+            {
+              "riga": 6,
+              "colonna": 1,
+              "numero": 19
+            },
+            {
+              "riga": 6,
+              "colonna": 5,
+              "numero": 20
+            },
+            {
+              "riga": 6,
+              "colonna": 8,
+              "numero": 21
+            },
+            {
+              "riga": 7,
+              "colonna": 1,
+              "numero": 22
+            },
+            {
+              "riga": 7,
+              "colonna": 5,
+              "numero": 23
+            },
+            {
+              "riga": 7,
+              "colonna": 7,
+              "numero": 24
+            },
+            {
+              "riga": 8,
+              "colonna": 1,
+              "numero": 25
+            },
+            {
+              "riga": 8,
+              "colonna": 4,
+              "numero": 26
+            },
+            {
+              "riga": 8,
+              "colonna": 9,
+              "numero": 27
+            },
+            {
+              "riga": 9,
+              "colonna": 1,
+              "numero": 28
+            },
+            {
+              "riga": 9,
+              "colonna": 8,
+              "numero": 29
+            }
+          ]
+        }
+      }
+    }
+  }
+}

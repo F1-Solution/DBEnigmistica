@@ -11,13 +11,15 @@ Test e pubblicazione avvengono solo tramite GitHub Actions. Non serve alcun segr
   1. ripristino dei pacchetti;
   2. controllo del formato con `dotnet format --verify-no-changes`, prima della compilazione (fine riga e spazi, secondo `.editorconfig`);
   3. compilazione in Release con `-warnaserror`: un avviso è un errore;
-  4. test con copertura, compresi i test d'integrazione (PostgreSQL 18 con Testcontainers) e i test di architettura;
-  5. soglia di copertura: almeno l'80% delle righe di Domain e Application (`.github/scripts/soglia-copertura.py`).
+  4. pubblicazione di controllo autonoma per linux-x64, che verifica la presenza dell'host del prototipo e dei cinque descrittori `tipologie` v0: se ne manca uno, il passo fallisce;
+  5. test con copertura, compresi i test d'integrazione (PostgreSQL 18 con Testcontainers) e i test di architettura;
+  6. soglia di copertura: almeno l'80% delle righe di Domain e Application (`.github/scripts/soglia-copertura.py`).
   
   I test end-to-end della CLI (categoria `EndToEnd`) girano in questo stesso passo, contro PostgreSQL 18. I risultati dei test e la copertura compaiono nel riepilogo del lavoro e nell'artefatto `test-results` (14 giorni).
 - **Vulnerabilita pacchetti** (lavoro "Vulnerabilita pacchetti"): `dotnet list package --vulnerable --include-transitive`, anche per le dipendenze transitive. Il comando esce con 0 anche quando trova vulnerabilità, quindi lo script controlla il testo del rapporto e fallisce se trova qualcosa.
 - **Controllo segreti** (lavoro "Controllo segreti"): gitleaks sull'intera storia git, con i valori oscurati nei log (`--redact`). Si usa il programma da riga di comando, verificato con checksum, perché l'azione ufficiale richiede una licenza nei repository di organizzazione. In locale lo stesso controllo gira come hook `pre-commit` (sezione "Hook locale" più sotto).
 - **Build immagine Docker** (lavoro "Build immagine Docker"): costruisce il `Dockerfile` senza pubblicarlo e verifica che `--version` stampi `0.0.0`, la versione predefinita. Poi esegue `diagnostica-render --salva-png` nell'immagine, per verificare PDFium, e pubblica i PNG come artefatto `png-render-chiseled` (14 giorni). Il lavoro è rosso se il rendering fallisce.
+  - L'immagine si costruisce senza il prototipo (`IncludePrototipo=false`): `dbe prototipo` nell'immagine risponde che il prototipo non è incluso in questa pubblicazione.
   - Il `Dockerfile` ammette una sola libreria nativa nella pubblicazione: `libpdfium.so` per linux-x64. Ogni altro file nativo (`.so`, `.dylib`, `pdfium.dll` o cartelle `runtimes/*/native`) fa fallire la build.
 
 ### Publish (`.github/workflows/publish.yml`)
@@ -28,7 +30,7 @@ Test e pubblicazione avvengono solo tramite GitHub Actions. Non serve alcun segr
   2. **Commit da main**: verifica che il commit discenda da `origin/main` (`.github/scripts/verifica-tag-da-main.sh`). Un tag su un commit fuori da `main` fa fallire il flusso prima di pubblicare.
   3. **Versione**: il tag deve essere `vX.Y.Z` o `vX.Y.Z-suffisso`. L'avvio manuale produce la versione `0.0.0-manual.<sha>`.
   4. **Immagine console (GHCR)**: costruisce il `Dockerfile` con `VERSION` e lo pubblica su `ghcr.io/f1-solution/dbenigmistica` con i tag `X.Y.Z`, `sha-<7 caratteri>` e `latest`. `latest` non va alle versioni con suffisso e agli avvii manuali da rami diversi da `main`.
-  5. **Eseguibile console** (`win-x64` e `linux-x64`): pubblicazione autonoma, con verifica che l'archivio contenga `appsettings.json`, l'eseguibile `dbe` (`dbe.exe` su Windows) e la libreria PDFium (`pdfium.dll` su Windows, `libpdfium.so` su Linux).
+  5. **Eseguibile console** (`win-x64` e `linux-x64`): pubblicazione autonoma, con verifica che l'archivio contenga `appsettings.json`, l'eseguibile `dbe` (`dbe.exe` su Windows), la libreria PDFium (`pdfium.dll` su Windows, `libpdfium.so` su Linux), l'host del prototipo (`DBEnigmistica.Web.dll` e il runtime `Microsoft.AspNetCore.dll`) e i cinque descrittori `tipologie` v0 (`crittografia-breve`, `rebus`, `sudoku`, `futoshiki`, `nonogramma`). Se manca un file, la pubblicazione fallisce.
   6. **GitHub Release** (solo da tag): crea la release con note generate, gli archivi `dbenigmistica-console-X.Y.Z-win-x64.zip` e `dbenigmistica-console-X.Y.Z-linux-x64.tar.gz`. Le versioni con suffisso sono marcate come prerelease. L'avvio manuale non crea release.
 
 ### Dependabot (`.github/dependabot.yml`)
