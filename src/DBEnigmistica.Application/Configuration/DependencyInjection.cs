@@ -3,6 +3,7 @@ using DBEnigmistica.Application.Services.Export;
 using DBEnigmistica.Application.Services.Processing;
 using DBEnigmistica.Application.Services.Schema;
 using DBEnigmistica.Application.Services.Solutions;
+using DBEnigmistica.Application.Valutazione;
 using DBEnigmistica.Domain.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +25,9 @@ public static class DependencyInjection
 
         // Registro
         services.AddScoped<VerificaIntegritaRegistro>();
+
+        // Valutazione
+        services.AddValutazione();
 
         // Export Services
         services.AddScoped<DataExportService>();

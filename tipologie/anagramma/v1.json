@@ -1,0 +1,24 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "anagramma",
+  "versione": 1,
+  "famiglia": "gioco-breve",
+  "nome": "Anagramma",
+  "descrizione": "Breve testo in versi o in prosa con un diagramma tra parentesi, per esempio (4 = 4): la soluzione usa le stesse lettere della parola indicata dall'esposto, in un altro ordine.",
+  "regole": {
+    "testo": "L'anagramma ha un esposto, un diagramma e una soluzione. L'esposto è un breve testo, in versi o in prosa, con due letture: la prima descrive una parola o una frase (la prima parola), la seconda descrive un'altra parola o frase (la soluzione). La soluzione è formata esattamente dalle stesse lettere della prima parola, con le stesse ripetizioni, in un ordine diverso. Il diagramma dà il numero di lettere di ogni parola: prima quelle della prima parola, poi il segno =, poi quelle della soluzione, per esempio 4 = 4 oppure 2 3 = 5. Spazi, apostrofi e accenti non contano come lettere. Le due parole sono diverse tra loro e italiane di uso comune, oppure nomi propri molto noti. Nessuna delle due compare nell'esposto. Esempio inventato: dalla parola CANE, spostando le lettere, si ottiene CENA; il diagramma è (4 = 4). Niente volgarità, temi offensivi o persone private.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente B1, ondata 1.2"
+  },
+  "campi": [
+    { "nome": "esposto", "etichetta": "Esposto", "tipo": "testo", "max": 1000, "obbligatorio": true, "ruolo": "esposto" },
+    { "nome": "diagramma", "etichetta": "Diagramma", "descrizione": "Il diagramma tra parentesi, senza parentesi, per esempio 4 = 4.", "tipo": "testo", "max": 100, "obbligatorio": true, "ruolo": "diagramma" },
+    { "nome": "prima_parola", "etichetta": "Prima parola", "descrizione": "La parola o la frase della prima lettura, solo se stampata sulla pagina o se la crea il Motore di creazione.", "tipo": "testo", "max": 100 },
+    { "nome": "soluzione", "etichetta": "Soluzione", "descrizione": "La parola o la frase della seconda lettura, solo se stampata sulla pagina.", "tipo": "testo", "max": 100, "ruolo": "soluzione" },
+    { "nome": "autore", "etichetta": "Autore", "descrizione": "Firma dell'autore, se stampata.", "tipo": "testo", "max": 100, "indice": true }
+  ],
+  "elenchi": [],
+  "resa": { "modello": "esposto_diagramma" },
+  "validatori": ["diagramma-coerente-con-soluzione", "anagramma-stesse-lettere"]
+}

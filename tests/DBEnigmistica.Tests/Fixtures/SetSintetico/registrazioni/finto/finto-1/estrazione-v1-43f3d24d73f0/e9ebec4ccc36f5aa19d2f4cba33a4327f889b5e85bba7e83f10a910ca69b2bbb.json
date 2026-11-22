@@ -1,0 +1,24 @@
+{
+  "versione_formato": 1,
+  "chiave": {
+    "impronta_pagina": "e9ebec4ccc36f5aa19d2f4cba33a4327f889b5e85bba7e83f10a910ca69b2bbb",
+    "versione_prompt": "estrazione-v1-43f3d24d73f0",
+    "fornitore": "finto",
+    "modello": "finto-1"
+  },
+  "registrata_il": "2026-11-24T00:00:00.000000Z",
+  "dpi": 200,
+  "esito": "riuscita",
+  "risposta_grezza": "{\u0022type\u0022:\u0022result\u0022,\u0022is_error\u0022:false,\u0022result\u0022:\u0022\u0022,\u0022structured_output\u0022:{\u0022versione_formato\u0022:1,\u0022contenuto_pagina\u0022:\u0022giochi\u0022,\u0022rivista\u0022:null,\u0022giochi\u0022:[{\u0022stato_tipologia\u0022:\u0022nota\u0022,\u0022tipologia\u0022:\u0022anagramma\u0022,\u0022versione_tipologia\u0022:1,\u0022titolo\u0022:\u0022Anagramma\u0022,\u0022riquadro\u0022:{\u0022x\u0022:0.08,\u0022y\u0022:0.1,\u0022larghezza\u0022:0.84,\u0022altezza\u0022:0.12},\u0022dati\u0022:{\u0022esposto\u0022:\u0022Il treno entra in stazione (5 = 5)\u0022,\u0022diagramma\u0022:\u00225 = 5\u0022,\u0022prima_parola\u0022:null,\u0022soluzione\u0022:null,\u0022autore\u0022:null},\u0022confidenza\u0022:{\u0022gioco\u0022:0.95,\u0022tipologia\u0022:0.97,\u0022campi\u0022:{\u0022esposto\u0022:0.95,\u0022diagramma\u0022:0.95,\u0022prima_parola\u0022:0.95,\u0022soluzione\u0022:0.95,\u0022autore\u0022:0.95},\u0022elenchi\u0022:{}},\u0022avvisi\u0022:[]},{\u0022stato_tipologia\u0022:\u0022nota\u0022,\u0022tipologia\u0022:\u0022sciarada\u0022,\u0022versione_tipologia\u0022:1,\u0022titolo\u0022:\u0022Sciarada\u0022,\u0022riquadro\u0022:{\u0022x\u0022:0.08,\u0022y\u0022:0.26,\u0022larghezza\u0022:0.84,\u0022altezza\u0022:0.06},\u0022dati\u0022:{\u0022esposto\u0022:\u0022Il mio primo e\\u0027 un saluto, il secondo un metallo\u0022,\u0022diagramma\u0022:\u00223, 4 = 7\u0022,\u0022parti\u0022:null,\u0022soluzione\u0022:null,\u0022autore\u0022:null},\u0022confidenza\u0022:{\u0022gioco\u0022:0.95,\u0022tipologia\u0022:0.97,\u0022campi\u0022:{\u0022esposto\u0022:0.95,\u0022diagramma\u0022:0.95,\u0022parti\u0022:0.95,\u0022soluzione\u0022:0.95,\u0022autore\u0022:0.95},\u0022elenchi\u0022:{}},\u0022avvisi\u0022:[]},{\u0022stato_tipologia\u0022:\u0022nota\u0022,\u0022tipologia\u0022:\u0022cambio-di-lettera\u0022,\u0022versione_tipologia\u0022:1,\u0022titolo\u0022:\u0022Cambio di lettera\u0022,\u0022riquadro\u0022:{\u0022x\u0022:0.08,\u0022y\u0022:0.36,\u0022larghezza\u0022:0.84,\u0022altezza\u0022:0.06},\u0022dati\u0022:{\u0022esposto\u0022:\u0022MARE - MALE - SALE\u0022,\u0022diagramma\u0022:\u00224 = 4\u0022,\u0022prima_parola\u0022:null,\u0022soluzione\u0022:null,\u0022autore\u0022:null},\u0022confidenza\u0022:{\u0022gioco\u0022:0.95,\u0022tipologia\u0022:0.97,\u0022campi\u0022:{\u0022esposto\u0022:0.95,\u0022diagramma\u0022:0.95,\u0022prima_parola\u0022:0.95,\u0022soluzione\u0022:0.95,\u0022autore\u0022:0.95},\u0022elenchi\u0022:{}},\u0022avvisi\u0022:[]}],\u0022avvisi\u0022:[]}}",
+  "risposta_sha256": "2557539bb5d13ab6e61c6f597de97e154645a67fdaa327bd3afd5d6a39a3821e",
+  "metadati": {
+    "durata_ms": 0,
+    "token_ingresso": null,
+    "token_uscita": null,
+    "token_cache_creazione": null,
+    "token_cache_lettura": null,
+    "costo": null,
+    "costo_valuta": null,
+    "costo_tipo": null
+  }
+}

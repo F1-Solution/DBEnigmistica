@@ -33,6 +33,7 @@
     <ProjectReference Include="..\..\src\DBEnigmistica.AI\DBEnigmistica.AI.csproj" />
     <ProjectReference Include="..\..\src\DBEnigmistica.Console\DBEnigmistica.Console.csproj" />
     <ProjectReference Include="..\..\src\DBEnigmistica.Web\DBEnigmistica.Web.csproj" />
+    <ProjectReference Include="..\..\src\DBEnigmistica.Tipologie\DBEnigmistica.Tipologie.csproj" />
   </ItemGroup>
 
 </Project>

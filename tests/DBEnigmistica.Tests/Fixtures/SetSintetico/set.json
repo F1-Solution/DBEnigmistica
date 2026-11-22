@@ -1,0 +1,44 @@
+{
+  "versione_formato": 1,
+  "nome": "sintetico",
+  "tipo": "sintetico",
+  "generatore": "set-sintetico-v1",
+  "pagine": [
+    {
+      "id": "s01",
+      "origine": "digitale",
+      "pdf": null,
+      "numero_pagina": 1
+    },
+    {
+      "id": "s02",
+      "origine": "digitale",
+      "pdf": null,
+      "numero_pagina": 2
+    },
+    {
+      "id": "s03",
+      "origine": "digitale",
+      "pdf": null,
+      "numero_pagina": 3
+    },
+    {
+      "id": "s04",
+      "origine": "scansione",
+      "pdf": null,
+      "numero_pagina": 4
+    },
+    {
+      "id": "s05",
+      "origine": "digitale",
+      "pdf": null,
+      "numero_pagina": 5
+    },
+    {
+      "id": "s06",
+      "origine": "digitale",
+      "pdf": null,
+      "numero_pagina": 6
+    }
+  ]
+}

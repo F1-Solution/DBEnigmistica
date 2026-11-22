@@ -8,6 +8,7 @@ using DBEnigmistica.Infrastructure.Repositories;
 using DBEnigmistica.Infrastructure.Services.Archivio;
 using DBEnigmistica.Infrastructure.Services.Pdf;
 using DBEnigmistica.Infrastructure.Services.Registrazioni;
+using DBEnigmistica.Infrastructure.Tipologie;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,10 @@ public static class DependencyInjection
         services.AddScoped<IGameSolutionRepository, GameSolutionRepository>();
         services.AddScoped<IRegistroEventi, RegistroEventiRepository>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+        // Tipologie: SQL applicato da migrate e dati dei Giochi nelle tabelle per Tipologia
+        services.AddSingleton<MigratoreTipologie>();
+        services.AddSingleton<ArchivioDatiTipologia>();
 
         // Services - PDF, Archivio e opzioni (validate quando si leggono, così solo i comandi che le usano le richiedono)
         services.AddSingleton<IRenderPagine, PdfRenderPagine>();

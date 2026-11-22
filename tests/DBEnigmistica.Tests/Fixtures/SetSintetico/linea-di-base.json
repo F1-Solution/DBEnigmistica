@@ -1,0 +1,46 @@
+{
+  "versione_formato": 1,
+  "set": "sintetico",
+  "registrata_il": "2026-11-24T00:00:00Z",
+  "condizioni": {
+    "fornitore": "finto",
+    "modello": "finto-1",
+    "versione_prompt": "estrazione-v1-43f3d24d73f0",
+    "dpi": 200
+  },
+  "metriche": {
+    "digitale": {
+      "pagine": 5,
+      "giochi_attesi": 8,
+      "giochi_estratti": 9,
+      "richiamo": 1,
+      "precisione": 0.8889,
+      "tipologia_corretta": 1,
+      "caselle_corrette": 0.9796,
+      "campi_esatti": 0.9667,
+      "cer": 0.0066
+    },
+    "scansione": {
+      "pagine": 1,
+      "giochi_attesi": 1,
+      "giochi_estratti": 1,
+      "richiamo": 1,
+      "precisione": 1,
+      "tipologia_corretta": 1,
+      "caselle_corrette": 1,
+      "campi_esatti": null,
+      "cer": null
+    },
+    "totale": {
+      "pagine": 6,
+      "giochi_attesi": 9,
+      "giochi_estratti": 10,
+      "richiamo": 1,
+      "precisione": 0.9,
+      "tipologia_corretta": 1,
+      "caselle_corrette": 0.9865,
+      "campi_esatti": 0.9667,
+      "cer": 0.0066
+    }
+  }
+}

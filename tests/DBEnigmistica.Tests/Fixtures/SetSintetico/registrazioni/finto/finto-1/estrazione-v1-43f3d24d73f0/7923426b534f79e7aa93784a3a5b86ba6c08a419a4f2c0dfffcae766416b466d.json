@@ -1,0 +1,24 @@
+{
+  "versione_formato": 1,
+  "chiave": {
+    "impronta_pagina": "7923426b534f79e7aa93784a3a5b86ba6c08a419a4f2c0dfffcae766416b466d",
+    "versione_prompt": "estrazione-v1-43f3d24d73f0",
+    "fornitore": "finto",
+    "modello": "finto-1"
+  },
+  "registrata_il": "2026-11-24T00:00:00.000000Z",
+  "dpi": 200,
+  "esito": "riuscita",
+  "risposta_grezza": "{\u0022type\u0022:\u0022result\u0022,\u0022is_error\u0022:false,\u0022result\u0022:\u0022\u0022,\u0022structured_output\u0022:{\u0022versione_formato\u0022:1,\u0022contenuto_pagina\u0022:\u0022giochi\u0022,\u0022rivista\u0022:null,\u0022giochi\u0022:[{\u0022stato_tipologia\u0022:\u0022nota\u0022,\u0022tipologia\u0022:\u0022cruciverba-classico\u0022,\u0022versione_tipologia\u0022:1,\u0022titolo\u0022:\u0022Cruciverba di prova\u0022,\u0022riquadro\u0022:{\u0022x\u0022:0.08,\u0022y\u0022:0.08,\u0022larghezza\u0022:0.84,\u0022altezza\u0022:0.8},\u0022dati\u0022:{\u0022righe\u0022:7,\u0022colonne\u0022:7,\u0022griglia\u0022:{\u0022righe\u0022:7,\u0022colonne\u0022:7,\u0022celle\u0022:[\u0022......#\u0022,\u0022....#..\u0022,\u0022.......\u0022,\u0022.......\u0022,\u0022.......\u0022,\u0022..#....\u0022,\u0022#......\u0022],\u0022numeri\u0022:[{\u0022riga\u0022:1,\u0022colonna\u0022:1,\u0022numero\u0022:1},{\u0022riga\u0022:1,\u0022colonna\u0022:2,\u0022numero\u0022:2},{\u0022riga\u0022:1,\u0022colonna\u0022:3,\u0022numero\u0022:3},{\u0022riga\u0022:2,\u0022colonna\u0022:1,\u0022numero\u0022:4},{\u0022riga\u0022:4,\u0022colonna\u0022:1,\u0022numero\u0022:5},{\u0022riga\u0022:6,\u0022colonna\u0022:6,\u0022numero\u0022:6}]},\u0022autore\u0022:null,\u0022definizioni\u0022:[{\u0022numero\u0022:1,\u0022direzione\u0022:\u0022orizzontale\u0022,\u0022testo\u0022:\u0022Capitale di Italia\u0022,\u0022soluzione\u0022:null},{\u0022numero\u0022:2,\u0022direzione\u0022:\u0022orizzontale\u0022,\u0022testo\u0022:\u0022Il contrario di no\u0022,\u0022soluzione\u0022:null},{\u0022numero\u0022:3,\u0022direzione\u0022:\u0022orizzontale\u0022,\u0022testo\u0022:\u0022Fiume di Torino\u0022,\u0022soluzione\u0022:null},{\u0022numero\u0022:1,\u0022direzione\u0022:\u0022verticale\u0022,\u0022testo\u0022:\u0022Lo e\\u0027 il sole al mattino\u0022,\u0022soluzione\u0022:null},{\u0022numero\u0022:2,\u0022direzione\u0022:\u0022verticale\u0022,\u0022testo\u0022:\u0022Metallo prezioso\u0022,\u0022soluzione\u0022:null},{\u0022numero\u0022:3,\u0022direzione\u0022:\u0022verticale\u0022,\u0022testo\u0022:\u0022Si accende per leggere\u0022,\u0022soluzione\u0022:null}]},\u0022confidenza\u0022:{\u0022gioco\u0022:0.95,\u0022tipologia\u0022:0.97,\u0022campi\u0022:{\u0022righe\u0022:0.95,\u0022colonne\u0022:0.95,\u0022griglia\u0022:0.95,\u0022autore\u0022:0.95},\u0022elenchi\u0022:{\u0022definizioni\u0022:0.95}},\u0022avvisi\u0022:[]}],\u0022avvisi\u0022:[]}}",
+  "risposta_sha256": "0b723f00a73fbe8649a9a3c9e28d6b11e1a4e975fbe6901f040426af73a73ec4",
+  "metadati": {
+    "durata_ms": 0,
+    "token_ingresso": null,
+    "token_uscita": null,
+    "token_cache_creazione": null,
+    "token_cache_lettura": null,
+    "costo": null,
+    "costo_valuta": null,
+    "costo_tipo": null
+  }
+}

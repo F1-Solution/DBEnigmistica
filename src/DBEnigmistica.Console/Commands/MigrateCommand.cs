@@ -2,8 +2,10 @@ using System.CommandLine;
 using DBEnigmistica.Console.Cli;
 using DBEnigmistica.Console.Presentation;
 using DBEnigmistica.Infrastructure.Data;
+using DBEnigmistica.Infrastructure.Tipologie;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands;
@@ -24,6 +26,7 @@ public class MigrateCommand : Command
 
 public sealed class MigrateHandler(
     EnigmisticaDbContext dbContext,
+    MigratoreTipologie migratoreTipologie,
     IAnsiConsole console,
     CliStreams streams,
     ILogger<MigrateHandler> logger)
@@ -36,7 +39,7 @@ public sealed class MigrateHandler(
         if (pending.Count == 0)
         {
             await WriteUpToDateAsync(cancellationToken);
-            return ExitCodes.Success;
+            return await ApplicaTipologieAsync(cancellationToken);
         }
 
         console.MarkupLineInterpolated($"[yellow]Trovate {pending.Count} migrazioni da applicare:[/]");
@@ -62,7 +65,30 @@ public sealed class MigrateHandler(
 
         ConsoleBanner.Success(console, $"{pending.Count} migrazioni applicate con successo.");
         logger.LogInformation("Applied {Count} migrations successfully", pending.Count);
-        return ExitCodes.Success;
+        return await ApplicaTipologieAsync(cancellationToken);
+    }
+
+    // Dopo le migrazioni EF si applicano gli SQL delle Tipologie, incorporati nel programma.
+    private async Task<int> ApplicaTipologieAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var esito = await migratoreTipologie.ApplicaAsync(
+                (NpgsqlConnection)dbContext.Database.GetDbConnection(), FonteMigrazioniTipologie.DalleRisorse(), cancellationToken);
+
+            foreach (var file in esito.Applicate)
+                console.MarkupLineInterpolated($"   Tipologia applicata: {file}");
+            ConsoleBanner.Success(console, esito.Applicate.Count == 0
+                ? "SQL delle Tipologie già applicato."
+                : $"{esito.Applicate.Count} SQL delle Tipologie applicati.");
+            logger.LogInformation("Applied {Count} tipologie SQL files, {Already} already applied", esito.Applicate.Count, esito.GiaApplicate);
+            return ExitCodes.Success;
+        }
+        catch (ChecksumMigrazioneAlteratoException ex)
+        {
+            streams.Error.WriteLine(ex.Message);
+            return ExitCodes.Error;
+        }
     }
 
     private async Task WriteUpToDateAsync(CancellationToken cancellationToken)

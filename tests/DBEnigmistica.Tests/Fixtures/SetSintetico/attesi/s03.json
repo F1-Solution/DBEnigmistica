@@ -1,0 +1,58 @@
+{
+  "versione_formato": 1,
+  "pagina": {
+    "id": "s03",
+    "impronta": "9ba2fdc83c3809c0fe779df81d3c25d3232640f6b64a0d9caefe88893ecee5f0",
+    "origine": "digitale"
+  },
+  "revisione": {
+    "stato": "corretto",
+    "bozza_da": null,
+    "corretto_da": "agente C, ondata 1.2",
+    "corretto_il": "2026-11-24"
+  },
+  "contenuto_pagina": "giochi",
+  "giochi": [
+    {
+      "id": "g01",
+      "stato_tipologia": "nota",
+      "tipologia": "anagramma",
+      "versione_tipologia": 1,
+      "titolo": "Anagramma",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.1,
+        "larghezza": 0.84,
+        "altezza": 0.1
+      },
+      "dati": {
+        "esposto": "Il cielo di notte (5 = 5)",
+        "diagramma": "5 = 5",
+        "prima_parola": null,
+        "soluzione": null,
+        "autore": null
+      }
+    },
+    {
+      "id": "g02",
+      "stato_tipologia": "nota",
+      "tipologia": "sciarada",
+      "versione_tipologia": 1,
+      "titolo": "Sciarada",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.25,
+        "larghezza": 0.84,
+        "altezza": 0.1
+      },
+      "dati": {
+        "esposto": "Il mio primo e' un saluto, il secondo un metallo",
+        "diagramma": "3, 4 = 7",
+        "parti": null,
+        "soluzione": null,
+        "autore": null
+      }
+    }
+  ],
+  "note": "Due Giochi brevi con un font non incorporato."
+}

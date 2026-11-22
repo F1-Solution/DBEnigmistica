@@ -55,6 +55,41 @@ jobs:
       - name: Compilazione (Release, avvisi come errori)
         run: dotnet build "$SOLUTION" --configuration Release --no-restore -warnaserror -consoleLoggerParameters:Summary -v:minimal
 
+      # L'SQL registrato in tipologie/ deve coincidere con quello generato dai descrittori (le versioni 0 non hanno SQL).
+      - name: SQL delle Tipologie allineato (types generate --check)
+        run: dotnet run --project src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release --no-build -- types generate --check
+
+      # Squawk fissato per versione e checksum (progetto-1.1, sezione 8): controlla solo gli SQL generati, con .squawk.toml.
+      - name: Squawk sugli SQL delle Tipologie
+        env:
+          SQUAWK_VERSION: v2.73.0
+          SQUAWK_SHA256: 9ae3747ca5eafa48b4d5c535fc64b61e0735a763164193644aa6436cc97c4274
+        run: |
+          set -euo pipefail
+          curl -sSfL -o "$RUNNER_TEMP/squawk" "https://github.com/sbdchd/squawk/releases/download/${SQUAWK_VERSION}/squawk-linux-x64"
+          echo "${SQUAWK_SHA256}  $RUNNER_TEMP/squawk" | sha256sum --check -
+          chmod +x "$RUNNER_TEMP/squawk"
+          "$RUNNER_TEMP/squawk" --config .squawk.toml tipologie/*/v*.sql
+
+      # Riproduce le Registrazioni del Set sintetico (nessuna chiamata AI) e confronta con la Linea di base.
+      - name: Regressione sull'estrazione (Set sintetico)
+        run: |
+          status=0
+          dotnet run --project src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release --no-build -- \
+            eval extraction --replay --set tests/DBEnigmistica.Tests/Fixtures/SetSintetico \
+            --output "$RUNNER_TEMP/regressione-sintetica" || status=$?
+          if [ -f "$RUNNER_TEMP/regressione-sintetica/rapporto.md" ]; then cat "$RUNNER_TEMP/regressione-sintetica/rapporto.md" >> "$GITHUB_STEP_SUMMARY"; fi
+          exit "$status"
+
+      - name: Rapporto della regressione sull'estrazione
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: regressione-sintetica
+          path: ${{ runner.temp }}/regressione-sintetica
+          if-no-files-found: warn
+          retention-days: 14
+
       # La pubblicazione autonoma deve portare l'host del prototipo e i descrittori (l'immagine Docker no: IncludePrototipo=false).
       - name: Pubblicazione di controllo (prototipo)
         run: |
@@ -74,7 +109,7 @@ jobs:
           --logger "console;verbosity=normal"
           --results-directory "$RUNNER_TEMP/test-results"
 
-      # Copertura delle righe di Domain e Application: minimo 80% (ROADMAP, fase 0, criterio 11).
+      # Copertura delle righe di Domain, Application e Tipologie: minimo 80% (ROADMAP, fase 0, criterio 11).
       - name: Soglia di copertura
         run: python3 .github/scripts/soglia-copertura.py "$RUNNER_TEMP/test-results" 80
 

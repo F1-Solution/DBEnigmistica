@@ -175,7 +175,8 @@
         "incroci-coerenti",
         "diagramma-coerente-con-soluzione",
         "anagramma-stesse-lettere",
-        "cambio-di-una-lettera"
+        "cambio-di-una-lettera",
+        "sciarada-parti-coerenti"
       ]
     },
     "regole": {

@@ -1,0 +1,68 @@
+{
+  "versione_formato": 1,
+  "contenuto_pagina": "giochi",
+  "rivista": null,
+  "giochi": [
+    {
+      "stato_tipologia": "nota",
+      "tipologia": "cruciverba-classico",
+      "versione_tipologia": 1,
+      "titolo": "Cruciverba piccolo",
+      "riquadro": {
+        "x": 0.17,
+        "y": 0.2,
+        "larghezza": 0.67,
+        "altezza": 0.47
+      },
+      "dati": {
+        "righe": 5,
+        "colonne": 5,
+        "griglia": {
+          "righe": 5,
+          "colonne": 5,
+          "celle": [
+            "....#",
+            ".....",
+            "..#..",
+            ".....",
+            "#...."
+          ],
+          "numeri": [
+            {
+              "riga": 1,
+              "colonna": 1,
+              "numero": 1
+            },
+            {
+              "riga": 1,
+              "colonna": 2,
+              "numero": 2
+            },
+            {
+              "riga": 2,
+              "colonna": 1,
+              "numero": 3
+            }
+          ]
+        },
+        "autore": null,
+        "definizioni": []
+      },
+      "confidenza": {
+        "gioco": 0.95,
+        "tipologia": 0.97,
+        "campi": {
+          "righe": 0.95,
+          "colonne": 0.95,
+          "griglia": 0.95,
+          "autore": 0.95
+        },
+        "elenchi": {
+          "definizioni": 0.95
+        }
+      },
+      "avvisi": []
+    }
+  ],
+  "avvisi": []
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Soglia di copertura delle righe per Domain e Application (ROADMAP, fase 0, criterio 11).
+"""Soglia di copertura delle righe per Domain, Application e Tipologie (ROADMAP, fase 0, criterio 11).
 
 Uso: soglia-copertura.py <cartella-dei-risultati> [soglia-percentuale]
 Scrive il riepilogo in $GITHUB_STEP_SUMMARY se presente; esce con 1 sotto la soglia.
@@ -9,7 +9,7 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 
-PACCHETTI = ("DBEnigmistica.Domain", "DBEnigmistica.Application")
+PACCHETTI = ("DBEnigmistica.Domain", "DBEnigmistica.Application", "DBEnigmistica.Tipologie")
 
 
 def righe_per_pacchetto(file_report):
