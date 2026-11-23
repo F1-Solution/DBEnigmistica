@@ -56,7 +56,17 @@ public sealed class TypesGenerateHandler(CliStreams streams)
             return ExitCodes.Error;
         }
 
-        var esito = AllineamentoSql.Allinea(catalogo.Descrittori, radice, scrivi: !soloControllo);
+        EsitoAllineamento esito;
+        try
+        {
+            esito = AllineamentoSql.Allinea(catalogo.Descrittori, radice, scrivi: !soloControllo);
+        }
+        catch (DescrittoreNonGenerabileException ex)
+        {
+            streams.Error.WriteLine(ex.Message);
+            return ExitCodes.Error;
+        }
+
         return soloControllo ? RiferisciControllo(esito) : RiferisciGenerazione(esito);
     }
 

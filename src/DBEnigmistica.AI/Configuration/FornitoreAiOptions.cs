@@ -9,6 +9,10 @@ public sealed class FornitoreAiOptions
     public const string TipoClaudeCode = "claude-code";
     public const string TipoApiAnthropic = "api-anthropic";
 
+    /// <summary>Messaggio dei comandi che rifiutano le chiamate dal vivo mentre l'interruttore è spento.</summary>
+    public const string MessaggioDalVivoDisattivato =
+        "Le chiamate dal vivo sono disattivate. Si abilitano con FornitoreAi:DalVivoAbilitato=true solo dopo la prova 1.1-prova (PROGRESS.md).";
+
     public string? Tipo { get; set; }
 
     public string? Modello { get; set; }
@@ -21,6 +25,9 @@ public sealed class FornitoreAiOptions
 
     /// <summary>Impostazioni della creazione: modello proprio (Opus) e Registrazioni proprie.</summary>
     public CreazioneOptions Creazione { get; set; } = new();
+
+    /// <summary>Interruttore delle chiamate dal vivo: spento di default, si accende dopo la prova 1.1-prova.</summary>
+    public bool DalVivoAbilitato { get; set; }
 
     /// <summary>Numero massimo di chiamate reali per esecuzione; vuoto significa nessun limite.</summary>
     public int? LimiteChiamate { get; set; }

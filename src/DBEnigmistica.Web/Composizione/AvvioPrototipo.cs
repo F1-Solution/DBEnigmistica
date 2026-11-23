@@ -90,6 +90,11 @@ public static class AvvioPrototipo
         configurazione.GetSection(FornitoreAiOptions.SectionName).Bind(opzioni);
         errori.AddRange(ValidatoreOpzioniCreazione.Valida(opzioni, ambiente));
 
+        // Fuori dalla riproduzione delle Registrazioni la generazione chiama il Fornitore AI dal vivo.
+        var riproduce = opzioni.Creazione.Registrazioni.Modalita?.Trim() == RegistrazioniOptions.ModalitaRiproduci;
+        if (!opzioni.DalVivoAbilitato && !riproduce)
+            errori.Add(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+
         var cartella = DependencyInjectionPrototipo.CartellaTipologie(configurazione);
         if (!Directory.Exists(cartella))
             errori.Add($"Cartella dei descrittori non trovata: '{cartella}'. Serve la cartella tipologie accanto all'eseguibile, oppure imposta Prototipo__CartellaTipologie.");

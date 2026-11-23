@@ -116,7 +116,8 @@ public class FornitoreAiCheckTests
         using var host = CliHost.Build(HostRequirements.None, NewStreams(), Impostazioni(
             ("FornitoreAi:Tipo", "claude-code"),
             ("FornitoreAi:Modello", "claude-sonnet-5-5"),
-            ("FornitoreAi:ClaudeCode:Eseguibile", "claude")));
+            ("FornitoreAi:ClaudeCode:Eseguibile", "claude"),
+            ("FornitoreAi:DalVivoAbilitato", "true")));
         using var scope = host.Services.CreateScope();
 
         var fornitore = scope.ServiceProvider.GetRequiredService<IFornitoreAiEstrazione>();

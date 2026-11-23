@@ -24,6 +24,8 @@ Non stimato nella ROADMAP. La prova è una sessione sola, fuori dagli orari di l
 
 AVVERTENZA: Usa solo la pagina di prova prodotta dal progetto. Non usare pagine di Riviste reali in questa prova.
 
+AVVERTENZA: Per la prova dal vivo imposta `FornitoreAi__DalVivoAbilitato` a `true` solo dopo il via. Con `false`, il predefinito, i comandi dal vivo non partono.
+
 AVVERTENZA: Non aprire, non stampare e non incollare il file `~\.claude\.credentials.json`. Basta sapere che esiste (passo 6).
 
 ## Cosa ti serve

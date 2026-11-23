@@ -248,6 +248,7 @@ public class FornitoreCreazioneTests : IDisposable
                 ["FornitoreAi:Tipo"] = "claude-code",
                 ["FornitoreAi:Modello"] = "claude-sonnet-5-5",
                 ["FornitoreAi:Creazione:Modello"] = Modello,
+                ["FornitoreAi:DalVivoAbilitato"] = "true",
             }));
         using var scope = host.Services.CreateScope();
 

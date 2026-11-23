@@ -54,6 +54,15 @@ public class CsvExportTests
     }
 
     [Fact]
+    public async Task ExportGamesAsCsv_HasTheExactFullHeader()
+    {
+        var csv = await ExportAsync(new Game { Origine = Origine.Rivista, Tipologia = "cruciverba-classico", Id = 1, Title = "t" });
+
+        csv.Split(Environment.NewLine)[1].Should()
+            .Be("Id,Tipologia,Title,Description,Difficulty,X,Y,Larghezza,Altezza,Confidence,ExtractedDate,PageId");
+    }
+
+    [Fact]
     public async Task ExportGamesAsCsv_StartsWithSeparatorDirective()
     {
         var csv = await ExportAsync(new Game { Origine = Origine.Rivista, Tipologia = "cruciverba-classico", Id = 1, Title = "t" });

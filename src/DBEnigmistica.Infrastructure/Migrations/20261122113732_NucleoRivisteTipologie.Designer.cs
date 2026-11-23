@@ -496,8 +496,8 @@ namespace DBEnigmistica.Infrastructure.Migrations
 
                     b.Property<string>("Tipologia")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
+                        .HasMaxLength(61)
+                        .HasColumnType("character varying(61)")
                         .HasColumnName("tipologia");
 
                     b.Property<string>("Title")
@@ -530,9 +530,11 @@ namespace DBEnigmistica.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_games_stato_tipologia", "stato_tipologia IN ('nota', 'proposta')");
 
+                            t.HasCheckConstraint("ck_games_tipologia", "tipologia ~ '^[a-z][a-z0-9-]{1,60}$'");
+
                             t.HasCheckConstraint("ck_games_trascrizione_proposta", "trascrizione_proposta IS NULL OR stato_tipologia = 'proposta'");
 
-                            t.HasCheckConstraint("ck_games_versione_tipologia", "versione_tipologia >= 0");
+                            t.HasCheckConstraint("ck_games_versione_tipologia", "versione_tipologia > 0");
                         });
                 });
 
@@ -693,7 +695,10 @@ namespace DBEnigmistica.Infrastructure.Migrations
 
                     b.HasIndex("Title", "PublicationDate");
 
-                    b.ToTable("magazines", "riviste");
+                    b.ToTable("magazines", "riviste", t =>
+                        {
+                            t.HasCheckConstraint("ck_magazines_impronta", "impronta IS NULL OR octet_length(impronta) = 32");
+                        });
                 });
 
             modelBuilder.Entity("DBEnigmistica.Domain.Entities.Page", b =>
@@ -736,7 +741,10 @@ namespace DBEnigmistica.Infrastructure.Migrations
 
                     b.HasIndex("MagazineId", "PageNumber");
 
-                    b.ToTable("pages", "riviste");
+                    b.ToTable("pages", "riviste", t =>
+                        {
+                            t.HasCheckConstraint("ck_pages_impronta", "impronta IS NULL OR octet_length(impronta) = 32");
+                        });
                 });
 
             modelBuilder.Entity("DBEnigmistica.Domain.Registro.EventoRegistro", b =>

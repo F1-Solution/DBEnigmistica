@@ -17,10 +17,10 @@ public class MigratoreTipologieIntegrationTests : IntegrationTestBase
     {
     }
 
-    private async Task<EsitoMigrazioniTipologie> ApplicaAsync(IEnumerable<MigrazioneSql>? migrazioni = null)
+    private async Task<EsitoMigrazioniTipologie> ApplicaAsync(IEnumerable<MigrazioneSql>? migrazioni = null, CancellationToken cancellationToken = default)
     {
         await using var connessione = new NpgsqlConnection(ConnectionString);
-        return await new MigratoreTipologie().ApplicaAsync(connessione, migrazioni ?? FonteMigrazioniTipologie.DalleRisorse(), CancellationToken.None);
+        return await new MigratoreTipologie().ApplicaAsync(connessione, migrazioni ?? FonteMigrazioniTipologie.DalleRisorse(), cancellationToken);
     }
 
     private static MigrazioneSql Prova(string sql, string tipologia = "prova", int versione = 1, string schema = "riviste") =>
@@ -44,7 +44,7 @@ public class MigratoreTipologieIntegrationTests : IntegrationTestBase
         (await ScalarAsync<long>("SELECT count(*) FROM tipologie.migrazioni_applicate")).Should().Be(8);
         foreach (var tipologia in Tipologie)
         {
-            var tabella = "gioco_" + tipologia.Replace('-', '_');
+            var tabella = "gioco_" + tipologia.Replace('-', '_') + "_v1";
             (await ScalarAsync<long>($"SELECT count(*) FROM information_schema.tables WHERE table_name = '{tabella}' AND table_schema IN ('riviste', 'catalogo')")).Should().Be(2);
         }
 
@@ -108,11 +108,11 @@ public class MigratoreTipologieIntegrationTests : IntegrationTestBase
     {
         await ApplicaAsync();
 
-        (await SqlStateAsync("SELECT count(*) FROM riviste.gioco_anagramma", "dbe_estrazione")).Should().BeNull();
-        (await SqlStateAsync("DELETE FROM riviste.gioco_anagramma", "dbe_estrazione")).Should().BeNull();
-        (await SqlStateAsync("SELECT count(*) FROM riviste.gioco_anagramma", "dbe_creazione")).Should().Be(PostgresErrorCodes.InsufficientPrivilege);
-        (await SqlStateAsync("SELECT count(*) FROM catalogo.gioco_anagramma", "dbe_creazione")).Should().BeNull();
-        (await SqlStateAsync("DELETE FROM catalogo.gioco_anagramma", "dbe_consegna")).Should().Be(PostgresErrorCodes.InsufficientPrivilege);
+        (await SqlStateAsync("SELECT count(*) FROM riviste.gioco_anagramma_v1", "dbe_estrazione")).Should().BeNull();
+        (await SqlStateAsync("DELETE FROM riviste.gioco_anagramma_v1", "dbe_estrazione")).Should().BeNull();
+        (await SqlStateAsync("SELECT count(*) FROM riviste.gioco_anagramma_v1", "dbe_creazione")).Should().Be(PostgresErrorCodes.InsufficientPrivilege);
+        (await SqlStateAsync("SELECT count(*) FROM catalogo.gioco_anagramma_v1", "dbe_creazione")).Should().BeNull();
+        (await SqlStateAsync("DELETE FROM catalogo.gioco_anagramma_v1", "dbe_consegna")).Should().Be(PostgresErrorCodes.InsufficientPrivilege);
     }
 
     [Fact]
@@ -150,5 +150,103 @@ public class MigratoreTipologieIntegrationTests : IntegrationTestBase
 
         codice.Should().Be(ExitCodes.Error);
         errori.ToString().Should().Contain("anagramma/v1.riviste.sql").And.Contain("checksum");
+    }
+
+    [Fact]
+    public async Task Il_lucchetto_del_migratore_e_diverso_da_quello_dei_candidati()
+    {
+        await using var altra = new NpgsqlConnection(ConnectionString);
+        await altra.OpenAsync();
+        await using var transazione = await altra.BeginTransactionAsync();
+        await using (var blocco = new NpgsqlCommand("SELECT pg_advisory_xact_lock(4419002)", altra, transazione))
+            await blocco.ExecuteNonQueryAsync();
+        using var scadenza = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        await using var connessione = new NpgsqlConnection(ConnectionString);
+
+        var esito = await new MigratoreTipologie().ApplicaAsync(connessione, [Prova("CREATE TABLE riviste.prova_chiave (a int);")], scadenza.Token);
+
+        esito.Applicate.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task L_attesa_del_lucchetto_e_limitata_dal_lock_timeout()
+    {
+        await using var altra = new NpgsqlConnection(ConnectionString);
+        await altra.OpenAsync();
+        await using var transazione = await altra.BeginTransactionAsync();
+        await using (var blocco = new NpgsqlCommand($"SELECT pg_advisory_xact_lock({MigratoreTipologie.ChiaveLucchetto})", altra, transazione))
+            await blocco.ExecuteNonQueryAsync();
+        using var scadenza = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        var azione = () => ApplicaAsync([Prova("CREATE TABLE riviste.prova_attesa (a int);")], scadenza.Token);
+
+        (await azione.Should().ThrowAsync<PostgresException>()).Which.SqlState.Should().Be(PostgresErrorCodes.LockNotAvailable);
+    }
+
+    [Fact]
+    public async Task Il_comando_migrate_senza_yes_non_applica_gli_SQL_delle_Tipologie_in_sospeso()
+    {
+        var coppie = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase) { ["ConnectionStrings:DefaultConnection"] = ConnectionString };
+        var uscita = new StringWriter();
+        var errori = new StringWriter();
+
+        var codice = await CliApp.RunAsync(["migrate"], uscita, errori, b => b.AddInMemoryCollection(coppie));
+
+        codice.Should().Be(ExitCodes.Error);
+        uscita.ToString().Should().Contain("anagramma/v1.riviste.sql").And.Contain("Migrazioni da applicare:")
+            .And.NotContain("Database già aggiornato");
+        errori.ToString().Should().Contain("--yes");
+        (await ScalarAsync<long>("SELECT count(*) FROM tipologie.migrazioni_applicate")).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Gli_SQL_in_sospeso_sono_quelli_non_registrati()
+    {
+        await ApplicaAsync([Prova("CREATE TABLE riviste.prova_uno (a int);")]);
+        var gia = Prova("CREATE TABLE riviste.prova_uno (a int);");
+        var nuova = Prova("CREATE TABLE riviste.prova_due (a int);", versione: 2);
+        await using var connessione = new NpgsqlConnection(ConnectionString);
+
+        var inSospeso = await new MigratoreTipologie().InSospesoAsync(connessione, [gia, nuova], CancellationToken.None);
+
+        inSospeso.Select(m => m.Percorso).Should().Equal("prova/v2.riviste.sql");
+    }
+
+    [Fact]
+    public async Task Il_comando_migrate_su_un_database_inesistente_lo_crea_e_applica_tutto()
+    {
+        var nome = "dbe_migrate_nuovo_" + Guid.NewGuid().ToString("N");
+        var costruttore = new NpgsqlConnectionStringBuilder(ConnectionString) { Database = nome };
+        var coppie = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase) { ["ConnectionStrings:DefaultConnection"] = costruttore.ConnectionString };
+        var uscita = new StringWriter();
+        var errori = new StringWriter();
+
+        try
+        {
+            var codice = await CliApp.RunAsync(["migrate", "--yes"], uscita, errori, b => b.AddInMemoryCollection(coppie));
+
+            codice.Should().Be(0, errori.ToString());
+            uscita.ToString().Should().Contain("Migrazioni da applicare:").And.Contain("8 SQL delle Tipologie applicati");
+            await using var connessione = new NpgsqlConnection(costruttore.ConnectionString);
+            await connessione.OpenAsync();
+            await using var conta = new NpgsqlCommand("SELECT count(*) FROM tipologie.migrazioni_applicate", connessione);
+            (await conta.ExecuteScalarAsync()).Should().Be(8L);
+        }
+        finally
+        {
+            NpgsqlConnection.ClearAllPools();
+            await ExecuteAsync($"DROP DATABASE IF EXISTS \"{nome}\" WITH (FORCE)");
+        }
+    }
+
+    [Fact]
+    public async Task Gli_SQL_in_sospeso_su_un_database_inesistente_sono_tutti()
+    {
+        var costruttore = new NpgsqlConnectionStringBuilder(ConnectionString) { Database = "dbe_inesistente_" + Guid.NewGuid().ToString("N") };
+        await using var connessione = new NpgsqlConnection(costruttore.ConnectionString);
+
+        var inSospeso = await new MigratoreTipologie().InSospesoAsync(connessione, FonteMigrazioniTipologie.DalleRisorse(), CancellationToken.None);
+
+        inSospeso.Should().HaveCount(8);
     }
 }

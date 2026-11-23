@@ -56,6 +56,22 @@ public class ArchivioDatiTipologiaIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task I_dati_vanno_nella_tabella_della_versione_del_descrittore_accanto_alla_v1()
+    {
+        var gioco = await SeedGiocoOriginaleAsync();
+        await using var connessione = await ConnessioneAsync();
+        var v2 = Carica("anagramma") with { Versione = 2 };
+        await using (var crea = new NpgsqlCommand(GeneratoreSql.Genera(v2, SchemaTipologia.Catalogo).Contenuto, connessione))
+            await crea.ExecuteNonQueryAsync();
+
+        await Archivio.ScriviAsync(connessione, null, v2, SchemaTipologia.Catalogo, gioco, Json(Anagramma("v2")), CancellationToken.None);
+
+        (await ScalarAsync<long>("SELECT count(*) FROM catalogo.gioco_anagramma_v2")).Should().Be(1);
+        (await ScalarAsync<long>("SELECT count(*) FROM catalogo.gioco_anagramma_v1")).Should().Be(0);
+        (await Archivio.LeggiAsync(connessione, null, v2, SchemaTipologia.Catalogo, gioco, CancellationToken.None))!["esposto"]!.GetValue<string>().Should().Be("v2");
+    }
+
+    [Fact]
     public async Task Un_cruciverba_con_elenco_e_griglia_si_rilegge_uguale()
     {
         var gioco = await SeedGiocoOriginaleAsync();
@@ -76,7 +92,7 @@ public class ArchivioDatiTipologiaIntegrationTests : IntegrationTestBase
         var definizioni = letto["definizioni"]!.AsArray();
         definizioni.Select(d => d!["testo"]!.GetValue<string>()).Should().Equal("Prima", "Seconda");
         definizioni[0]!["soluzione"].Should().BeNull();
-        (await ScalarAsync<long>("SELECT count(*) FROM catalogo.gioco_cruciverba_classico__definizioni")).Should().Be(2);
+        (await ScalarAsync<long>("SELECT count(*) FROM catalogo.gioco_cruciverba_classico_v1__definizioni")).Should().Be(2);
     }
 
     [Fact]
@@ -103,7 +119,7 @@ public class ArchivioDatiTipologiaIntegrationTests : IntegrationTestBase
         var azione = () => Archivio.ScriviAsync(connessione, null, cruciverba, SchemaTipologia.Catalogo, gioco, dati, CancellationToken.None);
 
         (await azione.Should().ThrowAsync<PostgresException>()).Which.SqlState.Should().Be(PostgresErrorCodes.CheckViolation);
-        (await ScalarAsync<long>("SELECT count(*) FROM catalogo.gioco_cruciverba_classico")).Should().Be(0);
+        (await ScalarAsync<long>("SELECT count(*) FROM catalogo.gioco_cruciverba_classico_v1")).Should().Be(0);
     }
 
     [Fact]
@@ -123,7 +139,7 @@ public class ArchivioDatiTipologiaIntegrationTests : IntegrationTestBase
         (await estranea.Should().ThrowAsync<ValoreTipologiaNonValidoException>()).Which.Percorso.Should().Be("estraneo");
         (await tipoErrato.Should().ThrowAsync<ValoreTipologiaNonValidoException>()).Which.Percorso.Should().Be("esposto");
         await idErrato.Should().ThrowAsync<ArgumentException>();
-        (await ScalarAsync<long>("SELECT count(*) FROM catalogo.gioco_anagramma")).Should().Be(0);
+        (await ScalarAsync<long>("SELECT count(*) FROM catalogo.gioco_anagramma_v1")).Should().Be(0);
     }
 
     [Fact]

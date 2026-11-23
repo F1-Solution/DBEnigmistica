@@ -34,9 +34,15 @@ public static partial class GeneratoreSql
     private static readonly Lazy<HashSet<string>> Riservati = new(CaricaParoleRiservate);
 
     /// <summary>Genera i file SQL di tutti i descrittori con SQL, nei due schemi, in ordine di id, versione e schema.</summary>
-    public static IReadOnlyList<FileSql> GeneraTutti(IEnumerable<Descrittore> descrittori) =>
+    public static IReadOnlyList<FileSql> GeneraTutti(IEnumerable<Descrittore> descrittori)
+    {
+        ArgumentNullException.ThrowIfNull(descrittori);
+        var conSql = descrittori.Where(d => !d.EPrototipo).ToList();
+        return GeneraInOrdine(conSql);
+    }
+
+    private static IReadOnlyList<FileSql> GeneraInOrdine(IEnumerable<Descrittore> descrittori) =>
         [.. descrittori
-            .Where(d => !d.EPrototipo)
             .OrderBy(d => d.Id, StringComparer.Ordinal).ThenBy(d => d.Versione)
             .SelectMany(d => new[] { SchemaTipologia.Riviste, SchemaTipologia.Catalogo }.Select(s => Genera(d, s)))];
 
@@ -170,6 +176,7 @@ public static partial class GeneratoreSql
         if (d.Campi.Count is < 1 or > 60 || d.Elenchi.Count > 10)
             throw new DescrittoreNonGenerabileException($"{d.Id}: troppi o troppo pochi campi o elenchi.");
 
+        ControllaLunghezzaTabelle(d);
         Nomi(d.Id, d.Campi.Select(c => c.Nome).Concat(d.Elenchi.Select(e => e.Nome)), 40);
         ControllaCampi(d.Id, d.Campi, consentiGriglia: true);
 
@@ -182,6 +189,14 @@ public static partial class GeneratoreSql
                 throw new DescrittoreNonGenerabileException($"{d.Id}.{e.Nome}: numero di campi non ammesso.");
             ControllaCampi($"{d.Id}.{e.Nome}", e.Campi, consentiGriglia: false);
         }
+    }
+
+    // I nomi di tabella includono il suffisso di versione e devono stare nei 63 byte di PostgreSQL.
+    private static void ControllaLunghezzaTabelle(Descrittore d)
+    {
+        foreach (var nome in new[] { NomiSql.Tabella(d) }.Concat(d.Elenchi.Select(e => NomiSql.Tabella(d, e))))
+            if (Encoding.UTF8.GetByteCount(nome) > MassimoByteIdentificatore)
+                throw new DescrittoreNonGenerabileException($"{d.Id}: il nome di tabella '{nome}' supera {MassimoByteIdentificatore} byte.");
     }
 
     private static void Nomi(string contesto, IEnumerable<string> nomi, int massimo)

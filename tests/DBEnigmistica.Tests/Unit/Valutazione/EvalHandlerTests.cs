@@ -1,3 +1,4 @@
+using DBEnigmistica.AI.Configuration;
 using DBEnigmistica.AI.Services;
 using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Application.Valutazione;
@@ -5,8 +6,10 @@ using DBEnigmistica.Console.Cli;
 using DBEnigmistica.Console.Commands;
 using DBEnigmistica.Infrastructure.Services.Registrazioni;
 using DBEnigmistica.Tests.Fixtures.ClaudeFinto;
+using DBEnigmistica.Tests.Unit.Creazione;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using static DBEnigmistica.Tests.Unit.Valutazione.ServiziDiProva;
 
 namespace DBEnigmistica.Tests.Unit.Valutazione;
@@ -24,9 +27,10 @@ public sealed class EvalHandlerTests : IDisposable
             Directory.Delete(_radice, recursive: true);
     }
 
-    private EvalExtractionHandler Handler(IServiceProvider? provider = null) =>
+    private EvalExtractionHandler Handler(IServiceProvider? provider = null, bool dalVivoAbilitato = true) =>
         new(Servizio(), new FabbricaArchivioRegistrazioniFileSystem(), new InterpreteRispostaClaudeCode(), new ValidatoreSchemaJson(),
-            provider ?? new ServiceCollection().BuildServiceProvider(), new CliStreams(_out, _err));
+            provider ?? new ServiceCollection().BuildServiceProvider(),
+            Options.Create(new FornitoreAiOptions { DalVivoAbilitato = dalVivoAbilitato }), new CliStreams(_out, _err));
 
     private string CopiaSet()
     {
@@ -113,6 +117,38 @@ public sealed class EvalHandlerTests : IDisposable
 
         await azione.Should().ThrowAsync<LimiteEsecuzioneRaggiuntoException>();
         finto.Invocazioni.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task Live_ConChiaveDalVivoAbilitatoFalse_RifiutaSenzaChiamareIlFornitore()
+    {
+        var servizi = new ServiceCollection();
+        servizi.AddSingleton<IFornitoreAiEstrazione>(_ => throw new InvalidOperationException("Il fornitore non deve essere risolto."));
+
+        var codice = await Handler(servizi.BuildServiceProvider(), dalVivoAbilitato: false)
+            .ExecuteAsync(Parametri(SetVersionato), replay: false, live: true, limite: 1, null, CancellationToken.None);
+
+        codice.Should().Be(ExitCodes.Configuration);
+        _err.ToString().Trim().Should().Be(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+        _out.ToString().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ILavoriDalVivoSonoDisattivatiDiDefaultEdEsplicitiInAppsettings()
+    {
+        new FornitoreAiOptions().DalVivoAbilitato.Should().BeFalse();
+        FornitoreAiOptions.MessaggioDalVivoDisattivato.Should().Be(
+            "Le chiamate dal vivo sono disattivate. Si abilitano con FornitoreAi:DalVivoAbilitato=true solo dopo la prova 1.1-prova (PROGRESS.md).");
+        var json = File.ReadAllText(FileDelRepository.Percorso("src", "DBEnigmistica.Console", "appsettings.json"));
+        System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("FornitoreAi"u8).GetProperty("DalVivoAbilitato"u8).GetBoolean().Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Replay_ConChiaveDalVivoAbilitatoFalse_NonCambia()
+    {
+        var codice = await Handler(dalVivoAbilitato: false).ExecuteAsync(Parametri(SetVersionato), replay: true, live: false, limite: null, null, CancellationToken.None);
+
+        codice.Should().Be(ExitCodes.Success);
     }
 
     [Fact]

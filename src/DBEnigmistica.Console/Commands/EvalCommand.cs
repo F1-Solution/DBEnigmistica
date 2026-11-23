@@ -1,10 +1,12 @@
 using System.CommandLine;
 using System.Text;
+using DBEnigmistica.AI.Configuration;
 using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Application.Valutazione;
 using DBEnigmistica.Console.Cli;
 using DBEnigmistica.Infrastructure.Services.Pdf;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace DBEnigmistica.Console.Commands;
 
@@ -132,6 +134,7 @@ public sealed class EvalExtractionHandler(
     IInterpreteRispostaGrezza interprete,
     IValidatoreSchemaJson validatore,
     IServiceProvider servizi,
+    IOptions<FornitoreAiOptions> opzioniAi,
     CliStreams streams)
 {
     public async Task<int> ExecuteAsync(
@@ -139,6 +142,13 @@ public sealed class EvalExtractionHandler(
     {
         if (replay == live)
             return Errore("Indica una sola modalità: --replay oppure --live.");
+
+        // L'interruttore si controlla prima di ogni chiamata o lancio di processo.
+        if (live && !opzioniAi.Value.DalVivoAbilitato)
+        {
+            streams.Error.WriteLine(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+            return ExitCodes.Configuration;
+        }
 
         if (live && limite is not > 0)
             return Errore("Con --live serve --limite con un numero di chiamate maggiore di zero.");

@@ -13,7 +13,6 @@ namespace DBEnigmistica.Tipologie.Caricamento;
 public sealed partial class CaricatoreDescrittori
 {
     private const int MassimoByteIdentificatore = 63;
-    private const string PrefissoTabella = "gioco_";
 
     private static readonly ValidatoreSchema Schemi = new();
     private static readonly Lazy<string> MetaSchema = new(() => RisorseTipologie.Leggi("_meta/descrittore.schema.json"));
@@ -119,10 +118,10 @@ public sealed partial class CaricatoreDescrittori
             yield return $"La versione {d.Versione} deve essere uguale a quella del nome del file ({nomeFile}).";
     }
 
-    // Controllo 4: nome della tabella dell'elenco (la più lunga); i vincoli si accorciano nel generatore.
+    // Controllo 4: nome della tabella dell'elenco (la più lunga), con il suffisso di versione; i vincoli si accorciano nel generatore.
     private static IEnumerable<string> LunghezzaIdentificatori(Descrittore d)
     {
-        var @base = PrefissoTabella + d.Id.Replace('-', '_');
+        var @base = Generatore.NomiSql.Tabella(d);
         foreach (var nome in new[] { @base }.Concat(d.Elenchi.Select(e => $"{@base}__{e.Nome}")))
             if (Encoding.UTF8.GetByteCount(nome) > MassimoByteIdentificatore)
                 yield return $"Il nome di tabella '{nome}' supera {MassimoByteIdentificatore} byte.";

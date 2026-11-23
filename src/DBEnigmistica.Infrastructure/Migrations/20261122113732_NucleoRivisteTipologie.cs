@@ -130,8 +130,8 @@ namespace DBEnigmistica.Infrastructure.Migrations
                 name: "tipologia",
                 schema: "riviste",
                 table: "games",
-                type: "character varying(30)",
-                maxLength: 30,
+                type: "character varying(61)",
+                maxLength: 61,
                 nullable: false,
                 defaultValue: "");
 
@@ -198,7 +198,25 @@ namespace DBEnigmistica.Infrastructure.Migrations
                 name: "ck_games_versione_tipologia",
                 schema: "riviste",
                 table: "games",
-                sql: "versione_tipologia >= 0");
+                sql: "versione_tipologia > 0");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "ck_games_tipologia",
+                schema: "riviste",
+                table: "games",
+                sql: "tipologia ~ '^[a-z][a-z0-9-]{1,60}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "ck_magazines_impronta",
+                schema: "riviste",
+                table: "magazines",
+                sql: "impronta IS NULL OR octet_length(impronta) = 32");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "ck_pages_impronta",
+                schema: "riviste",
+                table: "pages",
+                sql: "impronta IS NULL OR octet_length(impronta) = 32");
 
             // I valori di riempimento servono solo ad aggiungere le colonne: ogni Gioco dichiara i propri.
             migrationBuilder.Sql(
@@ -220,7 +238,7 @@ namespace DBEnigmistica.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(ControlloTabellaVuota(
-                "La tabella riviste.games contiene Giochi con Tipologia, che non tornano al vecchio schema: svuota la tabella (per esempio con DELETE FROM riviste.games;) e riesegui dbe migrate."));
+                "La tabella riviste.games contiene Giochi con Tipologia, che non tornano al vecchio schema: svuota la tabella prima di annullare la migrazione (per esempio con DELETE FROM riviste.games;), poi annullala di nuovo."));
 
             migrationBuilder.DropIndex(
                 name: "IX_pages_impronta",
@@ -261,6 +279,21 @@ namespace DBEnigmistica.Infrastructure.Migrations
                 name: "ck_games_versione_tipologia",
                 schema: "riviste",
                 table: "games");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "ck_games_tipologia",
+                schema: "riviste",
+                table: "games");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "ck_magazines_impronta",
+                schema: "riviste",
+                table: "magazines");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "ck_pages_impronta",
+                schema: "riviste",
+                table: "pages");
 
             migrationBuilder.DropColumn(
                 name: "impronta",

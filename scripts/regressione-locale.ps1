@@ -57,16 +57,29 @@ try {
     $temporanea = Join-Path ([System.IO.Path]::GetTempPath()) ("dbe-regressione-" + [guid]::NewGuid().ToString('N'))
     try {
         Invoke-Dbe @('eval', 'extraction', '--replay', '--set', $Set, '--fornitore', $Fornitore, '--modello', $Modello, '--dpi', $Dpi, '--output', $temporanea)
-        if ($LASTEXITCODE -ne 0) {
-            throw "La regressione non e' riuscita (codice $LASTEXITCODE)."
+        $codiceDbe = $LASTEXITCODE
+        $jsonTemp = Join-Path $temporanea 'rapporto.json'
+        $mdTemp = Join-Path $temporanea 'rapporto.md'
+        $rapportoPresente = (Test-Path -LiteralPath $jsonTemp) -and (Test-Path -LiteralPath $mdTemp)
+        if ($codiceDbe -ne 0 -and -not $rapportoPresente) {
+            throw "La regressione non e' riuscita (codice $codiceDbe)."
         }
 
-        $rapporto = Get-Content -LiteralPath (Join-Path $temporanea 'rapporto.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+        $rapporto = Get-Content -LiteralPath $jsonTemp -Raw -Encoding UTF8 | ConvertFrom-Json
         $versione = $rapporto.condizioni.versione_prompt
         $nome = $rapporto.set
         $destinazione = Join-Path (Join-Path $Uscita $versione) $nome
         New-Item -ItemType Directory -Force -Path $destinazione | Out-Null
-        Copy-Item -LiteralPath (Join-Path $temporanea 'rapporto.json'), (Join-Path $temporanea 'rapporto.md') -Destination $destinazione -Force
+        Copy-Item -LiteralPath $jsonTemp, $mdTemp -Destination $destinazione -Force
+        # Le metriche peggiorate stanno solo nel Markdown, come elenco sotto "Regressione:".
+        $sotto = @()
+        if ($codiceDbe -ne 0) {
+            $righe = Get-Content -LiteralPath $mdTemp -Encoding UTF8
+            $inizio = [array]::IndexOf($righe, ($righe | Where-Object { $_ -like 'Regressione:*' } | Select-Object -First 1))
+            if ($inizio -ge 0) {
+                $sotto = @($righe[($inizio + 1)..($righe.Count - 1)] | Where-Object { $_ -like '- *' })
+            }
+        }
     }
     finally {
         if (Test-Path -LiteralPath $temporanea) {
@@ -78,9 +91,18 @@ try {
     $md = Join-Path $destinazione 'rapporto.md'
     Write-Host ''
     Write-Host "Rapporto salvato in: $destinazione"
-    Write-Host 'Per allegarlo alla release, esegui tu questo comando (non viene eseguito):'
-    Write-Host "gh release upload $Tag `"$json`" `"$md`" --clobber"
-    exit 0
+    if ($codiceDbe -ne 0) {
+        Write-Host "La regressione non e' riuscita (codice $codiceDbe)."
+        foreach ($riga in $sotto) { Write-Host "Metrica peggiorata $riga" }
+    }
+    if ($codiceDbe -eq 0) {
+        Write-Host 'Per allegarlo alla release, esegui tu questo comando (non viene eseguito):'
+        Write-Host "gh release upload $Tag `"$json`" `"$md`" --clobber"
+    }
+    else {
+        Write-Host 'Regressione: non fare la release; manda il rapporto al responsabile.'
+    }
+    exit $codiceDbe
 }
 catch {
     [Console]::Error.WriteLine($_.Exception.Message)

@@ -6,8 +6,8 @@ namespace DBEnigmistica.Tipologie.Generatore;
 /// <summary>Nomi SQL delle tabelle di una Tipologia e quotatura degli identificatori: l'unico punto in cui un nome entra in una query.</summary>
 public static partial class NomiSql
 {
-    /// <summary>Nome della tabella 1:1 (senza schema): <c>gioco_</c> e l'id con i trattini sostituiti da trattini bassi.</summary>
-    public static string Tabella(Descrittore d) => "gioco_" + d.Id.Replace('-', '_');
+    /// <summary>Nome della tabella 1:1 (senza schema): <c>gioco_&lt;id con trattini bassi&gt;_v&lt;versione&gt;</c>.</summary>
+    public static string Tabella(Descrittore d) => string.Create(System.Globalization.CultureInfo.InvariantCulture, $"gioco_{d.Id.Replace('-', '_')}_v{d.Versione}");
 
     /// <summary>Nome della tabella figlia di un elenco (senza schema): <c>&lt;base&gt;__&lt;elenco&gt;</c>.</summary>
     public static string Tabella(Descrittore d, ElencoDescrittore elenco) => $"{Tabella(d)}__{elenco.Nome}";

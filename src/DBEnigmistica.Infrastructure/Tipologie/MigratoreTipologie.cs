@@ -50,7 +50,9 @@ public static partial class FonteMigrazioniTipologie
 /// </summary>
 public sealed class MigratoreTipologie
 {
-    private const long ChiaveLucchetto = 4419002;
+    /// <summary>Chiave dell'advisory lock di <c>dbe migrate</c>, distinta da quella dei candidati del prototipo (4419002).</summary>
+    public const long ChiaveLucchetto = 4419101;
+
     private const string LockTimeout = "5s";
     private const string StatementTimeout = "60s";
 
@@ -90,11 +92,55 @@ public sealed class MigratoreTipologie
         }
     }
 
+    /// <summary>I file non ancora registrati in <c>tipologie.migrazioni_applicate</c>; se la tabella non esiste ancora sono tutti.</summary>
+    public async Task<IReadOnlyList<MigrazioneSql>> InSospesoAsync(
+        NpgsqlConnection connessione, IEnumerable<MigrazioneSql> migrazioni, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(connessione);
+        var elenco = migrazioni.ToList();
+        var chiudi = connessione.State != ConnectionState.Open;
+        if (chiudi)
+        {
+            try
+            {
+                await connessione.OpenAsync(cancellationToken);
+            }
+            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.InvalidCatalogName)
+            {
+                // Un database che non esiste ancora non ha nulla di applicato.
+                return elenco;
+            }
+        }
+
+        try
+        {
+            await using var esiste = new NpgsqlCommand("SELECT to_regclass('tipologie.migrazioni_applicate') IS NOT NULL", connessione);
+            if (await esiste.ExecuteScalarAsync(cancellationToken) is not true)
+                return elenco;
+
+            var inSospeso = new List<MigrazioneSql>();
+            foreach (var migrazione in elenco)
+            {
+                if (await LeggiChecksumAsync(connessione, null, migrazione, cancellationToken) is null)
+                    inSospeso.Add(migrazione);
+            }
+
+            return inSospeso;
+        }
+        finally
+        {
+            if (chiudi)
+                await connessione.CloseAsync();
+        }
+    }
+
     private static async Task<bool> ApplicaUnaAsync(NpgsqlConnection connessione, MigrazioneSql migrazione, CancellationToken cancellationToken)
     {
         await using var transazione = await connessione.BeginTransactionAsync(cancellationToken);
 
-        // Il lucchetto serializza due migrate in parallelo; poi si riguarda il registro dentro la transazione.
+        // I timeout valgono già per l'attesa del lucchetto, che serializza due migrate in parallelo; poi si riguarda il registro.
+        await EseguiAsync(connessione, transazione, $"SET LOCAL lock_timeout = '{LockTimeout}'", cancellationToken);
+        await EseguiAsync(connessione, transazione, $"SET LOCAL statement_timeout = '{StatementTimeout}'", cancellationToken);
         await EseguiAsync(connessione, transazione, $"SELECT pg_advisory_xact_lock({ChiaveLucchetto})", cancellationToken);
         var registrato = await LeggiChecksumAsync(connessione, transazione, migrazione, cancellationToken);
         if (registrato is not null)
@@ -105,8 +151,6 @@ public sealed class MigratoreTipologie
             return false;
         }
 
-        await EseguiAsync(connessione, transazione, $"SET LOCAL lock_timeout = '{LockTimeout}'", cancellationToken);
-        await EseguiAsync(connessione, transazione, $"SET LOCAL statement_timeout = '{StatementTimeout}'", cancellationToken);
         await EseguiAsync(connessione, transazione, migrazione.Sql, cancellationToken);
 
         await using (var inserimento = new NpgsqlCommand(

@@ -1,6 +1,6 @@
 # 05 - Approvazione delle regole delle quattro Tipologie della fase 1
 
-**Stato:** In attesa (l'agente scrive le regole nell'ondata 1.2)
+**Stato:** In attesa. Le bozze arrivano entro il 27/11/2026 dalla ondata 1.2.
 **Fase:** 1
 
 ## Scopo
@@ -45,7 +45,7 @@ Circa 1 ora (ROADMAP, fase 1).
 6. Indica la data di approvazione. Usa il formato `AAAA-MM-GG`.
    Risultato: La data è scritta nella risposta.
 
-NOTA: Ogni modifica delle regole alza la versione delle regole. Cambia anche l'impronta del prompt. Le risposte registrate del modello diventano non valide (vedi `progetto-1.1.md`, sezione 5.3). Questo accade anche dopo l'approvazione.
+NOTA: Ogni modifica delle regole alza la versione delle regole. Cambia anche l'impronta del prompt. Le risposte registrate del modello diventano non valide (vedi `progetto-1.1.md`, sezione 5.3). Questo accade anche dopo l'approvazione. Dopo ogni approvazione l'agente ricalcola da solo le Registrazioni del Set sintetico: tu non esegui nulla.
 
 ## Verifica finale
 
@@ -63,8 +63,8 @@ Scrivi un messaggio con:
 
 ## Cosa sblocca
 
-- Ondata 1b.2: descrittori v1 di `cruciverba-classico` e `anagramma`.
-- Ondata 1.2: regole nel registro dei descrittori. Senza approvazione, le regole restano in bozza.
+- Ondata 1b.2: descrittori v1 di `cruciverba-classico` e `anagramma`, con le regole approvate.
+- Ondata 1.2: nessuna dipendenza. Le tabelle delle Tipologie si applicano con SQL rivisto e unito in `main` (decisione D2): lo stato delle regole conta solo per la creazione.
 
 ---
 Fonti: `ROADMAP.md`, fase 1, "Dal proprietario" (approvare le regole, circa 1 ora) e sezione 2.2 (regole approvate); `.planning/phases/1/PLAN.md`, ondata 1.2 e tabella delle date; `.planning/phases/1/progetto-1.1.md`, sezioni 2 (campo `regole`) e 5.3 (versione del prompt).

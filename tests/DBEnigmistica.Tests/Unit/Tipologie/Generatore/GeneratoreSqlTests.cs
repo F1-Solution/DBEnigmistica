@@ -12,30 +12,30 @@ public partial class GeneratoreSqlTests
         """
         -- Generato da dbe types generate: esempio-cruciverba v1, schema riviste. Non modificare a mano.
 
-        CREATE TABLE riviste."gioco_esempio_cruciverba" (
+        CREATE TABLE riviste."gioco_esempio_cruciverba_v1" (
             "gioco_id" integer NOT NULL,
             "righe" integer NOT NULL,
             "colonne" integer NOT NULL,
             "griglia" jsonb NOT NULL,
             "autore" varchar(100),
-            CONSTRAINT "pk_gioco_esempio_cruciverba" PRIMARY KEY ("gioco_id"),
-            CONSTRAINT "fk_gioco_esempio_cruciverba__gioco" FOREIGN KEY ("gioco_id") REFERENCES riviste."games" ("Id") ON DELETE CASCADE
+            CONSTRAINT "pk_gioco_esempio_cruciverba_v1" PRIMARY KEY ("gioco_id"),
+            CONSTRAINT "fk_gioco_esempio_cruciverba_v1__gioco" FOREIGN KEY ("gioco_id") REFERENCES riviste."games" ("Id") ON DELETE CASCADE
         );
 
-        CREATE TABLE riviste."gioco_esempio_cruciverba__definizioni" (
+        CREATE TABLE riviste."gioco_esempio_cruciverba_v1__definizioni" (
             "gioco_id" integer NOT NULL,
             "posizione" integer NOT NULL,
             "numero" integer NOT NULL,
             "direzione" text NOT NULL,
             "testo" varchar(300) NOT NULL,
             "soluzione" varchar(40),
-            CONSTRAINT "pk_gioco_esempio_cruciverba__definizioni" PRIMARY KEY ("gioco_id", "posizione"),
-            CONSTRAINT "fk_gioco_esempio_cruciverba__definizioni__gioco" FOREIGN KEY ("gioco_id") REFERENCES riviste."gioco_esempio_cruciverba" ("gioco_id") ON DELETE CASCADE,
-            CONSTRAINT "ck_gioco_esempio_cruciverba__definizioni__posizione" CHECK ("posizione" >= 0),
-            CONSTRAINT "ck_gioco_esempio_cruciverba__definizioni__direzione" CHECK ("direzione" IN ('orizzontale', 'verticale'))
+            CONSTRAINT "pk_gioco_esempio_cruciverba_v1__definizioni" PRIMARY KEY ("gioco_id", "posizione"),
+            CONSTRAINT "fk_gioco_esempio_cruciverba_v1__definizioni__gioco" FOREIGN KEY ("gioco_id") REFERENCES riviste."gioco_esempio_cruciverba_v1" ("gioco_id") ON DELETE CASCADE,
+            CONSTRAINT "ck_gioco_esempio_cruciverba_v1__definizioni__posizione" CHECK ("posizione" >= 0),
+            CONSTRAINT "ck_gioco_esempio_cruciverba_v1__definizioni__direzione" CHECK ("direzione" IN ('orizzontale', 'verticale'))
         );
 
-        CREATE INDEX "ix_gioco_esempio_cruciverba__autore" ON riviste."gioco_esempio_cruciverba" ("autore");
+        CREATE INDEX "ix_gioco_esempio_cruciverba_v1__autore" ON riviste."gioco_esempio_cruciverba_v1" ("autore");
 
         """;
 
@@ -47,6 +47,42 @@ public partial class GeneratoreSqlTests
         new(id, 1, FamigliaTipologia.GiocoBreve, "Prova", "d", new RegoleTipologia("r", 1, StatoRegole.Bozza),
             campi ?? [new CampoDescrittore("esposto", TipoCampo.Testo, Max: 100, Obbligatorio: true)], elenchi ?? [],
             new ResaDescrittore(ModelloResa.EspostoDiagramma), []);
+
+    [Fact]
+    public void Due_versioni_della_stessa_Tipologia_generano_tabelle_e_vincoli_distinti_senza_conflitti()
+    {
+        var elenchi = new[] { new ElencoDescrittore("voci", [new CampoDescrittore("b", TipoCampo.Intero, Indice: true)]) };
+        var file = GeneratoreSql.GeneraTutti([
+            Semplice("prova", elenchi: elenchi) with { Versione = 1 },
+            Semplice("prova", elenchi: elenchi) with { Versione = 2 }]);
+
+        file.Select(f => f.Percorso).Should().Equal(
+            "prova/v1.riviste.sql", "prova/v1.catalogo.sql", "prova/v2.riviste.sql", "prova/v2.catalogo.sql");
+        foreach (var schema in new[] { SchemaTipologia.Riviste, SchemaTipologia.Catalogo })
+        {
+            var nomi = file.Where(f => f.Schema == schema)
+                .SelectMany(f => CreateNomi().Matches(f.Contenuto).Select(m => m.Groups[1].Value)).ToList();
+            nomi.Should().Contain(["gioco_prova_v1", "gioco_prova_v1__voci", "gioco_prova_v2", "gioco_prova_v2__voci"]);
+            nomi.Should().OnlyHaveUniqueItems();
+        }
+
+        file[2].Contenuto.Should().Contain("CONSTRAINT \"pk_gioco_prova_v2\"").And.Contain("\"ix_gioco_prova_v2__voci__b\"").And.NotContain("_v1");
+    }
+
+    [Fact]
+    public void Ai_limiti_del_meta_schema_con_la_versione_i_nomi_di_tabella_arrivano_a_63_byte_senza_superarli()
+    {
+        var d = Semplice(new string('a', 30), elenchi: [new ElencoDescrittore(new string('b', 20), [new CampoDescrittore("c", TipoCampo.Intero)])]) with { Versione = 999 };
+
+        var sql = GeneratoreSql.Genera(d, SchemaTipologia.Riviste).Contenuto;
+
+        var tabelle = CreateNomi().Matches(sql).Select(m => m.Groups[1].Value).ToList();
+        tabelle.Should().HaveCount(2).And.OnlyContain(n => n.Length <= 63);
+        tabelle.Should().Contain(n => n.Length == 63 && n.EndsWith("_v999__" + new string('b', 20), StringComparison.Ordinal));
+    }
+
+    [GeneratedRegex("CREATE TABLE \\w+\\.\"([a-z0-9_]+)\"")]
+    private static partial Regex CreateNomi();
 
     [Fact]
     public void Lo_snapshot_dell_esempio_della_sezione_3_1_coincide_byte_per_byte()
@@ -62,9 +98,9 @@ public partial class GeneratoreSqlTests
     {
         var sql = GeneratoreSql.Genera(Cruciverba(), SchemaTipologia.Catalogo).Contenuto;
 
-        sql.Should().StartWith("-- Generato da dbe types generate: esempio-cruciverba v1, schema catalogo. Non modificare a mano.\n\nCREATE TABLE catalogo.\"gioco_esempio_cruciverba\" (\n    \"gioco_id\" uuid NOT NULL,");
+        sql.Should().StartWith("-- Generato da dbe types generate: esempio-cruciverba v1, schema catalogo. Non modificare a mano.\n\nCREATE TABLE catalogo.\"gioco_esempio_cruciverba_v1\" (\n    \"gioco_id\" uuid NOT NULL,");
         sql.Should().Contain("REFERENCES catalogo.\"giochi\" (\"id\") ON DELETE CASCADE");
-        sql.Should().Contain("REFERENCES catalogo.\"gioco_esempio_cruciverba\" (\"gioco_id\")");
+        sql.Should().Contain("REFERENCES catalogo.\"gioco_esempio_cruciverba_v1\" (\"gioco_id\")");
         sql.Should().NotContain("riviste.");
         sql.Should().EndWith(";\n");
     }
@@ -215,8 +251,8 @@ public partial class GeneratoreSqlTests
         var sql = GeneratoreSql.Genera(d, SchemaTipologia.Riviste).Contenuto;
 
         sql.IndexOf("CREATE INDEX", StringComparison.Ordinal).Should().BeGreaterThan(sql.LastIndexOf("CREATE TABLE", StringComparison.Ordinal));
-        sql.Should().Contain("CREATE INDEX \"ix_gioco_prova__a\" ON riviste.\"gioco_prova\" (\"a\");")
-            .And.Contain("CREATE INDEX \"ix_gioco_prova__voci__b\" ON riviste.\"gioco_prova__voci\" (\"b\");")
+        sql.Should().Contain("CREATE INDEX \"ix_gioco_prova_v1__a\" ON riviste.\"gioco_prova_v1\" (\"a\");")
+            .And.Contain("CREATE INDEX \"ix_gioco_prova_v1__voci__b\" ON riviste.\"gioco_prova_v1__voci\" (\"b\");")
             .And.Contain("\"b\" timestamptz");
     }
 

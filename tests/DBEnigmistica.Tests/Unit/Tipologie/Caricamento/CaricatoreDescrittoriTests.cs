@@ -164,6 +164,7 @@ public class CaricatoreDescrittoriTests
         var json = Modificato(n =>
         {
             n["id"] = lungo;
+            n["versione"] = 999;
             n["elenchi"]![0]!["nome"] = new string('b', 20);
         });
 

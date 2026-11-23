@@ -14,7 +14,7 @@ internal static class RivisteMapping
     {
         modelBuilder.Entity<Magazine>(entity =>
         {
-            entity.ToTable("magazines", Schema);
+            entity.ToTable("magazines", Schema, t => t.HasCheckConstraint("ck_magazines_impronta", "impronta IS NULL OR octet_length(impronta) = 32"));
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.SourceFilePath).IsRequired().HasMaxLength(500);
@@ -30,7 +30,7 @@ internal static class RivisteMapping
 
         modelBuilder.Entity<Page>(entity =>
         {
-            entity.ToTable("pages", Schema);
+            entity.ToTable("pages", Schema, t => t.HasCheckConstraint("ck_pages_impronta", "impronta IS NULL OR octet_length(impronta) = 32"));
             entity.HasKey(e => e.Id);
 
             entity.HasOne(p => p.Magazine)
@@ -70,9 +70,10 @@ internal static class RivisteMapping
             // Origine senza default: un Gioco estratto la dichiara sempre, e il database accetta solo 'rivista'.
             entity.ToTable("games", Schema, t =>
             {
+                t.HasCheckConstraint("ck_games_tipologia", "tipologia ~ '^[a-z][a-z0-9-]{1,60}$'");
                 t.HasCheckConstraint("ck_games_origine_rivista", "origine = 'rivista'");
                 t.HasCheckConstraint("ck_games_stato_tipologia", "stato_tipologia IN ('nota', 'proposta')");
-                t.HasCheckConstraint("ck_games_versione_tipologia", "versione_tipologia >= 0");
+                t.HasCheckConstraint("ck_games_versione_tipologia", "versione_tipologia > 0");
                 t.HasCheckConstraint("ck_games_riquadro",
                     "(riquadro_x IS NULL OR riquadro_x BETWEEN 0 AND 1) AND (riquadro_y IS NULL OR riquadro_y BETWEEN 0 AND 1) " +
                     "AND (riquadro_larghezza IS NULL OR riquadro_larghezza BETWEEN 0 AND 1) AND (riquadro_altezza IS NULL OR riquadro_altezza BETWEEN 0 AND 1)");
@@ -80,7 +81,7 @@ internal static class RivisteMapping
                 t.HasCheckConstraint("ck_games_trascrizione_proposta", "trascrizione_proposta IS NULL OR stato_tipologia = 'proposta'");
             });
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Tipologia).HasColumnName("tipologia").HasMaxLength(30).IsRequired();
+            entity.Property(e => e.Tipologia).HasColumnName("tipologia").HasMaxLength(61).IsRequired();
             entity.Property(e => e.VersioneTipologia).HasColumnName("versione_tipologia");
             entity.Property(e => e.StatoTipologia).HasColumnName("stato_tipologia").HasMaxLength(10)
                 .HasConversion(v => v == StatoTipologia.Proposta ? "proposta" : "nota",

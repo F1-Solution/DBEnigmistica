@@ -69,6 +69,10 @@ public static class DependencyInjection
         if (modalita == RegistrazioniOptions.ModalitaRiproduci)
             return new FornitoreAiRiproduci(FornitoreClaudeCode.Id, modello, archivio!, interprete, validatore);
 
+        // D8: senza l'interruttore acceso nessun adattatore dal vivo viene creato.
+        if (!opzioni.DalVivoAbilitato)
+            throw ErroreConfigurazione(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+
         var impostazioni = new ImpostazioniClaudeCode(
             opzioni.ClaudeCode.Eseguibile ?? "claude",
             modello,
@@ -109,6 +113,10 @@ public static class DependencyInjection
 
         if (modalita == RegistrazioniOptions.ModalitaRiproduci)
             return new FornitoreAiCreazioneRiproduci(FornitoreClaudeCode.Id, modello, archivio!, interprete, validatore);
+
+        // D8: senza l'interruttore acceso nessun adattatore dal vivo viene creato.
+        if (!opzioni.DalVivoAbilitato)
+            throw ErroreConfigurazione(FornitoreAiOptions.MessaggioDalVivoDisattivato);
 
         var impostazioni = new ImpostazioniClaudeCode(
             opzioni.ClaudeCode.Eseguibile ?? "claude",

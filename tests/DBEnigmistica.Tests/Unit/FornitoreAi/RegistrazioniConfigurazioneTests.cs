@@ -1,3 +1,4 @@
+using DBEnigmistica.AI.Configuration;
 using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Console.Cli;
 using FluentAssertions;
@@ -57,5 +58,56 @@ public class RegistrazioniConfigurazioneTests
 
         fornitore.Should().BeOfType<FornitoreAiRiproduci>();
         await chiamata.Should().ThrowAsync<RegistrazioneMancanteException>();
+    }
+
+    private static T RisolviServizio<T>(params (string Chiave, string Valore)[] impostazioni) where T : notnull
+    {
+        using var host = CliHost.Build(
+            HostRequirements.None,
+            new CliStreams(new StringWriter(), new StringWriter()),
+            builder => builder.AddInMemoryCollection(
+                impostazioni
+                    .Prepend(("FornitoreAi:Modello", "claude-sonnet-5-5"))
+                    .Prepend(("FornitoreAi:Tipo", "claude-code"))
+                    .Select(i => new KeyValuePair<string, string?>(i.Item1, i.Item2))));
+        using var scope = host.Services.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<T>();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void D8_ConChiaveDalVivoSpenta_LaCreazioneDelFornitoreDalVivoLanciaIlMessaggioDiDisattivazione(bool creazione)
+    {
+        var risolvi = () => creazione
+            ? (object)RisolviServizio<IFornitoreAiCreazione>(("FornitoreAi:DalVivoAbilitato", "false"))
+            : RisolviServizio<IFornitoreAiEstrazione>(("FornitoreAi:DalVivoAbilitato", "false"));
+
+        risolvi.Should().Throw<OptionsValidationException>().Which.Failures.Should().Contain(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void D8_ConChiaveDalVivoAccesa_IlFornitoreDalVivoSiCrea(bool creazione)
+    {
+        var risolvi = () => creazione
+            ? (object)RisolviServizio<IFornitoreAiCreazione>(("FornitoreAi:DalVivoAbilitato", "true"))
+            : RisolviServizio<IFornitoreAiEstrazione>(("FornitoreAi:DalVivoAbilitato", "true"));
+
+        risolvi.Should().NotThrow();
+    }
+
+    [Fact]
+    public void D8_LaRiproduzioneDelleRegistrazioniNonRichiedeLaChiaveDalVivo()
+    {
+        var cartella = Path.Combine(Path.GetTempPath(), "dbe-riproduci-" + Guid.NewGuid().ToString("N"));
+
+        var fornitore = RisolviServizio<IFornitoreAiEstrazione>(
+            ("FornitoreAi:DalVivoAbilitato", "false"),
+            ("FornitoreAi:Registrazioni:Modalita", "riproduci"),
+            ("FornitoreAi:Registrazioni:Cartella", cartella));
+
+        fornitore.Should().BeOfType<FornitoreAiRiproduci>();
     }
 }

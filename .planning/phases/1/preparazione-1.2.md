@@ -321,3 +321,5 @@ Il tempo guadagnato resta margine.
 | D4 | Nessun Gioco del vecchio codice da tenere; se `riviste.games` ha righe, la migrazione si ferma e chiede di svuotarla, senza conversioni. |
 | D5 | Colonne `Tipologia`, `X`, `Y`, `Larghezza`, `Altezza` (normalizzate 0-1) al posto delle vecchie; nessuna compatibilità col formato vecchio. |
 | D6 | C consegna `scripts/regressione-locale.ps1` entro il 26/11 con un Set sintetico provvisorio; il proprietario lo prova entro il 27/11 e lo rilancia dopo il ricalcolo del 2/12, senza nuova approvazione. |
+| D7 (23/11/2026) | Le Tabelle per Tipologia hanno il nome versionato `gioco_<id>_v<n>`; una v2 è una tabella nuova accanto alla v1, con migrazione dei dati rivista. Dettagli in `docs/ondata-1-2-decisioni-d7.md`. |
+| D8 (23/11/2026) | L'interruttore `FornitoreAi:DalVivoAbilitato` (predefinito `false`) blocca `eval extraction --live` e la generazione dal vivo di `dbe prototipo` fino al via della prova `1.1-prova`. Dettagli in `docs/ondata-1-2-decisioni-d7.md`. |
