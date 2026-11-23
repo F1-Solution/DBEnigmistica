@@ -59,6 +59,7 @@ Il programma si chiama `dbe`. `dbe --help` elenca i comandi. Il flag `--verbose`
 | `types generate` | Genera l'SQL delle Tipologie dai descrittori in `tipologie/`; con `--check` non scrive ed esce con 1 se un file SQL è diverso o manca | nessuno |
 | `eval extraction` | Misura l'estrazione su un Set e la confronta con la Linea di base. `--replay` legge le Registrazioni, senza chiamate AI; esce con 1 se una metrica scende | nessuno (con `--live`: configurazione AI) |
 | `eval draft` | Scrive le bozze dei risultati attesi da una Registrazione; le pagine con un risultato già presente restano intatte | nessuno |
+| `eval review-time` | Rapporto dei tempi di revisione dei candidati del prototipo, a confronto con le soglie G1. `--output <cartella>` scrive `review-time.json` e `review-time.md`; `--candidati <file>` legge i candidati da un file JSON invece che dal database. Esce con 0 anche se una soglia non è rispettata | database (senza `--candidati`) |
 
 ### Tipologie e valutazione dell'estrazione
 
@@ -84,6 +85,16 @@ Dopo ogni modifica a descrittori o regole delle Tipologie, prima di misurare, si
 ```bash
 dotnet run --project src/DBEnigmistica.Console -- eval sintetico aggiorna-chiavi --set tests/DBEnigmistica.Tests/Fixtures/SetSintetico
 ```
+
+### Tempi di revisione
+
+Il rapporto confronta i tempi di revisione dei candidati con le soglie G1. Sul Set di candidati sintetici, senza database e senza chiamate AI:
+
+```bash
+dotnet run --project src/DBEnigmistica.Console -- eval review-time --candidati tests/DBEnigmistica.Tests/Fixtures/CandidatiSintetici/candidati.json --output <cartella>
+```
+
+Il rapporto ha sei gruppi: crittografia breve, anagramma, cruciverba, rebus, sudoku e giochi logici (futoshiki e nonogramma insieme). Ogni gruppo riporta conteggi, quota accettata, mediana e quartili del tempo attivo. Le soglie G1 valgono per crittografia breve, anagramma e cruciverba; per gli altri gruppi il rapporto riporta solo i tempi. Un gruppo senza candidati rivisti non riporta valori di tempo.
 
 ### Codici d'uscita
 

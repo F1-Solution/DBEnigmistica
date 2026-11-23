@@ -21,6 +21,7 @@ public static class DependencyInjectionCreazione
             p.GetRequiredService<IValidatoreSchemaJson>(), p.GetRequiredService<IGeneratoriAlgoritmici>().Supporta));
         services.AddScoped<GeneraCandidato>();
         services.AddScoped<RevisioneCandidati>();
+        services.AddScoped<TipologieDelPrototipo>();
         return services;
     }
 }

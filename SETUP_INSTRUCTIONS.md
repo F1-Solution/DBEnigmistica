@@ -303,6 +303,7 @@ Il prototipo è un host web locale per rivedere i Giochi originali. Gira solo su
 3. Cartella dei descrittori delle Tipologie. Il predefinito è la cartella `tipologie` accanto all'eseguibile, già presente nell'archivio. Per usarne un'altra, imposta `Prototipo:CartellaTipologie` (variabile `Prototipo__CartellaTipologie`). Un valore relativo si risolve dalla cartella corrente.
 4. Modello di creazione: `FornitoreAi:Creazione:Modello` (variabile `FornitoreAi__Creazione__Modello`), predefinito `claude-opus-5-5` in `appsettings.json`. Il modello dell'estrazione non cambia.
 5. Registrazioni di creazione: `FornitoreAi:Creazione:Registrazioni`, con `Modalita` e `Cartella` (variabili `FornitoreAi__Creazione__Registrazioni__Modalita` e `FornitoreAi__Creazione__Registrazioni__Cartella`).
+6. Interfaccia costruita: in `interfaccia\` esegui `npm ci` e poi `npm run build`. Serve Node 24 (LTS). Il build scrive in `interfaccia\dist\`, da dove la compilazione dell'host la copia in `wwwroot`. Senza questo passo l'host risponde 503 (sezione 11.5).
 
 ### 11.2 Avvio
 
@@ -316,11 +317,13 @@ Il programma applica la configurazione, porta a errore le generazioni rimaste in
 
 Se manca una chiave richiesta o un valore non è valido, il programma esce con codice 3.
 
-**Sviluppo dai sorgenti.** Con la configurazione impostata, lo stesso comando funziona da sorgente, dalla radice del repository:
+**Sviluppo dai sorgenti.** Con la configurazione impostata e l'interfaccia costruita (punto 6 di 11.1), lo stesso comando funziona da sorgente, dalla radice del repository:
 
 ```powershell
 dotnet run --project src\DBEnigmistica.Console -- prototipo
 ```
+
+**Sviluppo dell'interfaccia.** Con l'host in esecuzione sulla porta 5180, in un secondo terminale nella cartella `interfaccia` esegui `npm run dev`. Il server di sviluppo di Vite (porta predefinita 5173) inoltra le chiamate `/api` all'host e toglie l'intestazione `Origin`. Apri `http://localhost:5173`. Con altre porte l'inoltro non funziona: l'indirizzo dell'host è fisso a `127.0.0.1:5180` nella configurazione dell'interfaccia.
 
 L'archivio `win-x64` resta la via per il proprietario.
 
@@ -329,11 +332,18 @@ L'archivio `win-x64` resta la via per il proprietario.
 - Il prototipo ascolta solo su `127.0.0.1`. L'indirizzo è fisso e non si cambia da configurazione, URL o variabili d'ambiente.
 - La porta predefinita è `5180`. Si cambia con `Prototipo:Porta` (variabile `Prototipo__Porta`).
 - Le richieste con un nome host diverso da `127.0.0.1` o `localhost` ricevono 421.
-- Non c'è una pagina alla radice. Le API stanno sotto `/api/prototipo`. Per verificare che l'host risponda, apri `http://127.0.0.1:5180/api/prototipo/salute`: deve comparire `{"stato":"ok"}`.
+- Per usare il prototipo apri `http://127.0.0.1:5180` nel browser. Compare la pagina "Inizio", con l'elenco delle Tipologie, i link *Nuovo candidato* e *Rivedi*, e la voce *Nuovo candidato* nel menu.
+- Le API stanno sotto `/api/prototipo`. Per verificare solo che l'host risponda, apri `http://127.0.0.1:5180/api/prototipo/salute`: deve comparire `{"stato":"ok"}`.
+- Le pagine dell'interfaccia non caricano nulla da altri siti e non si possono incorniciare.
 
 ### 11.4 Creazione dal vivo
 
-Finché la prova reale di Claude Code non è registrata (riga `PHASE:1 WAVE:1.1-prova STATUS:complete` in `PROGRESS.md`), la creazione usa solo le Registrazioni in riproduzione. Nessuna chiamata a Claude Code parte dal prototipo.
+Finché la prova reale di Claude Code non è registrata (riga `PHASE:1 WAVE:1.1-prova STATUS:complete` in `PROGRESS.md`), nessuna chiamata a Claude Code parte dal prototipo. Il comportamento dipende dalla configurazione:
+
+- **Interruttore spento** (`FornitoreAi__DalVivoAbilitato=false`, predefinito) e nessuna riproduzione: il prototipo parte. *Genera* per crittografia breve, anagramma, cruciverba e rebus è disattivato, e accanto al pulsante compare il messaggio "Le chiamate dal vivo sono disattivate. Si abilitano con FornitoreAi:DalVivoAbilitato=true solo dopo la prova 1.1-prova (PROGRESS.md).". Nessuna chiamata parte. Sudoku, futoshiki, nonogramma e la revisione funzionano.
+- **Riproduzione** (`FornitoreAi__Creazione__Registrazioni__Modalita=riproduci` e `FornitoreAi__Creazione__Registrazioni__Cartella` con le Registrazioni del brief): *Genera* usa le risposte registrate. Se per il brief non c'è una Registrazione, la generazione fallisce con un messaggio: nessuna chiamata parte al suo posto. Con regole in bozza, in riproduzione compare l'avviso "Regole in bozza" e *Genera* resta attivo; dal vivo le stesse regole restano bloccate.
+
+Il valore `FornitoreAi__DalVivoAbilitato=true` si imposta solo dopo il via della prova `1.1-prova`.
 
 ### 11.5 Risoluzione dei problemi
 
@@ -351,3 +361,9 @@ La richiesta arriva da un'altra origine o dichiara un contesto cross-site. Chiam
 
 **Risposta 415**
 Una POST o una PUT non dichiara `Content-Type: application/json`. Aggiungi l'intestazione.
+
+**Risposta 503 con "Interfaccia non costruita"**
+Manca `interfaccia\dist\index.html`. Esegui `npm ci` e `npm run build` nella cartella `interfaccia`, poi riavvia il prototipo.
+
+**Il messaggio "Le chiamate dal vivo sono disattivate" su *Genera***
+È il comportamento atteso con l'interruttore spento (sezione 11.4). Non è un errore del prototipo.

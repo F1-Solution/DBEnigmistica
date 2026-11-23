@@ -1,0 +1,193 @@
+{
+ "versione_formato": 1,
+ "candidati": [
+  {
+   "tipologia": "crittografia-breve",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 600000
+  },
+  {
+   "tipologia": "crittografia-breve",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 900000
+  },
+  {
+   "tipologia": "crittografia-breve",
+   "versione_tipologia": 0,
+   "stato": "scartato",
+   "istanti_ms": [
+    0,
+    60000,
+    120000,
+    180000,
+    480000,
+    540000,
+    600000
+   ]
+  },
+  {
+   "tipologia": "crittografia-breve",
+   "versione_tipologia": 0,
+   "stato": "scartato",
+   "tempo_attivo_ms": 1500000
+  },
+  {
+   "tipologia": "crittografia-breve",
+   "versione_tipologia": 0,
+   "stato": "da_rivedere",
+   "tempo_attivo_ms": 0
+  },
+  {
+   "tipologia": "crittografia-breve",
+   "versione_tipologia": 0,
+   "stato": "in_revisione",
+   "tempo_attivo_ms": 120000
+  },
+  {
+   "tipologia": "crittografia-breve",
+   "versione_tipologia": 0,
+   "stato": "non_valido_schema",
+   "tempo_attivo_ms": 0
+  },
+  {
+   "tipologia": "crittografia-breve",
+   "versione_tipologia": 0,
+   "stato": "errore_generazione",
+   "tempo_attivo_ms": 0
+  },
+  {
+   "tipologia": "anagramma",
+   "versione_tipologia": 1,
+   "stato": "accettato",
+   "tempo_attivo_ms": 1500000
+  },
+  {
+   "tipologia": "cruciverba-classico",
+   "versione_tipologia": 1,
+   "stato": "da_rivedere",
+   "tempo_attivo_ms": 0
+  },
+  {
+   "tipologia": "cruciverba-classico",
+   "versione_tipologia": 1,
+   "stato": "da_rivedere",
+   "tempo_attivo_ms": 0
+  },
+  {
+   "tipologia": "cruciverba-classico",
+   "versione_tipologia": 1,
+   "stato": "non_valido_schema",
+   "tempo_attivo_ms": 0
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 60000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 120000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "scartato",
+   "tempo_attivo_ms": 180000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 240000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 300000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 360000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "scartato",
+   "tempo_attivo_ms": 420000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 480000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 540000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 600000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "scartato",
+   "tempo_attivo_ms": 660000
+  },
+  {
+   "tipologia": "rebus",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 720000
+  },
+  {
+   "tipologia": "sudoku",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 180000
+  },
+  {
+   "tipologia": "sudoku",
+   "versione_tipologia": 0,
+   "stato": "scartato",
+   "tempo_attivo_ms": 240000
+  },
+  {
+   "tipologia": "sudoku",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 300000
+  },
+  {
+   "tipologia": "sudoku",
+   "versione_tipologia": 0,
+   "stato": "in_revisione",
+   "tempo_attivo_ms": 60000
+  },
+  {
+   "tipologia": "futoshiki",
+   "versione_tipologia": 0,
+   "stato": "accettato",
+   "tempo_attivo_ms": 600000
+  },
+  {
+   "tipologia": "nonogramma",
+   "versione_tipologia": 0,
+   "stato": "scartato",
+   "tempo_attivo_ms": 1200000
+  }
+ ]
+}

@@ -62,3 +62,8 @@ artifacts/
 
 # Rapporti locali di scripts/regressione-locale.ps1
 rapporti-regressione/
+
+# Interfaccia (Node)
+node_modules/
+interfaccia/dist/
+interfaccia/coverage/

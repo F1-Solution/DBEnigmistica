@@ -9,9 +9,9 @@ Ordine secondo D1: 1.1 → **1b.1** → 1.2 → 1b.2 → 1.3 → 1.4 con 1b.3. M
 | Ordine | Ondata | Periodo previsto | Agenti | Può partire con `1.1-prova` aperta? |
 |---|---|---|---|---|
 | 2 | **1b.1** | 23/11 - 6/12/2026 | Opus A, Sonnet B, Sonnet C; poi Haiku D | **Sì.** Nessuna chiamata dal vivo: eseguibile finto di Claude Code e Registrazioni scritte dal progetto |
-| 3 | 1.2 | 7/12 - 20/12/2026 | (fase 1) | Sì |
-| 4 | **1b.2** | 21/12/2026 - 3/1/2027; prototipo pronto verso il 10/1, scadenza 17/1 | Sonnet A, Sonnet B, Sonnet C; poi Haiku | **Codice sì, misura no.** La prima generazione dal vivo richiede `PHASE:1 WAVE:1.1-prova STATUS:complete` e regole approvate |
-| 5 | 1.3 | 4/1 - 17/1/2027 | (fase 1) | In parte |
+| 3 | 1.2 | chiusa il 23/11/2026 | (fase 1) | Sì |
+| 4 | **1b.2** | 24/11/2026 - 7/12/2026; prototipo pronto verso il 10/1, scadenza 17/1 | Sonnet A, Sonnet B, Sonnet C; poi Haiku | **Codice sì, misura no.** La prima generazione dal vivo richiede `PHASE:1 WAVE:1.1-prova STATUS:complete` e regole approvate |
+| 5 | 1.3 | dall'8/12/2026 | (fase 1) | In parte |
 | 6 | **1b.3** | dal 25/1/2027 fino al 21/2, accanto alla 1.4 | Sonnet A | Richiede la prova chiusa: la prova 1 usa candidati generati dal vivo |
 | - | Prova 1 | 18/1 - 21/2/2027 | proprietario | - |
 | - | Decisione G1 | 28/2/2027 | proprietario | - |
@@ -188,7 +188,8 @@ Fatto quando: i file citano solo comandi, chiavi e comportamenti che esistono ne
 
 ## 4. Ondata 1b.2 - Schermate, cronometro, misura (a grandi linee)
 
-**Ramo:** `fase-1b/ondata-1b.2`, dal 21/12/2026, dopo la 1.2. Fine prevista il 3/1/2027; prototipo pronto verso il 10/1, scadenza 17/1.
+**Ramo:** `fase-1b/ondata-1b.2`, dal 24/11/2026 al 7/12/2026, dopo la 1.2. Prototipo pronto verso il 10/1/2027, scadenza 17/1 (invariate).
+I passi dal vivo non sono in questa ondata: vanno nel compito `1b.2-dal-vivo`, con la sua riga in `PROGRESS.md` (D1b.2-2).
 
 | Agente | Modello | Contenuto |
 |---|---|---|

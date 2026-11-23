@@ -1,0 +1,14 @@
+{
+  "versione_formato": 1,
+  "tipologia": "anagramma",
+  "versione_tipologia": 1,
+  "famiglia": "gioco-breve",
+  "tema": "il mare",
+  "vincoli": [
+    "Anagramma semplice: una parola diventa un'altra parola",
+    "Esposto di 2-4 versi"
+  ],
+  "difficolta": 2,
+  "dimensioni": null,
+  "sottotipo": null
+}

@@ -26,6 +26,13 @@ public sealed record BriefCreazione(
 
     public BriefCreazione ConVariante(int variante) => this with { Variante = variante };
 
+    /// <summary>
+    /// Seme che dipende solo dai campi che la schermata invia più la variante: il codice del brief tipo non conta,
+    /// così in riproduzione lo stesso brief dà lo stesso schema e la stessa richiesta.
+    /// </summary>
+    public long SemeDiRiproduzione() =>
+        BitConverter.ToInt64(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes((this with { Codice = null }).ToJson())), 0) & long.MaxValue;
+
     /// <summary>Legge un brief già validato dallo schema; l'eventuale <c>$schema</c> si ignora.</summary>
     public static BriefCreazione Leggi(string json)
     {

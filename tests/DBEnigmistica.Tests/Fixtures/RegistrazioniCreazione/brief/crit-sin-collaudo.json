@@ -1,0 +1,13 @@
+{
+  "versione_formato": 1,
+  "tipologia": "crittografia-breve",
+  "versione_tipologia": 0,
+  "famiglia": "crittografia",
+  "tema": "il mercato",
+  "vincoli": [
+    "Esposto di al massimo 2 parole"
+  ],
+  "difficolta": 2,
+  "dimensioni": null,
+  "sottotipo": "sinonimica"
+}

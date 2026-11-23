@@ -3,14 +3,17 @@ using System.Text;
 using DBEnigmistica.AI.Configuration;
 using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Application.Valutazione;
+using DBEnigmistica.Application.Valutazione.TempiRevisione;
 using DBEnigmistica.Console.Cli;
+using DBEnigmistica.Infrastructure.Prototipo;
 using DBEnigmistica.Infrastructure.Services.Pdf;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace DBEnigmistica.Console.Commands;
 
-/// <summary>Valutazione dell'estrazione: <c>eval extraction</c>, <c>eval draft</c> e, nascosto, <c>eval sintetico aggiorna-chiavi</c>.</summary>
+/// <summary>Valutazione: <c>eval extraction</c>, <c>eval draft</c>, <c>eval review-time</c> e, nascosto, <c>eval sintetico aggiorna-chiavi</c>.</summary>
 public class EvalCommand : Command
 {
     public EvalCommand(CommandRunner runner)
@@ -19,6 +22,7 @@ public class EvalCommand : Command
         Subcommands.Add(new EvalExtractionCommand(runner));
         Subcommands.Add(new EvalDraftCommand(runner));
         Subcommands.Add(new EvalSinteticoCommand(runner));
+        Subcommands.Add(new EvalReviewTimeCommand(runner));
     }
 }
 
@@ -88,6 +92,23 @@ public class EvalDraftCommand : Command
             (handler, token) => handler.ExecuteAsync(
                 parseResult.GetRequiredValue(set).FullName, parseResult.GetRequiredValue(fornitore),
                 parseResult.GetRequiredValue(modello), parseResult.GetRequiredValue(dpi), parseResult.GetValue(sovrascrivi), token),
+            ct));
+    }
+}
+
+public class EvalReviewTimeCommand : Command
+{
+    public EvalReviewTimeCommand(CommandRunner runner)
+        : base("review-time", "Rapporto dei tempi di revisione dei candidati del prototipo, a confronto con le soglie di G1")
+    {
+        var output = new Option<DirectoryInfo?>("--output") { Description = "Cartella in cui scrivere review-time.json e review-time.md" };
+        var candidati = new Option<FileInfo?>("--candidati") { Description = "Legge i candidati da un file JSON (set sintetico) invece che dal database" };
+        Options.Add(output);
+        Options.Add(candidati);
+
+        this.SetAction((parseResult, ct) => runner.RunAsync<EvalReviewTimeHandler>(
+            parseResult.GetValue(candidati) is null ? HostRequirements.Database : HostRequirements.None,
+            (handler, token) => handler.ExecuteAsync(parseResult.GetValue(candidati), parseResult.GetValue(output), token),
             ct));
     }
 }
@@ -202,6 +223,43 @@ public sealed class EvalDraftHandler(GeneratoreBozzeAttese generatore, CliStream
             streams.Error.WriteLine(ex.Message);
             return ExitCodes.Error;
         }
+    }
+}
+
+/// <summary>Scrive il rapporto dei tempi di revisione; esce 0 anche se le soglie non sono rispettate: il rapporto confronta, non decide.</summary>
+public sealed class EvalReviewTimeHandler(ServizioTempiRevisione servizio, IConfiguration configurazione, CliStreams streams)
+{
+    public async Task<int> ExecuteAsync(FileInfo? candidati, DirectoryInfo? output, CancellationToken cancellationToken)
+    {
+        try
+        {
+            ILettoreCandidatiRapporto lettore = candidati is null
+                ? new LettoreCandidatiRapporto(configurazione)
+                : new LettoreDaFile(await File.ReadAllTextAsync(candidati.FullName, cancellationToken));
+            var rapporto = await servizio.EseguiAsync(lettore, cancellationToken);
+
+            if (output is not null)
+            {
+                output.Create();
+                await File.WriteAllTextAsync(Path.Combine(output.FullName, "review-time.json"), rapporto.InJson(), new UTF8Encoding(false), cancellationToken);
+                await File.WriteAllTextAsync(Path.Combine(output.FullName, "review-time.md"), rapporto.InMarkdown(), new UTF8Encoding(false), cancellationToken);
+                streams.Out.WriteLine($"Rapporto scritto in {output.FullName}");
+            }
+
+            streams.Out.Write(rapporto.InMarkdown());
+            return ExitCodes.Success;
+        }
+        catch (Exception ex) when (ex is FormatException or IOException or UnauthorizedAccessException)
+        {
+            streams.Error.WriteLine(ex.Message);
+            return ExitCodes.Error;
+        }
+    }
+
+    private sealed class LettoreDaFile(string json) : ILettoreCandidatiRapporto
+    {
+        public Task<IReadOnlyList<CandidatoPerRapporto>> LeggiAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(LettoreCandidatiDaFile.Leggi(json));
     }
 }
 

@@ -35,6 +35,24 @@ internal sealed partial record DiagrammaLetto(IReadOnlyList<int> Sinistra, IRead
         return true;
     }
 
+    /// <summary>Diagramma del rebus: solo le lunghezze delle parole della soluzione (per esempio <c>2 5 1 6</c>), senza segno =.</summary>
+    public static bool TryLeggiSoluzione(string? testo, out DiagrammaLetto? diagramma, out string errore)
+    {
+        diagramma = null;
+        var t = (testo ?? string.Empty).Trim();
+        if (t.StartsWith('(') && t.EndsWith(')'))
+            t = t[1..^1].Trim();
+        if (t.Contains('=', StringComparison.Ordinal) || !TryLato(t, out var lunghezze))
+        {
+            errore = "Il diagramma del rebus deve contenere solo le lettere di ogni parola della soluzione, senza segno =, per esempio 2 5 1 6.";
+            return false;
+        }
+
+        diagramma = new DiagrammaLetto([], lunghezze);
+        errore = string.Empty;
+        return true;
+    }
+
     private static bool TryLato(string lato, out List<int> numeri)
     {
         numeri = [];

@@ -34,6 +34,8 @@ public sealed class GeneraCandidato(
     {
         ArgumentNullException.ThrowIfNull(briefJson);
         var (descrittore, brief) = await PreparaAsync(briefJson, cancellationToken);
+        if (descrittore.Famiglia != ModelloPromptCreazione.FamigliaLogico && fornitore is IFornitoreAiDisattivato disattivato)
+            throw new RichiestaNonValidaException(disattivato.Messaggio);
 
         var creati = new List<Candidato>();
         for (var tentativo = 1; tentativo <= TentativiMassimi; tentativo++)
@@ -106,7 +108,8 @@ public sealed class GeneraCandidato(
         var variante = 1 + esistenti.Count(b => BriefCreazione.Leggi(b).SenzaVarianteJson() == chiave);
         var brief = briefBase.ConVariante(variante);
 
-        var seme = semi.Prossimo();
+        // In riproduzione il seme dipende dal brief: lo stesso brief dà lo stesso schema, quindi la stessa richiesta e la stessa Registrazione.
+        var seme = !algoritmico && fornitore is IFornitoreAiInRiproduzione ? brief.SemeDiRiproduzione() : semi.Prossimo();
         SchemaCaselle? caselle = null;
         if (descrittore.Famiglia == "cruciverba")
             caselle = generatori.GeneraSchemaCaselle(brief.Dimensioni!.Righe, seme);
@@ -116,7 +119,7 @@ public sealed class GeneraCandidato(
         {
             try
             {
-                richiesta = modello.Compila(descrittore, brief, caselle, consentiRegoleInBozza);
+                richiesta = modello.Compila(descrittore, brief, caselle, consentiRegoleInBozza || fornitore is IFornitoreAiInRiproduzione);
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
             {

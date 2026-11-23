@@ -153,6 +153,20 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Setup Node 24 (LTS)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: interfaccia/.nvmrc
+          cache: npm
+          cache-dependency-path: interfaccia/package-lock.json
+
+      # L'interfaccia del prototipo entra nell'archivio: si costruisce prima della pubblicazione .NET.
+      - name: Interfaccia, installazione e costruzione
+        working-directory: interfaccia
+        run: |
+          npm ci
+          npm run build
+
       - name: Pubblica (autonomo, ${{ matrix.rid }})
         env:
           VERSION: ${{ needs.version.outputs.version }}
@@ -160,7 +174,7 @@ jobs:
         run: >
           dotnet publish "$CONSOLE_PROJECT" --configuration Release
           --runtime "$RID" --self-contained true
-          -p:Version="$VERSION" --output "publish/$RID"
+          -p:Version="$VERSION" -p:RichiediInterfaccia=true --output "publish/$RID"
 
       - name: Crea archivio
         env:
@@ -174,6 +188,8 @@ jobs:
           # L'archivio deve contenere l'host del prototipo (dbe prototipo) con il runtime di ASP.NET Core.
           test -f "publish/$RID/DBEnigmistica.Web.dll"
           test -f "publish/$RID/Microsoft.AspNetCore.dll"
+          # E l'interfaccia costruita, che l'host serve da wwwroot.
+          test -f "publish/$RID/wwwroot/index.html"
           # E i descrittori delle Tipologie che l'host legge accanto all'eseguibile.
           for id in crittografia-breve rebus sudoku futoshiki nonogramma; do test -f "publish/$RID/tipologie/$id/v0.json"; done
           # Deve esserci la libreria nativa di PDFium del sistema di destinazione.

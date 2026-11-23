@@ -63,6 +63,26 @@ public sealed class RevisioneCandidati(
             },
             cancellationToken);
 
+    /// <summary>Salva il tempo attivo e l'ultima attività del prossimo candidato (ogni 15 secondi dal browser); il tempo non può diminuire.</summary>
+    public Task<Candidato> SalvaTempoAsync(Guid id, long tempoAttivoMs, DateTime ultimaAttivitaIl, CancellationToken cancellationToken = default)
+    {
+        if (tempoAttivoMs < 0)
+            throw new RichiestaNonValidaException("Il tempo attivo non può essere negativo.");
+
+        return transazione.EseguiAsync(
+            async () =>
+            {
+                var c = await CaricaProssimoAsync(id, cancellationToken);
+                if (tempoAttivoMs < c.TempoAttivoMs)
+                    throw new RichiestaNonValidaException("Il tempo attivo non può diminuire.");
+
+                var aggiornato = c with { TempoAttivoMs = tempoAttivoMs, UltimaAttivitaIl = ultimaAttivitaIl.ToUniversalTime() };
+                await candidati.AggiornaAsync(aggiornato, cancellationToken);
+                return aggiornato;
+            },
+            cancellationToken);
+    }
+
     /// <summary>Accetta o scarta il prossimo candidato e scrive nel registro l'evento con i soli metadati dell'esito.</summary>
     public Task<Candidato> RegistraEsitoAsync(Guid id, EsitoRichiesto richiesta, CancellationToken cancellationToken = default)
     {
@@ -180,7 +200,7 @@ public sealed class RevisioneCandidati(
     }
 
     /// <summary>
-    /// I controlli oltre lo schema sul contenuto attuale del candidato (finale se c'è, altrimenti generato), per chi rivede:
+    /// I controlli oltre lo schema e dei validatori sul contenuto attuale del candidato (finale se c'è, altrimenti generato), per chi rivede:
     /// elenco vuoto se non ce ne sono. Non toccano il contenuto generato.
     /// </summary>
     public async Task<IReadOnlyList<string>> ControlliAsync(Candidato candidato, CancellationToken cancellationToken = default)
@@ -191,6 +211,10 @@ public sealed class RevisioneCandidati(
             return [];
 
         var descrittore = await catalogo.TrovaAsync(candidato.Tipologia, candidato.VersioneTipologia, cancellationToken);
-        return descrittore is null ? [] : ControlliDopoLoSchema(candidato, descrittore, contenuto);
+        if (descrittore is null)
+            return [];
+
+        // I validatori della 1.2 sono solo informativi: non entrano in Errori, quindi non bloccano Accetta.
+        return [.. ControlliDopoLoSchema(candidato, descrittore, contenuto), .. ControlliValidatoriTipologia.Verifica(candidato.Tipologia, candidato.VersioneTipologia, contenuto)];
     }
 }

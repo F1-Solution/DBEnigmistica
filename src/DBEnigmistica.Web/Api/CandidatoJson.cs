@@ -32,6 +32,10 @@ internal static class CandidatoJson
         else
             w.WriteNull("seme");
         w.WriteNumber("tempoAttivoMs", c.TempoAttivoMs);
+        if (c.UltimaAttivitaIl is { } ultima)
+            w.WriteString("ultimaAttivitaIl", DateTime.SpecifyKind(ultima, DateTimeKind.Utc));
+        else
+            w.WriteNull("ultimaAttivitaIl");
         Testo(w, "motivoScarto", c.MotivoScarto);
         Grezzo(w, "brief", c.Brief);
         Grezzo(w, "contenutoGenerato", c.ContenutoGenerato);
@@ -42,6 +46,55 @@ internal static class CandidatoJson
         foreach (var controllo in controlli ?? [])
             w.WriteStringValue(controllo);
         w.WriteEndArray();
+        w.WriteEndObject();
+    }
+
+    public static string Tipologie(IReadOnlyList<TipologiaPrototipo> tipologie, Func<TipologiaPrototipo, string?> motivo) => Scrivi(w =>
+    {
+        w.WriteStartObject();
+        w.WriteStartArray("tipologie");
+        foreach (var t in tipologie)
+        {
+            w.WriteStartObject();
+            w.WriteString("id", t.Id);
+            w.WriteNumber("versione", t.Versione);
+            w.WriteString("famiglia", t.Famiglia);
+            w.WriteString("nome", t.Nome);
+            w.WriteString("modo", t.Modo);
+            w.WriteString("statoRegole", t.StatoRegole);
+            w.WriteBoolean("regoleApprovate", t.RegoleApprovate);
+            w.WriteBoolean("generazioneConsentita", t.GenerazioneConsentita);
+            Testo(w, "motivoGenerazioneNonConsentita", motivo(t));
+            w.WriteStartArray("campiBrief");
+            foreach (var c in t.CampiBrief)
+                CampoBrief(w, c);
+            w.WriteEndArray();
+            w.WriteEndObject();
+        }
+
+        w.WriteEndArray();
+        w.WriteEndObject();
+    });
+
+    private static void CampoBrief(Utf8JsonWriter w, CampoBrief c)
+    {
+        w.WriteStartObject();
+        w.WriteString("nome", c.Nome);
+        w.WriteString("etichetta", c.Etichetta);
+        w.WriteString("tipo", c.Tipo);
+        w.WriteBoolean("obbligatorio", c.Obbligatorio);
+        w.WriteStartArray("valori");
+        foreach (var v in c.Valori)
+            w.WriteStringValue(v);
+        w.WriteEndArray();
+        if (c.Minimo is { } minimo)
+            w.WriteNumber("minimo", minimo);
+        else
+            w.WriteNull("minimo");
+        if (c.Massimo is { } massimo)
+            w.WriteNumber("massimo", massimo);
+        else
+            w.WriteNull("massimo");
         w.WriteEndObject();
     }
 

@@ -19,4 +19,18 @@
     <NoWarn>$(NoWarn);CTJ001</NoWarn>
   </PropertyGroup>
 
+  <!-- L'interfaccia costruita (npm run build in interfaccia/) finisce in wwwroot dell'output e della pubblicazione. -->
+  <PropertyGroup>
+    <CartellaInterfaccia>$(MSBuildThisFileDirectory)..\..\interfaccia\dist\</CartellaInterfaccia>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(CartellaInterfaccia)**\*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Con -p:RichiediInterfaccia=true (CI e publish.yml) la build fallisce se l'interfaccia non è stata costruita. -->
+  <Target Name="ControllaInterfaccia" BeforeTargets="BeforeBuild" Condition="'$(RichiediInterfaccia)' == 'true'">
+    <Error Condition="!Exists('$(CartellaInterfaccia)index.html')" Text="Interfaccia non costruita: esegui npm ci e npm run build in interfaccia/ prima di compilare con RichiediInterfaccia=true." />
+  </Target>
+
 </Project>

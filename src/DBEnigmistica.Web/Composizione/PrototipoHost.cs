@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
 namespace DBEnigmistica.Web.Composizione;
@@ -26,7 +27,10 @@ public static class PrototipoHost
     public const int PortaPredefinita = 5180;
 
     /// <summary>Costruisce l'applicazione senza avviarla. <paramref name="sostituzioni"/> serve ai test per sostituire servizi.</summary>
-    public static WebApplication Crea(IConfiguration configurazione, Action<IServiceCollection>? sostituzioni = null)
+    public static WebApplication Crea(
+        IConfiguration configurazione,
+        Action<IServiceCollection>? sostituzioni = null,
+        string? cartellaInterfaccia = null)
     {
         ArgumentNullException.ThrowIfNull(configurazione);
         var porta = int.TryParse(configurazione[SezionePorta], out var p) && p is >= 0 and <= 65535 ? p : PortaPredefinita;
@@ -53,8 +57,13 @@ public static class PrototipoHost
         sostituzioni?.Invoke(servizi);
 
         var app = builder.Build();
-        app.UseRouting();
         app.Use(SoloLocale);
+        app.Use(IntestazioniDiSicurezza);
+        var cartella = cartellaInterfaccia ?? Path.Combine(AppContext.BaseDirectory, "wwwroot");
+        if (Directory.Exists(cartella))
+            app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(Path.GetFullPath(cartella)) });
+        app.Use((contesto, successivo) => RispostaInterfaccia(contesto, successivo, cartella));
+        app.UseRouting();
         app.MapPrototipo();
         return app;
     }
@@ -62,6 +71,44 @@ public static class PrototipoHost
     /// <summary>Gli indirizzi su cui l'applicazione avviata ascolta.</summary>
     public static IReadOnlyList<string> Indirizzi(WebApplication app) =>
         [.. app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses ?? []];
+
+    // Le pagine non caricano nulla da fuori e non si incorniciano (CSP, nosniff, nessun referrer).
+    private static Task IntestazioniDiSicurezza(HttpContext contesto, RequestDelegate successivo)
+    {
+        var intestazioni = contesto.Response.Headers;
+        intestazioni["Content-Security-Policy"] = "default-src 'self'; base-uri 'none'; form-action 'self'; object-src 'none'; frame-ancestors 'none'";
+        intestazioni["X-Content-Type-Options"] = "nosniff";
+        intestazioni["Referrer-Policy"] = "no-referrer";
+        return successivo(contesto);
+    }
+
+    // Ritorno a index.html per i percorsi dell'interfaccia (solo GET, non /api, non file con estensione).
+    private static async Task RispostaInterfaccia(HttpContext contesto, RequestDelegate successivo, string cartella)
+    {
+        var percorso = contesto.Request.Path;
+        var daInterfaccia = HttpMethods.IsGet(contesto.Request.Method)
+            && !percorso.StartsWithSegments("/api")
+            && !Path.HasExtension(percorso.Value);
+        if (!daInterfaccia)
+        {
+            await successivo(contesto);
+            return;
+        }
+
+        var indice = Path.Combine(cartella, "index.html");
+        contesto.Response.ContentType = "text/html; charset=utf-8";
+        if (File.Exists(indice))
+        {
+            await contesto.Response.SendFileAsync(indice, contesto.RequestAborted);
+            return;
+        }
+
+        contesto.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        await contesto.Response.WriteAsync(
+            "<!doctype html><meta charset=\"utf-8\"><title>Interfaccia non costruita</title>"
+            + "<p>L'interfaccia non è stata costruita. Esegui <code>npm run build</code> nella cartella <code>interfaccia</code> e riavvia il prototipo.</p>",
+            contesto.RequestAborted);
+    }
 
     // Difesa locale: rebinding DNS (Host), richieste di altri siti (Origin, Sec-Fetch-Site) e POST/PUT "semplici" (Content-Type).
     private static async Task SoloLocale(HttpContext contesto, RequestDelegate successivo)

@@ -38,6 +38,7 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - `docs\fase-0-decisioni.md`, `docs\ondata-0-2-decisioni.md`, `docs\ondata-0-2-decisioni-2.md`: decisioni del proprietario per le fasi 0 e 1b, con le opzioni scartate. Gli ADR si basano su questi file.
 - `docs\fase-1b-decisioni.md`: decisioni del proprietario del 20/11/2026 per la fase 1b (prototipo di revisione della creazione), con le opzioni scartate.
 - `docs\ondata-1-2-decisioni-d7.md`: decisioni del proprietario del 23/11/2026 per l'ondata 1.2: nome versionato delle Tabelle per Tipologia (D7) e interruttore delle chiamate dal vivo (D8), con le opzioni scartate.
+- `docs\ondata-1b-2-decisioni.md`: decisioni del proprietario del 23/11/2026 per l'ondata 1b.2: date (D1b.2-1), passi dal vivo nel compito `1b.2-dal-vivo` (D1b.2-2), prototipo avviabile con l'interruttore spento (D1b.2-3), collaudo e pre-release (D1b.2-4), con le opzioni scartate.
 - `docs\fase-0-chiusura-decisioni.md`: decisioni del 13/11/2026 per chiudere la fase 0 (protezione di `main` rimandata, codice 5 di `verify-integrity`, PostgreSQL 18, tag `v0.1.1`), con le opzioni scartate.
 - `docs\handoff\`: istruzioni passo passo per le operazioni del proprietario; indice in `docs\handoff\README.md`.
 - `.planning\phases\1\prova-claude-code-1.1.md`: prova reale di Claude Code della ondata 1.1 (task `1.1-prova`), in attesa del proprietario.
@@ -123,10 +124,10 @@ Usa sempre questi termini, con la maiuscola iniziale.
 ## 7. Stato attuale
 
 - Fase 0 (Fondamenta) conclusa il 19/11/2026 con l'approvazione del proprietario: le ondate 0.1-0.3 sono concluse e unite in `main`, con CI verde. I tag `v0.1.0` (commit 03a773b) e `v0.1.1` sono pubblicati, e l'immagine `0.1.1` è verificata. Il 13/11/2026 il proprietario ha deciso codice 5 per il registro alterato, PostgreSQL 18, protezione di `main` rimandata e ADR accettati (`docs/fase-0-chiusura-decisioni.md`).
-- Fase 1 (Motore di estrazione) in corso: ondata 1.1 chiusa il 20/11/2026 con l'approvazione del proprietario, unita in `main` con CI verde, ma senza la prova reale di Claude Code. Sono consegnati rendering PDFium, Archivio delle Riviste, adattatore Claude Code con Registrazioni, meta-schemi delle Tipologie e `check-ai` con controllo del login OAuth.
+- Fase 1 (Motore di estrazione) in corso: ondata 1.1 chiusa il 20/11/2026 con l'approvazione del proprietario, unita in `main` con CI verde, ma senza la prova reale di Claude Code. Sono consegnati rendering PDFium, Archivio delle Riviste, adattatore Claude Code con Registrazioni, meta-schemi delle Tipologie e `check-ai` con controllo del login OAuth. Ondata 1.2 chiusa il 23/11/2026 con l'approvazione del proprietario, unita in `main` (PR #33) con CI verde: Tipologie con validatori, tabelle per Tipologia, `types generate` e `migrate`, interruttore delle chiamate dal vivo (predefinito spento).
 - Aperto il task `1.1-prova` (`.planning\phases\1\prova-claude-code-1.1.md`), in attesa della verifica delle condizioni d'uso dell'abbonamento da parte del proprietario, entro il 06/12/2026. Finché `PROGRESS.md` non contiene `PHASE:1 WAVE:1.1-prova STATUS:complete`, non si fanno estrazioni né generazioni dal vivo.
 - Fase 1b (Prototipo di revisione della creazione) in corso: ondata 1b.1 chiusa il 21/11/2026 con l'approvazione del proprietario, unita in `main` con CI verde. Sono consegnati il comando `dbe prototipo` (solo `127.0.0.1`), lo schema `prototipo` e i generatori di sudoku, futoshiki e nonogramma; la generazione dal vivo attende `1.1-prova`.
-- Prossima ondata: 1.2, poi 1b.2, 1.3, 1.4 con 1b.3. La CLI `dbe` parte e i test d'integrazione girano su PostgreSQL 18 con Testcontainers, come il Compose. Il Motore di estrazione non produce ancora risultati: `scan-file` e `scan-folder` arrivano dalle ondate successive della fase 1.
+- Prossima ondata: 1b.2, poi 1.3, 1.4 con 1b.3. La CLI `dbe` parte e i test d'integrazione girano su PostgreSQL 18 con Testcontainers, come il Compose. Il Motore di estrazione non produce ancora risultati: `scan-file` e `scan-folder` arrivano dalle ondate successive della fase 1.
 
 ## 8. Protocollo di avanzamento
 

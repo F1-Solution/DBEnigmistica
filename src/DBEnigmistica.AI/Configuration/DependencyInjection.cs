@@ -1,4 +1,5 @@
 using DBEnigmistica.AI.Services;
+using DBEnigmistica.Application.Creazione;
 using DBEnigmistica.Application.FornitoreAi;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -93,6 +94,11 @@ public static class DependencyInjection
         IFabbricaArchivioRegistrazioniCreazione fabbrica,
         IInterpreteRispostaGrezza interprete)
     {
+        // D1b.2-3: con l'interruttore spento il prototipo parte e solo la generazione con AI si rifiuta; la riproduzione resta ammessa.
+        var riproduzione = opzioni.Creazione.Registrazioni.Modalita?.Trim() == RegistrazioniOptions.ModalitaRiproduci;
+        if (!opzioni.DalVivoAbilitato && !riproduzione)
+            return new FornitoreAiCreazioneDisattivato(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+
         if (opzioni.Tipo?.Trim() != FornitoreAiOptions.TipoClaudeCode)
             throw ErroreConfigurazione("Il Fornitore AI api-anthropic non è disponibile in fase 1: imposta FornitoreAi__Tipo=claude-code.");
 
@@ -112,11 +118,7 @@ public static class DependencyInjection
         }
 
         if (modalita == RegistrazioniOptions.ModalitaRiproduci)
-            return new FornitoreAiCreazioneRiproduci(FornitoreClaudeCode.Id, modello, archivio!, interprete, validatore);
-
-        // D8: senza l'interruttore acceso nessun adattatore dal vivo viene creato.
-        if (!opzioni.DalVivoAbilitato)
-            throw ErroreConfigurazione(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+            return new FornitoreAiCreazioneInRiproduzione(new FornitoreAiCreazioneRiproduci(FornitoreClaudeCode.Id, modello, archivio!, interprete, validatore));
 
         var impostazioni = new ImpostazioniClaudeCode(
             opzioni.ClaudeCode.Eseguibile ?? "claude",

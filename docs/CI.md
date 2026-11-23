@@ -7,19 +7,24 @@ Test e pubblicazione avvengono solo tramite GitHub Actions. Non serve alcun segr
 ### CI (`.github/workflows/ci.yml`)
 
 - **Quando**: a ogni push su `main`, a ogni pull request e quando lo richiama il flusso Publish. Le esecuzioni superate sullo stesso ramo vengono annullate, tranne quelle dei tag.
-- **Build e test** (lavoro "Build e test"):
-  1. ripristino dei pacchetti;
-  2. controllo del formato con `dotnet format --verify-no-changes`, prima della compilazione (fine riga e spazi, secondo `.editorconfig`);
-  3. compilazione in Release con `-warnaserror`: un avviso è un errore;
-  4. controllo dell'SQL delle Tipologie con `dbe types generate --check`: fallisce se l'SQL registrato in `tipologie/` è diverso da quello generato dai descrittori o manca;
-  5. controllo degli SQL delle Tipologie con squawk 2.73.0, versione e checksum fissati, con la configurazione `.squawk.toml`;
-  6. regressione sull'estrazione sul Set sintetico con `dbe eval extraction --replay`, senza chiamate AI: una metrica sotto la Linea di base fa fallire il passo. Il rapporto va nel riepilogo del passo e nell'artefatto `regressione-sintetica` (14 giorni);
-  7. pubblicazione di controllo autonoma per linux-x64, che verifica la presenza dell'host del prototipo e dei cinque descrittori `tipologie` v0: se ne manca uno, il passo fallisce;
-  8. test con copertura, compresi i test d'integrazione (PostgreSQL 18 con Testcontainers) e i test di architettura;
-  9. soglia di copertura: almeno l'80% delle righe di Domain, Application e Tipologie (`.github/scripts/soglia-copertura.py`).
-  
-  I test end-to-end della CLI (categoria `EndToEnd`) girano in questo stesso passo, contro PostgreSQL 18. I risultati dei test e la copertura compaiono nel riepilogo del lavoro e nell'artefatto `test-results` (14 giorni).
+- **Build e test** (lavoro "Build e test", limite di 30 minuti):
+  1. Node 24 (LTS) e installazione dei pacchetti dell'interfaccia con `npm ci`, sul lockfile tracciato in `interfaccia/`;
+  2. lint (`npm run lint`), controllo dei tipi (`npm run typecheck`), test Vitest (`npm test`) e costruzione dell'interfaccia (`npm run build`), che scrive `interfaccia/dist/`;
+  3. ripristino dei pacchetti;
+  4. controllo del formato con `dotnet format --verify-no-changes`, prima della compilazione (fine riga e spazi, secondo `.editorconfig`);
+  5. compilazione in Release con `-warnaserror` e `-p:RichiediInterfaccia=true`: la compilazione fallisce se manca `interfaccia/dist/index.html`;
+  6. controllo dell'SQL delle Tipologie con `dbe types generate --check`: fallisce se l'SQL registrato in `tipologie/` è diverso da quello generato dai descrittori o manca;
+  7. controllo degli SQL delle Tipologie con squawk 2.73.0, versione e checksum fissati, con la configurazione `.squawk.toml`;
+  8. regressione sull'estrazione sul Set sintetico con `dbe eval extraction --replay`, senza chiamate AI: una metrica sotto la Linea di base fa fallire il passo. Il rapporto va nel riepilogo del passo e nell'artefatto `regressione-sintetica` (14 giorni);
+  9. rapporto dei tempi di revisione sui 30 candidati sintetici con `dbe eval review-time --candidati`, senza database e senza chiamate AI. Il rapporto va nel riepilogo del passo e nell'artefatto `review-time-sintetico` (14 giorni). Il comando confronta le soglie e non fallisce se una manca;
+  10. pubblicazione di controllo autonoma per linux-x64 con `-p:RichiediInterfaccia=true`, che verifica l'host del prototipo, `wwwroot/index.html` e i cinque descrittori `tipologie` v0: se ne manca uno, il passo fallisce;
+  11. installazione di Chromium per Playwright (solo Chromium, con le librerie di sistema; la cache è legata a `Directory.Packages.props`);
+  12. test con copertura, compresi i test d'integrazione (PostgreSQL 18 con Testcontainers), i test di architettura e i test end-to-end del prototipo nel browser (categoria `EndToEnd`, Playwright per .NET). Questo passo esclude i test a categoria `Temporizzato` e `Strumento` (filtro `Category!=Temporizzato&Category!=Strumento`). `Strumento` è lo strumento che rigenera le Registrazioni dei test, e gira solo con `DBE_AGGIORNA_REGISTRAZIONI=1`. Il passo **Test dei tempi** esegue questi test senza copertura, che li rallenterebbe (filtro `Category=Temporizzato`);
+  13. soglia di copertura: almeno l'80% delle righe di Domain, Application e Tipologie (`.github/scripts/soglia-copertura.py`).
+
+  I risultati dei test e la copertura compaiono nel riepilogo del lavoro e nell'artefatto `test-results` (14 giorni).
 - **Vulnerabilita pacchetti** (lavoro "Vulnerabilita pacchetti"): `dotnet list package --vulnerable --include-transitive`, anche per le dipendenze transitive. Il comando esce con 0 anche quando trova vulnerabilità, quindi lo script controlla il testo del rapporto e fallisce se trova qualcosa.
+  I pacchetti npm dell'interfaccia si controllano con `npm audit --package-lock-only --audit-level=high`: il controllo legge solo il lockfile e fallisce con una vulnerabilità alta o critica.
 - **Controllo segreti** (lavoro "Controllo segreti"): gitleaks sull'intera storia git, con i valori oscurati nei log (`--redact`). Si usa il programma da riga di comando, verificato con checksum, perché l'azione ufficiale richiede una licenza nei repository di organizzazione. In locale lo stesso controllo gira come hook `pre-commit` (sezione "Hook locale" più sotto).
 - **Build immagine Docker** (lavoro "Build immagine Docker"): costruisce il `Dockerfile` senza pubblicarlo e verifica che `--version` stampi `0.0.0`, la versione predefinita. Poi esegue `diagnostica-render --salva-png` nell'immagine, per verificare PDFium, e pubblica i PNG come artefatto `png-render-chiseled` (14 giorni). Il lavoro è rosso se il rendering fallisce.
   - L'immagine si costruisce senza il prototipo (`IncludePrototipo=false`): `dbe prototipo` nell'immagine risponde che il prototipo non è incluso in questa pubblicazione.
@@ -33,12 +38,12 @@ Test e pubblicazione avvengono solo tramite GitHub Actions. Non serve alcun segr
   2. **Commit da main**: verifica che il commit discenda da `origin/main` (`.github/scripts/verifica-tag-da-main.sh`). Un tag su un commit fuori da `main` fa fallire il flusso prima di pubblicare.
   3. **Versione**: il tag deve essere `vX.Y.Z` o `vX.Y.Z-suffisso`. L'avvio manuale produce la versione `0.0.0-manual.<sha>`.
   4. **Immagine console (GHCR)**: costruisce il `Dockerfile` con `VERSION` e lo pubblica su `ghcr.io/f1-solution/dbenigmistica` con i tag `X.Y.Z`, `sha-<7 caratteri>` e `latest`. `latest` non va alle versioni con suffisso e agli avvii manuali da rami diversi da `main`.
-  5. **Eseguibile console** (`win-x64` e `linux-x64`): pubblicazione autonoma, con verifica che l'archivio contenga `appsettings.json`, l'eseguibile `dbe` (`dbe.exe` su Windows), la libreria PDFium (`pdfium.dll` su Windows, `libpdfium.so` su Linux), l'host del prototipo (`DBEnigmistica.Web.dll` e il runtime `Microsoft.AspNetCore.dll`) e i cinque descrittori `tipologie` v0 (`crittografia-breve`, `rebus`, `sudoku`, `futoshiki`, `nonogramma`). Se manca un file, la pubblicazione fallisce.
+  5. **Eseguibile console** (`win-x64` e `linux-x64`): prima della pubblicazione autonoma il lavoro installa i pacchetti dell'interfaccia con `npm ci` e la costruisce con `npm run build`. La pubblicazione usa `-p:RichiediInterfaccia=true`, e l'archivio deve contenere `wwwroot/index.html`. Il lavoro verifica anche che l'archivio contenga `appsettings.json`, l'eseguibile `dbe` (`dbe.exe` su Windows), la libreria PDFium (`pdfium.dll` su Windows, `libpdfium.so` su Linux), l'host del prototipo (`DBEnigmistica.Web.dll` e il runtime `Microsoft.AspNetCore.dll`) e i cinque descrittori `tipologie` v0 (`crittografia-breve`, `rebus`, `sudoku`, `futoshiki`, `nonogramma`). Se manca un file, la pubblicazione fallisce.
   6. **GitHub Release** (solo da tag): crea la release con note generate, gli archivi `dbenigmistica-console-X.Y.Z-win-x64.zip` e `dbenigmistica-console-X.Y.Z-linux-x64.tar.gz`. Le versioni con suffisso sono marcate come prerelease. L'avvio manuale non crea release.
 
 ### Dependabot (`.github/dependabot.yml`)
 
-Ogni settimana propone aggiornamenti per NuGet, GitHub Actions e immagini Docker, raggruppati (pacchetti di test, pacchetti Microsoft, altri aggiornamenti minori e patch). Le pull request passano dalla CI.
+Ogni settimana propone aggiornamenti per NuGet, pacchetti npm dell'interfaccia (cartella `interfaccia/`), GitHub Actions e immagini Docker, raggruppati (pacchetti di test, pacchetti Microsoft, altri aggiornamenti minori e patch). Le versioni npm restano esatte: Dependabot propone la versione esatta. Le pull request passano dalla CI.
 
 ## Hook locale
 

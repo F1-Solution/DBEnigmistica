@@ -1,0 +1,26 @@
+{
+  "versione_formato": 1,
+  "uso": "creazione",
+  "chiave": {
+    "impronta_richiesta": "f6a5e4157abb231781abc6fb6d02e15a290d4b1ee244bd1c8e60a7010629bc43",
+    "versione_prompt": "creazione-v1-4d68b029ae5c",
+    "fornitore": "claude-code",
+    "modello": "claude-opus-5-5"
+  },
+  "registrata_il": "2026-12-01T09:00:00.000000Z",
+  "tipologia": "crittografia-breve",
+  "versione_tipologia": 0,
+  "esito": "riuscita",
+  "risposta_grezza": "{\u0022type\u0022:\u0022result\u0022,\u0022subtype\u0022:\u0022success\u0022,\u0022is_error\u0022:false,\u0022result\u0022:\u0022\u0022,\u0022structured_output\u0022:{\u0022versione_formato\u0022:1,\u0022tipologia\u0022:\u0022crittografia-breve\u0022,\u0022versione_tipologia\u0022:0,\u0022titolo\u0022:null,\u0022dati\u0022:{\u0022sottotipo\u0022:\u0022sinonimica\u0022,\u0022esposto\u0022:\u0022CENA SOVRANO\u0022,\u0022diagramma\u0022:\u00225 2 = 7\u0022,\u0022prima_lettura\u0022:\u0022PASTO RE\u0022,\u0022soluzione\u0022:\u0022PASTORE\u0022,\u0022spiegazione\u0022:\u0022CENA = PASTO; SOVRANO = RE; PASTO RE = PASTORE.\u0022},\u0022avvisi\u0022:[]},\u0022total_cost_usd\u0022:0,\u0022usage\u0022:{\u0022input_tokens\u0022:0,\u0022output_tokens\u0022:0}}",
+  "risposta_sha256": "9692da8e0795d504fc882e42dc0ccd646cfb47426296236dfc9bee608bf03696",
+  "metadati": {
+    "durata_ms": 1000,
+    "token_ingresso": null,
+    "token_uscita": null,
+    "token_cache_creazione": null,
+    "token_cache_lettura": null,
+    "costo": null,
+    "costo_valuta": null,
+    "costo_tipo": null
+  }
+}
