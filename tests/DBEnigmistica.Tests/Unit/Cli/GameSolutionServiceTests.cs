@@ -20,7 +20,7 @@ public class GameSolutionServiceTests
     [Fact]
     public async Task Link_MarksGameAsSolvedAndSavesAVerifiedSolution()
     {
-        var game = new Game { Origine = Origine.Rivista };
+        var game = new Game { Origine = Origine.Rivista, Tipologia = "cruciverba-classico" };
         _games.Setup(r => r.GetByIdAsync(7)).ReturnsAsync(game);
         _solutions.Setup(r => r.AddAsync(It.IsAny<GameSolution>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GameSolution s, CancellationToken _) => s);
@@ -49,7 +49,7 @@ public class GameSolutionServiceTests
     [Fact]
     public async Task Verify_Approved_PropagatesSolutionToGame()
     {
-        var game = new Game { Origine = Origine.Rivista };
+        var game = new Game { Origine = Origine.Rivista, Tipologia = "cruciverba-classico" };
         var solution = new GameSolution { Id = 5, GameId = 2, SolutionText = "ROMA", SolutionPageId = 9 };
         _solutions.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(solution);
         _games.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(game);

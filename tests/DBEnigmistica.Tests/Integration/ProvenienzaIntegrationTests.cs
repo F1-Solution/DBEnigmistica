@@ -39,8 +39,8 @@ public class ProvenienzaIntegrationTests : IntegrationTestBase
         var pagina = await SeedPaginaAsync();
 
         var stato = await SqlStateAsync(
-            "INSERT INTO riviste.games (\"PageId\", \"GameType\", \"ExtractedDate\", \"HasSolution\") " +
-            "VALUES (@p, 'Crossword', now(), false)",
+            "INSERT INTO riviste.games (\"PageId\", tipologia, versione_tipologia, stato_tipologia, avvisi, \"ExtractedDate\", \"HasSolution\") " +
+            "VALUES (@p, 'cruciverba-classico', 1, 'nota', '[]'::jsonb, now(), false)",
             parameters: P("p", pagina));
 
         stato.Should().Be(PostgresErrorCodes.NotNullViolation);
@@ -66,8 +66,8 @@ public class ProvenienzaIntegrationTests : IntegrationTestBase
         var pagina = await SeedPaginaAsync();
 
         var stato = await SqlStateAsync(
-            "INSERT INTO riviste.games (\"PageId\", \"GameType\", \"ExtractedDate\", \"HasSolution\", origine) " +
-            "VALUES (@p, 'Crossword', now(), false, 'originale')",
+            "INSERT INTO riviste.games (\"PageId\", tipologia, versione_tipologia, stato_tipologia, avvisi, \"ExtractedDate\", \"HasSolution\", origine) " +
+            "VALUES (@p, 'cruciverba-classico', 1, 'nota', '[]'::jsonb, now(), false, 'originale')",
             parameters: P("p", pagina));
 
         stato.Should().Be(PostgresErrorCodes.CheckViolation);

@@ -423,95 +423,6 @@ namespace DBEnigmistica.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("DBEnigmistica.Domain.Entities.AnagramGame", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AddedLetters")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AnagramType")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Clue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DiscardedLetters")
-                        .HasColumnType("text");
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("LengthPattern")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Solution")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<int?>("WordCount")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameId")
-                        .IsUnique();
-
-                    b.ToTable("anagram_games", "riviste");
-                });
-
-            modelBuilder.Entity("DBEnigmistica.Domain.Entities.CrosswordGame", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Columns")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("GridStructure")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HorizontalClues")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsFreeSchema")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSyllabic")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Rows")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Solution")
-                        .HasColumnType("text");
-
-                    b.Property<string>("VerticalClues")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameId")
-                        .IsUnique();
-
-                    b.ToTable("crossword_games", "riviste");
-                });
-
             modelBuilder.Entity("DBEnigmistica.Domain.Entities.Game", b =>
                 {
                     b.Property<int>("Id")
@@ -520,14 +431,14 @@ namespace DBEnigmistica.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BoundingBoxHeight")
-                        .HasColumnType("integer");
+                    b.Property<string>("Avvisi")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("avvisi");
 
-                    b.Property<int?>("BoundingBoxWidth")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("ClassificationConfidence")
-                        .HasColumnType("double precision");
+                    b.Property<double?>("Confidenza")
+                        .HasColumnType("double precision")
+                        .HasColumnName("confidenza");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -537,10 +448,6 @@ namespace DBEnigmistica.Infrastructure.Migrations
 
                     b.Property<DateTime>("ExtractedDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("GameType")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<bool>("HasSolution")
                         .HasColumnType("boolean");
@@ -553,11 +460,21 @@ namespace DBEnigmistica.Infrastructure.Migrations
                     b.Property<int>("PageId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("PositionX")
-                        .HasColumnType("integer");
+                    b.Property<decimal?>("RiquadroAltezza")
+                        .HasColumnType("numeric(6,5)")
+                        .HasColumnName("riquadro_altezza");
 
-                    b.Property<int?>("PositionY")
-                        .HasColumnType("integer");
+                    b.Property<decimal?>("RiquadroLarghezza")
+                        .HasColumnType("numeric(6,5)")
+                        .HasColumnName("riquadro_larghezza");
+
+                    b.Property<decimal?>("RiquadroX")
+                        .HasColumnType("numeric(6,5)")
+                        .HasColumnName("riquadro_x");
+
+                    b.Property<decimal?>("RiquadroY")
+                        .HasColumnType("numeric(6,5)")
+                        .HasColumnName("riquadro_y");
 
                     b.Property<string>("Solution")
                         .HasColumnType("text");
@@ -568,21 +485,51 @@ namespace DBEnigmistica.Infrastructure.Migrations
                     b.Property<int?>("SolutionPageId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("StatoTipologia")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("stato_tipologia");
+
+                    b.Property<string>("Tipologia")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("tipologia");
+
                     b.Property<string>("Title")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.HasKey("Id");
+                    b.Property<string>("TrascrizioneProposta")
+                        .HasColumnType("text")
+                        .HasColumnName("trascrizione_proposta");
 
-                    b.HasIndex("GameType");
+                    b.Property<int>("VersioneTipologia")
+                        .HasColumnType("integer")
+                        .HasColumnName("versione_tipologia");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("PageId");
 
                     b.HasIndex("SolutionPageId");
 
+                    b.HasIndex("Tipologia");
+
                     b.ToTable("games", "riviste", t =>
                         {
+                            t.HasCheckConstraint("ck_games_confidenza", "confidenza IS NULL OR confidenza BETWEEN 0 AND 1");
+
                             t.HasCheckConstraint("ck_games_origine_rivista", "origine = 'rivista'");
+
+                            t.HasCheckConstraint("ck_games_riquadro", "(riquadro_x IS NULL OR riquadro_x BETWEEN 0 AND 1) AND (riquadro_y IS NULL OR riquadro_y BETWEEN 0 AND 1) AND (riquadro_larghezza IS NULL OR riquadro_larghezza BETWEEN 0 AND 1) AND (riquadro_altezza IS NULL OR riquadro_altezza BETWEEN 0 AND 1)");
+
+                            t.HasCheckConstraint("ck_games_stato_tipologia", "stato_tipologia IN ('nota', 'proposta')");
+
+                            t.HasCheckConstraint("ck_games_trascrizione_proposta", "trascrizione_proposta IS NULL OR stato_tipologia = 'proposta'");
+
+                            t.HasCheckConstraint("ck_games_versione_tipologia", "versione_tipologia >= 0");
                         });
                 });
 
@@ -689,52 +636,6 @@ namespace DBEnigmistica.Infrastructure.Migrations
                     b.ToTable("game_type_schemas", "tipologie");
                 });
 
-            modelBuilder.Entity("DBEnigmistica.Domain.Entities.LogicGame", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Constraints")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EstimatedDifficulty")
-                        .HasColumnType("text");
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("GameStructure")
-                        .HasColumnType("text");
-
-                    b.Property<string>("GridSize")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InitialData")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProblemText")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Solution")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SubType")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameId")
-                        .IsUnique();
-
-                    b.HasIndex("SubType");
-
-                    b.ToTable("logic_games", "riviste");
-                });
-
             modelBuilder.Entity("DBEnigmistica.Domain.Entities.Magazine", b =>
                 {
                     b.Property<int>("Id")
@@ -742,6 +643,10 @@ namespace DBEnigmistica.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<byte[]>("Impronta")
+                        .HasColumnType("bytea")
+                        .HasColumnName("impronta");
 
                     b.Property<string>("IssueNumber")
                         .HasMaxLength(50)
@@ -778,6 +683,9 @@ namespace DBEnigmistica.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Impronta")
+                        .IsUnique();
+
                     b.HasIndex("Year");
 
                     b.HasIndex("Title", "PublicationDate");
@@ -799,6 +707,10 @@ namespace DBEnigmistica.Infrastructure.Migrations
                     b.Property<string>("ImagePath")
                         .HasColumnType("text");
 
+                    b.Property<byte[]>("Impronta")
+                        .HasColumnType("bytea")
+                        .HasColumnName("impronta");
+
                     b.Property<int>("MagazineId")
                         .HasColumnType("integer");
 
@@ -816,51 +728,12 @@ namespace DBEnigmistica.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Impronta")
+                        .IsUnique();
+
                     b.HasIndex("MagazineId", "PageNumber");
 
                     b.ToTable("pages", "riviste");
-                });
-
-            modelBuilder.Entity("DBEnigmistica.Domain.Entities.RebusGame", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ImageDescriptions")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImagePaths")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsPictorial")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Reading")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RebusText")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Solution")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameId")
-                        .IsUnique();
-
-                    b.ToTable("rebus_games", "riviste");
                 });
 
             modelBuilder.Entity("DBEnigmistica.Domain.Registro.EventoRegistro", b =>
@@ -1125,28 +998,6 @@ namespace DBEnigmistica.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DBEnigmistica.Domain.Entities.AnagramGame", b =>
-                {
-                    b.HasOne("DBEnigmistica.Domain.Entities.Game", "Game")
-                        .WithOne()
-                        .HasForeignKey("DBEnigmistica.Domain.Entities.AnagramGame", "GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
-                });
-
-            modelBuilder.Entity("DBEnigmistica.Domain.Entities.CrosswordGame", b =>
-                {
-                    b.HasOne("DBEnigmistica.Domain.Entities.Game", "Game")
-                        .WithOne()
-                        .HasForeignKey("DBEnigmistica.Domain.Entities.CrosswordGame", "GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
-                });
-
             modelBuilder.Entity("DBEnigmistica.Domain.Entities.Game", b =>
                 {
                     b.HasOne("DBEnigmistica.Domain.Entities.Page", "Page")
@@ -1183,17 +1034,6 @@ namespace DBEnigmistica.Infrastructure.Migrations
                     b.Navigation("SolutionPage");
                 });
 
-            modelBuilder.Entity("DBEnigmistica.Domain.Entities.LogicGame", b =>
-                {
-                    b.HasOne("DBEnigmistica.Domain.Entities.Game", "Game")
-                        .WithOne()
-                        .HasForeignKey("DBEnigmistica.Domain.Entities.LogicGame", "GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
-                });
-
             modelBuilder.Entity("DBEnigmistica.Domain.Entities.Page", b =>
                 {
                     b.HasOne("DBEnigmistica.Domain.Entities.Magazine", "Magazine")
@@ -1203,17 +1043,6 @@ namespace DBEnigmistica.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Magazine");
-                });
-
-            modelBuilder.Entity("DBEnigmistica.Domain.Entities.RebusGame", b =>
-                {
-                    b.HasOne("DBEnigmistica.Domain.Entities.Game", "Game")
-                        .WithOne()
-                        .HasForeignKey("DBEnigmistica.Domain.Entities.RebusGame", "GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("DBEnigmistica.Infrastructure.Prototipo.ChiamataAiPrototipoRiga", b =>

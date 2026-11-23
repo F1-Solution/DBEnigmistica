@@ -42,6 +42,9 @@ public class Page
     /// </summary>
     public DateTime? ProcessedDate { get; set; }
 
+    /// <summary>Impronta SHA-256 dell'immagine della pagina, unica.</summary>
+    public byte[]? Impronta { get; set; }
+
     // Navigation properties
     public Magazine Magazine { get; set; } = null!;
     public ICollection<Game> Games { get; set; } = new List<Game>();

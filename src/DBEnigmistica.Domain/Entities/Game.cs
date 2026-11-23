@@ -15,35 +15,35 @@ public class Game
     /// </summary>
     public int PageId { get; set; }
 
-    /// <summary>
-    /// Tipo di gioco
-    /// </summary>
-    public GameType GameType { get; set; }
+    /// <summary>Identificativo della Tipologia del Gioco.</summary>
+    public required string Tipologia { get; set; }
 
-    /// <summary>
-    /// Titolo del gioco (se presente)
-    /// </summary>
+    /// <summary>Versione del descrittore della Tipologia.</summary>
+    public int VersioneTipologia { get; set; } = 1;
+
+    /// <summary>Tipologia nota oppure proposta dall'estrazione.</summary>
+    public StatoTipologia StatoTipologia { get; set; } = StatoTipologia.Nota;
+
+    /// <summary>Titolo del gioco (se presente)</summary>
     public string? Title { get; set; }
 
-    /// <summary>
-    /// Posizione nel layout - coordinata X (top-left)
-    /// </summary>
-    public int? PositionX { get; set; }
+    /// <summary>Riquadro nella pagina, normalizzato 0-1: ascissa dell'angolo in alto a sinistra.</summary>
+    public decimal? RiquadroX { get; set; }
 
-    /// <summary>
-    /// Posizione nel layout - coordinata Y (top-left)
-    /// </summary>
-    public int? PositionY { get; set; }
+    /// <summary>Riquadro nella pagina, normalizzato 0-1: ordinata dell'angolo in alto a sinistra.</summary>
+    public decimal? RiquadroY { get; set; }
 
-    /// <summary>
-    /// Larghezza del bounding box
-    /// </summary>
-    public int? BoundingBoxWidth { get; set; }
+    /// <summary>Larghezza del riquadro, normalizzata 0-1.</summary>
+    public decimal? RiquadroLarghezza { get; set; }
 
-    /// <summary>
-    /// Altezza del bounding box
-    /// </summary>
-    public int? BoundingBoxHeight { get; set; }
+    /// <summary>Altezza del riquadro, normalizzata 0-1.</summary>
+    public decimal? RiquadroAltezza { get; set; }
+
+    /// <summary>Avvisi dell'estrazione, come array JSON.</summary>
+    public string Avvisi { get; set; } = "[]";
+
+    /// <summary>Testo visibile di un Gioco di Tipologia proposta; assente se la Tipologia è nota.</summary>
+    public string? TrascrizioneProposta { get; set; }
 
     /// <summary>
     /// Livello di difficoltà (se disponibile)
@@ -60,10 +60,8 @@ public class Game
     /// </summary>
     public DateTime ExtractedDate { get; set; }
 
-    /// <summary>
-    /// Confidenza dell'AI nella classificazione (0-1)
-    /// </summary>
-    public double? ClassificationConfidence { get; set; }
+    /// <summary>Confidenza dell'estrazione per il Gioco (0-1).</summary>
+    public double? Confidenza { get; set; }
 
     /// <summary>
     /// Soluzione breve del gioco (per soluzioni semplici)
