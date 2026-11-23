@@ -173,6 +173,8 @@ Fatto quando: i quattro file citano solo comandi, chiavi e comportamenti che esi
 
 **Ramo:** `fase-1/ondata-1.2`, dal 7/12/2026 (fine prevista il 20/12), dopo l'unione della 1b.1.
 
+**Stato: chiusa il 23/11/2026** con l'approvazione del proprietario, unita in `main` (PR #33) con CI verde. Le regole delle 4 Tipologie restano da approvare entro il 4/12/2026.
+
 ### Sonnet A - Generatore SQL, migrazioni delle Tipologie, scrittore e lettore
 
 File: `src/DBEnigmistica.Tipologie/**` (nuovo progetto, tranne `Validatori/**` e `Descrittori/**` di B), `DBEnigmistica.slnx`, `Directory.Packages.props`, `tests/.../DBEnigmistica.Tests.csproj` (unico proprietario nell'ondata); `src/DBEnigmistica.Infrastructure/Tipologie/**` (scrittore, lettore, applicazione delle migrazioni); `src/DBEnigmistica.Console/Commands/MigrateCommand.cs`, `TypesCommand.cs` (nuovo); `.github/workflows/ci.yml` (passi `types generate --check` e squawk); `.github/scripts/soglia-copertura.py`; `tests/.../Unit/Tipologie/Generatore/**`, `tests/.../Integration/Tipologie/**`.
