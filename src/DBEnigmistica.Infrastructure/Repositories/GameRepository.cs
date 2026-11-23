@@ -15,15 +15,15 @@ public class GameRepository : Repository<Game>, IGameRepository
     {
         return await _dbSet
             .Where(g => g.PageId == pageId)
-            .OrderBy(g => g.PositionY)
-            .ThenBy(g => g.PositionX)
+            .OrderBy(g => g.RiquadroY)
+            .ThenBy(g => g.RiquadroX)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Game>> GetByGameTypeAsync(Domain.Enums.GameType gameType)
+    public async Task<IEnumerable<Game>> GetByTipologiaAsync(string tipologia)
     {
         return await _dbSet
-            .Where(g => g.GameType == gameType)
+            .Where(g => g.Tipologia == tipologia)
             .Include(g => g.Page)
                 .ThenInclude(p => p.Magazine)
             .ToListAsync();
@@ -35,7 +35,7 @@ public class GameRepository : Repository<Game>, IGameRepository
             .Include(g => g.Page)
             .Where(g => g.Page.MagazineId == magazineId)
             .OrderBy(g => g.Page.PageNumber)
-            .ThenBy(g => g.PositionY)
+            .ThenBy(g => g.RiquadroY)
             .ToListAsync();
     }
 

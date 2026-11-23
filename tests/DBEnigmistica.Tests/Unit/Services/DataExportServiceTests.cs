@@ -1,7 +1,6 @@
 using DBEnigmistica.Application.Services.Export;
 using DBEnigmistica.Domain.Diritti;
 using DBEnigmistica.Domain.Entities;
-using DBEnigmistica.Domain.Enums;
 using DBEnigmistica.Domain.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,6 +11,9 @@ namespace DBEnigmistica.Tests.Unit.Services;
 
 public class DataExportServiceTests
 {
+    private const string Cruciverba = "cruciverba-classico";
+    private const string Rebus = "rebus";
+
     private readonly Mock<IMagazineRepository> _riviste = new();
     private readonly Mock<IGameRepository> _giochi = new();
     private readonly DataExportService _servizio;
@@ -67,7 +69,7 @@ public class DataExportServiceTests
         var righe = csv.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
         righe.Should().HaveCount(2);
         righe[0].Should().Be(CsvFieldFormatter.SeparatorDirective);
-        righe[1].Should().StartWith("Id,GameType,Title");
+        righe[1].Should().StartWith("Id,Tipologia,Title");
     }
 
     [Fact]
@@ -120,17 +122,17 @@ public class DataExportServiceTests
         voce.GetProperty("totalGames").GetInt32().Should().Be(0);
     }
 
-    private static Game NuovoGioco(int id, GameType tipo, string? titolo = "Titolo") => new()
+    private static Game NuovoGioco(int id, string tipologia, string? titolo = "Titolo") => new()
     {
         Origine = Origine.Rivista,
         Id = id,
-        GameType = tipo,
+        Tipologia = tipologia,
         Title = titolo,
-        PositionX = 10,
-        PositionY = 20,
-        BoundingBoxWidth = 100,
-        BoundingBoxHeight = 50,
-        ClassificationConfidence = 0.5,
+        RiquadroX = 0.1m,
+        RiquadroY = 0.2m,
+        RiquadroLarghezza = 0.5m,
+        RiquadroAltezza = 0.25m,
+        Confidenza = 0.5,
         ExtractedDate = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc),
         PageId = 4,
     };
@@ -138,7 +140,7 @@ public class DataExportServiceTests
     [Fact]
     public async Task ExportGamesAsJsonAsync_ConGiochi_ElencaCampiECalcolaIlTotale()
     {
-        _giochi.Setup(g => g.GetAllAsync()).ReturnsAsync([NuovoGioco(1, GameType.Crossword), NuovoGioco(2, GameType.Rebus)]);
+        _giochi.Setup(g => g.GetAllAsync()).ReturnsAsync([NuovoGioco(1, Cruciverba), NuovoGioco(2, Rebus)]);
 
         var json = await _servizio.ExportGamesAsJsonAsync();
 
@@ -147,21 +149,25 @@ public class DataExportServiceTests
         var primo = documento.RootElement.GetProperty("games")[0];
         primo.GetProperty("id").GetInt32().Should().Be(1);
         primo.GetProperty("title").GetString().Should().Be("Titolo");
-        primo.GetProperty("position").GetProperty("positionX").GetInt32().Should().Be(10);
-        primo.GetProperty("boundingBox").GetProperty("width").GetInt32().Should().Be(100);
+        primo.GetProperty("tipologia").GetString().Should().Be(Cruciverba);
+        primo.GetProperty("riquadro").GetProperty("x").GetDecimal().Should().Be(0.1m);
+        primo.GetProperty("riquadro").GetProperty("larghezza").GetDecimal().Should().Be(0.5m);
+        primo.GetProperty("riquadro").GetProperty("altezza").GetDecimal().Should().Be(0.25m);
+        primo.GetProperty("classificationConfidence").GetDouble().Should().Be(0.5);
         primo.GetProperty("pageId").GetInt32().Should().Be(4);
     }
 
     [Fact]
     public async Task ExportGamesAsCsvAsync_ConGiochi_ScriveUnaRigaPerGiocoConCampiTraVirgolette()
     {
-        _giochi.Setup(g => g.GetAllAsync()).ReturnsAsync([NuovoGioco(1, GameType.Crossword, "Un \"titolo\""), NuovoGioco(2, GameType.Rebus, "=1+1")]);
+        _giochi.Setup(g => g.GetAllAsync()).ReturnsAsync([NuovoGioco(1, Cruciverba, "Un \"titolo\""), NuovoGioco(2, Rebus, "=1+1")]);
 
         var csv = await _servizio.ExportGamesAsCsvAsync();
 
         var righe = csv.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
         righe.Should().HaveCount(4);
-        righe[2].Should().StartWith("1,\"Crossword\",\"Un \"\"titolo\"\"\"");
+        righe[2].Should().StartWith("1,\"cruciverba-classico\",\"Un \"\"titolo\"\"\"");
+        righe[2].Should().Contain(",0.1,0.2,0.5,0.25,0.5,");
         righe[2].Should().Contain(",0.5,2026-01-02T03:04:05.0000000Z,4");
         righe[3].Should().Contain("\"'=1+1\"");
     }
@@ -171,10 +177,10 @@ public class DataExportServiceTests
     {
         var rivista = new Magazine { Id = 5, Title = "Rivista", SourceFilePath = "r.pdf", IssueNumber = "12", Year = 2026 };
         var pagina1 = new Page { Id = 1, MagazineId = 5, PageNumber = 1 };
-        pagina1.Games.Add(NuovoGioco(1, GameType.Crossword));
-        pagina1.Games.Add(NuovoGioco(2, GameType.Crossword));
+        pagina1.Games.Add(NuovoGioco(1, Cruciverba));
+        pagina1.Games.Add(NuovoGioco(2, Cruciverba));
         var pagina2 = new Page { Id = 2, MagazineId = 5, PageNumber = 2 };
-        pagina2.Games.Add(NuovoGioco(3, GameType.Rebus));
+        pagina2.Games.Add(NuovoGioco(3, Rebus));
         rivista.Pages.Add(pagina1);
         rivista.Pages.Add(pagina2);
         _riviste.Setup(m => m.GetAllAsync()).ReturnsAsync([rivista]);
@@ -187,8 +193,8 @@ public class DataExportServiceTests
         voce.GetProperty("totalPages").GetInt32().Should().Be(2);
         voce.GetProperty("totalGames").GetInt32().Should().Be(3);
         var perTipo = voce.GetProperty("gamesByType").EnumerateArray()
-            .ToDictionary(e => e.GetProperty("gameType").GetString()!, e => e.GetProperty("count").GetInt32());
-        perTipo.Should().BeEquivalentTo(new Dictionary<string, int> { ["Crossword"] = 2, ["Rebus"] = 1 });
+            .ToDictionary(e => e.GetProperty("tipologia").GetString()!, e => e.GetProperty("count").GetInt32());
+        perTipo.Should().BeEquivalentTo(new Dictionary<string, int> { [Cruciverba] = 2, [Rebus] = 1 });
     }
 
     [Fact]

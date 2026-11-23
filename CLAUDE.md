@@ -37,6 +37,7 @@ Usa sempre questi termini, con la maiuscola iniziale.
 - `docs\adr\`: decisioni di architettura, ADR 001-006 con indice in `docs\adr\README.md`. Sono accettate dal proprietario il 13/11/2026. Un ADR si sostituisce con uno nuovo, non si riscrive.
 - `docs\fase-0-decisioni.md`, `docs\ondata-0-2-decisioni.md`, `docs\ondata-0-2-decisioni-2.md`: decisioni del proprietario per le fasi 0 e 1b, con le opzioni scartate. Gli ADR si basano su questi file.
 - `docs\fase-1b-decisioni.md`: decisioni del proprietario del 20/11/2026 per la fase 1b (prototipo di revisione della creazione), con le opzioni scartate.
+- `docs\ondata-1-2-decisioni-d7.md`: decisioni del proprietario del 23/11/2026 per l'ondata 1.2: nome versionato delle Tabelle per Tipologia (D7) e interruttore delle chiamate dal vivo (D8), con le opzioni scartate.
 - `docs\fase-0-chiusura-decisioni.md`: decisioni del 13/11/2026 per chiudere la fase 0 (protezione di `main` rimandata, codice 5 di `verify-integrity`, PostgreSQL 18, tag `v0.1.1`), con le opzioni scartate.
 - `docs\handoff\`: istruzioni passo passo per le operazioni del proprietario; indice in `docs\handoff\README.md`.
 - `.planning\phases\1\prova-claude-code-1.1.md`: prova reale di Claude Code della ondata 1.1 (task `1.1-prova`), in attesa del proprietario.
@@ -90,7 +91,7 @@ Usa sempre questi termini, con la maiuscola iniziale.
 
 **Stack**
 - .NET 10 (`net10.0`), EF Core, PostgreSQL. Soluzione `DBEnigmistica.slnx`.
-- Progetti in `src\`: Domain, Application, Infrastructure, AI, Console. Test in `tests\DBEnigmistica.Tests` (cartelle `Unit`, `Integration`, `Architecture` e `EndToEnd`).
+- Progetti in `src\`: Domain, Application, Infrastructure, AI, Console, Tipologie (descrittori e SQL delle Tipologie, senza riferimenti ad altri progetti). Test in `tests\DBEnigmistica.Tests` (cartelle `Unit`, `Integration`, `Architecture` e `EndToEnd`).
 - Dalla fase 2: interfaccia React e TypeScript con API ASP.NET Core. Dalla fase 5: involucro desktop Tauri. Non ancora presenti.
 - Estrazione con modelli con visione, dietro il Fornitore AI (ADR 004). Predefinito: Claude Code non interattivo con l'abbonamento, senza chiavi. Il modello è configurabile con `FornitoreAi:Modello`; quello in `appsettings.json` è `claude-sonnet-5-5`, confermato il 13/11/2026 (`ROADMAP.md`, sezione 8, rischio 5).
 
@@ -107,7 +108,13 @@ Usa sempre questi termini, con la maiuscola iniziale.
 **Console**
 - L'eseguibile si chiama `dbe` (assembly `dbe`). Aiuto: `dotnet run --project src\DBEnigmistica.Console -- --help`. I comandi non ancora disponibili rispondono "Comando disponibile dalla fase N" con codice 2.
 - `dbe check-ai` verifica la configurazione del Fornitore AI senza chiamate di rete. `dbe verify-integrity` verifica la catena di impronte del registro. Se è integra esce con 0 e stampa «Registro integro: N eventi verificati.». Se è alterata esce con 5 e scrive su stderr l'id del primo evento non valido. Per gli errori generici, per esempio un database non raggiungibile, esce con 1.
-- Variabili d'ambiente: `ConnectionStrings__DefaultConnection` (stringa di connessione), la sezione `FornitoreAi` (`FornitoreAi__Tipo`, `FornitoreAi__Modello`, `FornitoreAi__ClaudeCode__Eseguibile`) e `Archivio__Cartella` (cartella dell'Archivio, percorso assoluto). Claude Code si autentica su Windows con `claude` e `/login`: in fase 1 non si usano chiavi API né `CLAUDE_CODE_OAUTH_TOKEN` (il programma lo accetta come alternativa al login, ma la decisione del proprietario è aperta), e `ANTHROPIC_API_KEY` non deve essere nell'ambiente. Su Windows l'eseguibile di Claude Code è `claude.exe`.
+- `dbe types generate [--check]` genera l'SQL delle Tipologie dai descrittori in `tipologie\<id>\`, mai a mano. Con `--check` non scrive ed esce con 1 se un file SQL è diverso o manca. Le versioni `v0` non hanno SQL.
+- `dbe migrate [--yes]` applica le migrazioni EF pending, poi gli SQL delle Tipologie incorporati nel programma. Un checksum alterato dà errore con codice 1. Chiede conferma salvo `--yes`.
+- `dbe eval extraction --set <cartella> --replay [--output <cartella>]` misura l'estrazione sul set e la confronta con la Linea di base, senza chiamate AI. Esce con 1 se una metrica scende. `--live --limite <n>` non si usa finché `PROGRESS.md` non contiene `PHASE:1 WAVE:1.1-prova STATUS:complete`.
+- `dbe eval draft --set <cartella>` scrive le bozze dei risultati attesi. Le pagine con un risultato già presente restano intatte.
+- `dbe eval sintetico aggiorna-chiavi --set tests\DBEnigmistica.Tests\Fixtures\SetSintetico` (comando nascosto) ricalcola Registrazioni e Linea di base del Set sintetico. Va eseguito dopo ogni modifica a descrittori o regole.
+- `dbe list-unsolved --tipologia <id>` filtra i Giochi senza soluzione per Tipologia.
+- Variabili d'ambiente: `ConnectionStrings__DefaultConnection` (stringa di connessione), la sezione `FornitoreAi` (`FornitoreAi__Tipo`, `FornitoreAi__Modello`, `FornitoreAi__ClaudeCode__Eseguibile`, `FornitoreAi__DalVivoAbilitato`) e `Archivio__Cartella` (cartella dell'Archivio, percorso assoluto). `FornitoreAi__DalVivoAbilitato` vale `false` per impostazione predefinita: con `false` non partono `eval extraction --live` né la generazione dal vivo di `dbe prototipo`. Si imposta a `true` solo dopo il via della prova `1.1-prova`. Claude Code si autentica su Windows con `claude` e `/login`: in fase 1 non si usano chiavi API né `CLAUDE_CODE_OAUTH_TOKEN` (il programma lo accetta come alternativa al login, ma la decisione del proprietario è aperta), e `ANTHROPIC_API_KEY` non deve essere nell'ambiente. Su Windows l'eseguibile di Claude Code è `claude.exe`.
 
 **Segreti**
 - `src\DBEnigmistica.Console\appsettings.Development.json` e `.env`, se esistono, contengono segreti e sono ignorati da git. Non aprirli, non stamparli, non copiarli. Cita solo i nomi delle chiavi, mai i valori.

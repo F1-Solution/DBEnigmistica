@@ -1,8 +1,8 @@
 using DBEnigmistica.Application.Registro;
 using DBEnigmistica.Application.Services.Export;
-using DBEnigmistica.Application.Services.Processing;
 using DBEnigmistica.Application.Services.Schema;
 using DBEnigmistica.Application.Services.Solutions;
+using DBEnigmistica.Application.Valutazione;
 using DBEnigmistica.Domain.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,11 +19,11 @@ public static class DependencyInjection
         // Solution Services
         services.AddScoped<IGameSolutionService, GameSolutionService>();
 
-        // Processing Services
-        services.AddScoped<GameExtractionService>();
-
         // Registro
         services.AddScoped<VerificaIntegritaRegistro>();
+
+        // Valutazione
+        services.AddValutazione();
 
         // Export Services
         services.AddScoped<DataExportService>();

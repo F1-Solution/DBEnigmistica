@@ -11,9 +11,12 @@ Test e pubblicazione avvengono solo tramite GitHub Actions. Non serve alcun segr
   1. ripristino dei pacchetti;
   2. controllo del formato con `dotnet format --verify-no-changes`, prima della compilazione (fine riga e spazi, secondo `.editorconfig`);
   3. compilazione in Release con `-warnaserror`: un avviso è un errore;
-  4. pubblicazione di controllo autonoma per linux-x64, che verifica la presenza dell'host del prototipo e dei cinque descrittori `tipologie` v0: se ne manca uno, il passo fallisce;
-  5. test con copertura, compresi i test d'integrazione (PostgreSQL 18 con Testcontainers) e i test di architettura;
-  6. soglia di copertura: almeno l'80% delle righe di Domain e Application (`.github/scripts/soglia-copertura.py`).
+  4. controllo dell'SQL delle Tipologie con `dbe types generate --check`: fallisce se l'SQL registrato in `tipologie/` è diverso da quello generato dai descrittori o manca;
+  5. controllo degli SQL delle Tipologie con squawk 2.73.0, versione e checksum fissati, con la configurazione `.squawk.toml`;
+  6. regressione sull'estrazione sul Set sintetico con `dbe eval extraction --replay`, senza chiamate AI: una metrica sotto la Linea di base fa fallire il passo. Il rapporto va nel riepilogo del passo e nell'artefatto `regressione-sintetica` (14 giorni);
+  7. pubblicazione di controllo autonoma per linux-x64, che verifica la presenza dell'host del prototipo e dei cinque descrittori `tipologie` v0: se ne manca uno, il passo fallisce;
+  8. test con copertura, compresi i test d'integrazione (PostgreSQL 18 con Testcontainers) e i test di architettura;
+  9. soglia di copertura: almeno l'80% delle righe di Domain, Application e Tipologie (`.github/scripts/soglia-copertura.py`).
   
   I test end-to-end della CLI (categoria `EndToEnd`) girano in questo stesso passo, contro PostgreSQL 18. I risultati dei test e la copertura compaiono nel riepilogo del lavoro e nell'artefatto `test-results` (14 giorni).
 - **Vulnerabilita pacchetti** (lavoro "Vulnerabilita pacchetti"): `dotnet list package --vulnerable --include-transitive`, anche per le dipendenze transitive. Il comando esce con 0 anche quando trova vulnerabilità, quindi lo script controlla il testo del rapporto e fallisce se trova qualcosa.
@@ -80,7 +83,13 @@ Ogni ondata della fase 1 lavora su un ramo `fase-1/ondata-1.<n>`, creato da `mai
 
 ## Creare una versione
 
-Dal ramo `main` aggiornato e con la CI verde:
+Dal ramo `main` aggiornato, con la CI verde e la checklist seguente completa:
+
+1. La CI su `main` è verde, compresi i passi dell'SQL delle Tipologie, di squawk e della regressione sintetica.
+2. Ogni Tipologia nuova o modificata ha l'SQL rivisto e unito in `main`, e `dbe types generate --check` passa. Una migrazione per Tipologia è approvata così (decisione D2 in `.planning/phases/1/preparazione-1.2.md`, sezione 7). Lo stato delle regole conta solo per la creazione.
+3. La regressione locale sul Set di riferimento ha codice 0. Il suo rapporto si allega alla release dopo la pubblicazione (`docs/handoff/13-regressione-locale-e-release.md`).
+
+Poi:
 
 ```
 git tag -a v1.0.0 -m "Versione 1.0.0"

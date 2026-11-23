@@ -1,0 +1,50 @@
+{
+  "versione_formato": 1,
+  "pagina": {
+    "id": "s06",
+    "impronta": "12318d7f4f57fb8079965540d727650439b8e547f257eb3d3a1b03d60369f70f",
+    "origine": "digitale"
+  },
+  "revisione": {
+    "stato": "corretto",
+    "bozza_da": null,
+    "corretto_da": "agente C, ondata 1.2",
+    "corretto_il": "2026-11-24"
+  },
+  "contenuto_pagina": "giochi",
+  "giochi": [
+    {
+      "id": "g01",
+      "stato_tipologia": "nota",
+      "tipologia": "anagramma",
+      "versione_tipologia": 1,
+      "titolo": "Anagramma",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.1,
+        "larghezza": 0.84,
+        "altezza": 0.12
+      },
+      "dati": {
+        "esposto": "Il mare calmo (4 = 4)",
+        "diagramma": "4 = 4",
+        "prima_parola": null,
+        "soluzione": null,
+        "autore": null
+      }
+    },
+    {
+      "id": "g02",
+      "stato_tipologia": "proposta",
+      "famiglia": "gioco-breve",
+      "titolo": "Scarto di prova",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.28,
+        "larghezza": 0.84,
+        "altezza": 0.1
+      }
+    }
+  ],
+  "note": "Un anagramma e un Gioco di Tipologia non prevista."
+}

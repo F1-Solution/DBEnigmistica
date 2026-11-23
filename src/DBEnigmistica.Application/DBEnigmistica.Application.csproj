@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DBEnigmistica.Domain\DBEnigmistica.Domain.csproj" />
+    <ProjectReference Include="..\DBEnigmistica.Tipologie\DBEnigmistica.Tipologie.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -12,12 +13,16 @@
   <ItemGroup>
     <EmbeddedResource Include="..\..\tipologie\_meta\brief.schema.json" LogicalName="brief.schema.json" />
     <EmbeddedResource Include="..\..\tipologie\_meta\prompt-creazione-v1.md" LogicalName="prompt-creazione-v1.md" />
+    <EmbeddedResource Include="..\..\tipologie\_meta\prompt-estrazione-v1.md" LogicalName="prompt-estrazione-v1.md" />
+    <EmbeddedResource Include="..\..\tipologie\_meta\risultato-atteso.schema.json" LogicalName="risultato-atteso.schema.json" />
   </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- CTJ001 (Corvus, arriva da Tipologie) chiede letterali UTF-8 anche per System.Text.Json: qui i nomi sono letterali normali. -->
+    <NoWarn>$(NoWarn);CTJ001</NoWarn>
   </PropertyGroup>
 
 </Project>

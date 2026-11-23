@@ -14,6 +14,11 @@ public static class HandlerRegistration
         services.AddScoped<VerifyIntegrityHandler>();
         services.AddScoped<DiagnosticaRenderHandler>();
         services.AddScoped<PrototipoHandler>();
+        services.AddScoped<EvalExtractionHandler>();
+        services.AddScoped<EvalSinteticoHandler>();
+        services.AddScoped<EvalDraftHandler>();
+        services.AddScoped<TypesGenerateHandler>();
+        services.AddSingleton<DBEnigmistica.Application.Valutazione.IGeneratorePdfSet, GeneratorePdfSetSintetico>();
         services.AddScoped<ExportGamesHandler>();
         services.AddScoped<ExportSchemaHandler>();
         services.AddScoped<ExportStatsHandler>();

@@ -1,0 +1,119 @@
+{
+  "versione_formato": 1,
+  "pagina": {
+    "id": "s01",
+    "impronta": "7923426b534f79e7aa93784a3a5b86ba6c08a419a4f2c0dfffcae766416b466d",
+    "origine": "digitale"
+  },
+  "revisione": {
+    "stato": "corretto",
+    "bozza_da": null,
+    "corretto_da": "agente C, ondata 1.2",
+    "corretto_il": "2026-11-24"
+  },
+  "contenuto_pagina": "giochi",
+  "giochi": [
+    {
+      "id": "g01",
+      "stato_tipologia": "nota",
+      "tipologia": "cruciverba-classico",
+      "versione_tipologia": 1,
+      "titolo": "Cruciverba di prova",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.08,
+        "larghezza": 0.84,
+        "altezza": 0.8
+      },
+      "dati": {
+        "righe": 7,
+        "colonne": 7,
+        "griglia": {
+          "righe": 7,
+          "colonne": 7,
+          "celle": [
+            "......#",
+            "....#..",
+            ".......",
+            "...#...",
+            ".......",
+            "..#....",
+            "#......"
+          ],
+          "numeri": [
+            {
+              "riga": 1,
+              "colonna": 1,
+              "numero": 1
+            },
+            {
+              "riga": 1,
+              "colonna": 2,
+              "numero": 2
+            },
+            {
+              "riga": 1,
+              "colonna": 3,
+              "numero": 3
+            },
+            {
+              "riga": 2,
+              "colonna": 1,
+              "numero": 4
+            },
+            {
+              "riga": 4,
+              "colonna": 1,
+              "numero": 5
+            },
+            {
+              "riga": 6,
+              "colonna": 6,
+              "numero": 6
+            }
+          ]
+        },
+        "autore": null,
+        "definizioni": [
+          {
+            "numero": 1,
+            "direzione": "orizzontale",
+            "testo": "Capitale d'Italia",
+            "soluzione": null
+          },
+          {
+            "numero": 2,
+            "direzione": "orizzontale",
+            "testo": "Il contrario di no",
+            "soluzione": null
+          },
+          {
+            "numero": 3,
+            "direzione": "orizzontale",
+            "testo": "Fiume di Torino",
+            "soluzione": null
+          },
+          {
+            "numero": 1,
+            "direzione": "verticale",
+            "testo": "Lo e' il sole al mattino",
+            "soluzione": null
+          },
+          {
+            "numero": 2,
+            "direzione": "verticale",
+            "testo": "Metallo prezioso",
+            "soluzione": null
+          },
+          {
+            "numero": 3,
+            "direzione": "verticale",
+            "testo": "Si accende per leggere",
+            "soluzione": null
+          }
+        ]
+      }
+    }
+  ],
+  "note": "Cruciverba 7x7; la risposta ha una casella e una definizione sbagliate."
+}

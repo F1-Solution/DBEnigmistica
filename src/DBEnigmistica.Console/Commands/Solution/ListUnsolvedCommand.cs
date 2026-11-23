@@ -2,7 +2,6 @@ using System.CommandLine;
 using System.Text.Json;
 using DBEnigmistica.Console.Cli;
 using DBEnigmistica.Console.Presentation;
-using DBEnigmistica.Domain.Enums;
 using DBEnigmistica.Domain.Interfaces;
 using Spectre.Console;
 
@@ -13,18 +12,18 @@ public class ListUnsolvedCommand : Command
     public ListUnsolvedCommand(CommandRunner runner) : base("list-unsolved", "Elenca i giochi senza soluzione")
     {
         var magazineIdOption = new Option<int?>("--magazine-id") { Description = "ID della rivista da filtrare (opzionale)" };
-        var gameTypeOption = new Option<GameType?>("--game-type") { Description = "Tipo di gioco da filtrare (opzionale)" };
+        var tipologiaOption = new Option<string?>("--tipologia") { Description = "Tipologia da filtrare, per esempio cruciverba-classico (opzionale)" };
         var exportOption = new Option<string?>("--export") { Description = "Percorso file per esportare in JSON (opzionale)" };
 
         Options.Add(magazineIdOption);
-        Options.Add(gameTypeOption);
+        Options.Add(tipologiaOption);
         Options.Add(exportOption);
 
         this.SetAction((parseResult, ct) => runner.RunAsync<ListUnsolvedHandler>(
             HostRequirements.Database,
             (handler, token) => handler.ExecuteAsync(
                 parseResult.GetValue(magazineIdOption),
-                parseResult.GetValue(gameTypeOption),
+                parseResult.GetValue(tipologiaOption),
                 parseResult.GetValue(exportOption),
                 token),
             ct));
@@ -35,12 +34,12 @@ public sealed class ListUnsolvedHandler(IGameSolutionRepository repository, IAns
 {
     public async Task<int> ExecuteAsync(
         int? magazineId,
-        GameType? gameType,
+        string? tipologia,
         string? exportPath,
         CancellationToken cancellationToken)
     {
         var games = (await repository.GetUnsolvedGamesAsync(magazineId))
-            .Where(g => gameType is null || g.GameType == gameType)
+            .Where(g => tipologia is null || g.Tipologia == tipologia)
             .ToList();
 
         if (games.Count == 0)
@@ -49,9 +48,9 @@ public sealed class ListUnsolvedHandler(IGameSolutionRepository repository, IAns
             return ExitCodes.Success;
         }
 
-        var table = new Table().AddColumn("ID").AddColumn("Titolo").AddColumn("Tipo").AddColumn("Pagina");
+        var table = new Table().AddColumn("ID").AddColumn("Titolo").AddColumn("Tipologia").AddColumn("Pagina");
         foreach (var game in games)
-            table.AddRow(game.Id.ToString(), Markup.Escape(game.Title ?? "N/A"), game.GameType.ToString(), game.PageId.ToString());
+            table.AddRow(game.Id.ToString(), Markup.Escape(game.Title ?? "N/A"), Markup.Escape(game.Tipologia), game.PageId.ToString());
 
         console.Write(table);
         ConsoleBanner.Success(console, $"Trovati {games.Count} giochi senza soluzione");
@@ -71,10 +70,10 @@ public sealed class ListUnsolvedHandler(IGameSolutionRepository repository, IAns
         {
             g.Id,
             g.Title,
-            Type = g.GameType.ToString(),
+            g.Tipologia,
             g.PageId,
-            g.PositionX,
-            g.PositionY
+            g.RiquadroX,
+            g.RiquadroY
         }).ToList();
 
         var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });

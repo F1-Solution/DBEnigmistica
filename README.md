@@ -45,17 +45,45 @@ Il programma si chiama `dbe`. `dbe --help` elenca i comandi. Il flag `--verbose`
 
 | Comando | Cosa fa | Richiede |
 |---|---|---|
-| `migrate` | Applica le migrazioni pending al database | database |
+| `migrate` | Applica le migrazioni EF pending, poi gli SQL delle Tipologie; chiede conferma salvo `--yes` | database |
 | `list-games` | Elenca le Tipologie presenti nel database | database |
 | `export-schema` | Esporta gli schemi di gioco in JSON | database |
-| `export-games` | Esporta i Giochi estratti in JSON o CSV | database |
+| `export-games` | Esporta i Giochi estratti in JSON o CSV. Il CSV ha le colonne `Tipologia`, `X`, `Y`, `Larghezza` e `Altezza`; il riquadro è normalizzato tra 0 e 1 | database |
 | `export-stats` | Esporta le statistiche delle Riviste in JSON | database |
 | `link-solution` | Associa una soluzione a un Gioco | database |
 | `verify-solution` | Verifica o rifiuta una soluzione | database |
-| `list-unsolved` | Elenca i Giochi senza soluzione | database |
+| `list-unsolved` | Elenca i Giochi senza soluzione; filtri `--tipologia` (per esempio `cruciverba-classico`) e `--magazine-id` | database |
 | `export-solutions` | Esporta le soluzioni in JSON o CSV | database |
 | `check-ai` | Verifica la configurazione del Fornitore AI e il login di Claude Code, senza chiamate di rete: codice 0 se valida, codice 3 con il messaggio per ogni errore (login mancante, `api-anthropic` non disponibile in fase 1, eseguibile `.cmd` o `.bat`) | configurazione AI |
 | `verify-integrity` | Verifica la catena delle impronte del registro in sola aggiunta: codice 0 e "Registro integro: N eventi verificati.", oppure codice 5 con l'id del primo evento non valido su stderr; codice 1 per gli errori generici, per esempio database non raggiungibile | database |
+| `types generate` | Genera l'SQL delle Tipologie dai descrittori in `tipologie/`; con `--check` non scrive ed esce con 1 se un file SQL è diverso o manca | nessuno |
+| `eval extraction` | Misura l'estrazione su un Set e la confronta con la Linea di base. `--replay` legge le Registrazioni, senza chiamate AI; esce con 1 se una metrica scende | nessuno (con `--live`: configurazione AI) |
+| `eval draft` | Scrive le bozze dei risultati attesi da una Registrazione; le pagine con un risultato già presente restano intatte | nessuno |
+
+### Tipologie e valutazione dell'estrazione
+
+Gli SQL delle Tipologie si generano dai descrittori, mai a mano:
+
+```bash
+dotnet run --project src/DBEnigmistica.Console -- types generate
+dotnet run --project src/DBEnigmistica.Console -- types generate --check
+```
+
+`migrate` applica prima le migrazioni EF e poi gli SQL delle Tipologie. Un file già applicato con un checksum diverso dà errore con codice 1. Le versioni `v0` non hanno SQL e non si applicano mai.
+
+Misura sul Set sintetico (`tests/DBEnigmistica.Tests/Fixtures/SetSintetico`), senza chiamate AI. `--output` scrive `rapporto.json` e `rapporto.md`:
+
+```bash
+dotnet run --project src/DBEnigmistica.Console -- eval extraction --replay --set tests/DBEnigmistica.Tests/Fixtures/SetSintetico --output <cartella>
+```
+
+Il confronto usa `linea-di-base.json` del set. `--live` chiama il Fornitore AI e richiede `--limite <n>`: non si usa finché `PROGRESS.md` non contiene `PHASE:1 WAVE:1.1-prova STATUS:complete`. Il comando rifiuta di partire finché `FornitoreAi:DalVivoAbilitato` vale `false`, che è il predefinito. Impostala a `true` solo dopo il via della prova `1.1-prova`.
+
+Dopo ogni modifica a descrittori o regole delle Tipologie, prima di misurare, si ricalcolano Registrazioni e Linea di base del Set sintetico. Il comando è nascosto nell'aiuto:
+
+```bash
+dotnet run --project src/DBEnigmistica.Console -- eval sintetico aggiorna-chiavi --set tests/DBEnigmistica.Tests/Fixtures/SetSintetico
+```
 
 ### Codici d'uscita
 
@@ -99,6 +127,8 @@ src/
   DBEnigmistica.Infrastructure/  EF Core, Npgsql, migrazioni, repository, PDF
   DBEnigmistica.AI/              Fornitore AI (adattatore Claude Code, fase 1)
   DBEnigmistica.Console/         Riga di comando dbe, configurazione, presentazione
+  DBEnigmistica.Tipologie/       Descrittori e validatori delle Tipologie, SQL generato (nessun riferimento ad altri progetti)
+tipologie/                       Descrittori v*.json e SQL generato per Tipologia
 tests/
   DBEnigmistica.Tests/           Unit, Integration (PostgreSQL vero), Architecture, EndToEnd (CLI in processo)
 docs/

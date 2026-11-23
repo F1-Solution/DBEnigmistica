@@ -1,0 +1,17 @@
+{
+  "versione_formato": 1,
+  "pagina": {
+    "id": "s05",
+    "impronta": "568a331431e70f5e6e7e787ebbeea52d6c41dd5c6872e15dad6d2b0ed05f2f2e",
+    "origine": "digitale"
+  },
+  "revisione": {
+    "stato": "corretto",
+    "bozza_da": null,
+    "corretto_da": "agente C, ondata 1.2",
+    "corretto_il": "2026-11-24"
+  },
+  "contenuto_pagina": "altro",
+  "giochi": [],
+  "note": "Pagina redazionale senza Giochi; la risposta ha un Gioco in piu'."
+}

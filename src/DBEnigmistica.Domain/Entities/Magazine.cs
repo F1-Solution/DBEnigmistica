@@ -54,6 +54,9 @@ public class Magazine
     /// </summary>
     public bool SolutionsInNextIssue { get; set; }
 
+    /// <summary>Impronta SHA-256 del PDF, unica per Rivista.</summary>
+    public byte[]? Impronta { get; set; }
+
     // Navigation properties
     public ICollection<Page> Pages { get; set; } = new List<Page>();
 }

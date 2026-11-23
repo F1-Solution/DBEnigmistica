@@ -134,17 +134,17 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
     protected static Game NewGame(
         int pageId,
-        GameType gameType = GameType.Crossword,
+        string tipologia = "cruciverba-classico",
         string? title = "Gioco",
-        int? x = null,
-        int? y = null) => new()
+        decimal? x = null,
+        decimal? y = null) => new()
         {
             Origine = Origine.Rivista,
             PageId = pageId,
-            GameType = gameType,
+            Tipologia = tipologia,
             Title = title,
-            PositionX = x,
-            PositionY = y,
+            RiquadroX = x,
+            RiquadroY = y,
             ExtractedDate = DateTime.UtcNow
         };
 

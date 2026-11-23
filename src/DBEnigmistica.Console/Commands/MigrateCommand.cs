@@ -2,15 +2,17 @@ using System.CommandLine;
 using DBEnigmistica.Console.Cli;
 using DBEnigmistica.Console.Presentation;
 using DBEnigmistica.Infrastructure.Data;
+using DBEnigmistica.Infrastructure.Tipologie;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Spectre.Console;
 
 namespace DBEnigmistica.Console.Commands;
 
 public class MigrateCommand : Command
 {
-    public MigrateCommand(CommandRunner runner) : base("migrate", "Applica le migrazioni pending al database")
+    public MigrateCommand(CommandRunner runner) : base("migrate", "Applica le migrazioni pending e gli SQL delle Tipologie al database")
     {
         var yesOption = new Option<bool>("--yes", "-y") { Description = "Applica senza chiedere conferma" };
         Options.Add(yesOption);
@@ -24,6 +26,7 @@ public class MigrateCommand : Command
 
 public sealed class MigrateHandler(
     EnigmisticaDbContext dbContext,
+    MigratoreTipologie migratoreTipologie,
     IAnsiConsole console,
     CliStreams streams,
     ILogger<MigrateHandler> logger)
@@ -32,17 +35,17 @@ public sealed class MigrateHandler(
     {
         ConsoleBanner.Write(console, "Migrazioni database");
 
+        var fonte = FonteMigrazioniTipologie.DalleRisorse();
         var pending = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
-        if (pending.Count == 0)
+        var sqlInSospeso = await migratoreTipologie.InSospesoAsync(
+            (NpgsqlConnection)dbContext.Database.GetDbConnection(), fonte, cancellationToken);
+        if (pending.Count == 0 && sqlInSospeso.Count == 0)
         {
             await WriteUpToDateAsync(cancellationToken);
-            return ExitCodes.Success;
+            return await ApplicaTipologieAsync(fonte, cancellationToken);
         }
 
-        console.MarkupLineInterpolated($"[yellow]Trovate {pending.Count} migrazioni da applicare:[/]");
-        foreach (var migration in pending)
-            console.MarkupLineInterpolated($"   - {migration}");
-        console.WriteLine();
+        MostraInSospeso(pending, sqlInSospeso);
 
         if (!assumeYes)
         {
@@ -57,12 +60,59 @@ public sealed class MigrateHandler(
             }
         }
 
-        console.MarkupLine("Applicazione migrazioni in corso...");
-        await dbContext.Database.MigrateAsync(cancellationToken);
+        if (pending.Count > 0)
+        {
+            console.MarkupLine("Applicazione migrazioni in corso...");
+            await dbContext.Database.MigrateAsync(cancellationToken);
 
-        ConsoleBanner.Success(console, $"{pending.Count} migrazioni applicate con successo.");
-        logger.LogInformation("Applied {Count} migrations successfully", pending.Count);
-        return ExitCodes.Success;
+            ConsoleBanner.Success(console, $"{pending.Count} migrazioni applicate con successo.");
+            logger.LogInformation("Applied {Count} migrations successfully", pending.Count);
+        }
+
+        return await ApplicaTipologieAsync(fonte, cancellationToken);
+    }
+
+    private void MostraInSospeso(List<string> pending, IReadOnlyList<MigrazioneSql> sqlInSospeso)
+    {
+        console.MarkupLine("[yellow]Migrazioni da applicare:[/]");
+        if (pending.Count > 0)
+        {
+            console.MarkupLineInterpolated($"Migrazioni del database ({pending.Count}):");
+            foreach (var migration in pending)
+                console.MarkupLineInterpolated($"   - {migration}");
+        }
+
+        if (sqlInSospeso.Count > 0)
+        {
+            console.MarkupLineInterpolated($"SQL delle Tipologie ({sqlInSospeso.Count}):");
+            foreach (var file in sqlInSospeso)
+                console.MarkupLineInterpolated($"   - {file.Percorso}");
+        }
+
+        console.WriteLine();
+    }
+
+    // Dopo le migrazioni EF si applicano gli SQL delle Tipologie, incorporati nel programma.
+    private async Task<int> ApplicaTipologieAsync(IReadOnlyList<MigrazioneSql> fonte, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var esito = await migratoreTipologie.ApplicaAsync(
+                (NpgsqlConnection)dbContext.Database.GetDbConnection(), fonte, cancellationToken);
+
+            foreach (var file in esito.Applicate)
+                console.MarkupLineInterpolated($"   Tipologia applicata: {file}");
+            ConsoleBanner.Success(console, esito.Applicate.Count == 0
+                ? "SQL delle Tipologie già applicato."
+                : $"{esito.Applicate.Count} SQL delle Tipologie applicati.");
+            logger.LogInformation("Applied {Count} tipologie SQL files, {Already} already applied", esito.Applicate.Count, esito.GiaApplicate);
+            return ExitCodes.Success;
+        }
+        catch (ChecksumMigrazioneAlteratoException ex)
+        {
+            streams.Error.WriteLine(ex.Message);
+            return ExitCodes.Error;
+        }
     }
 
     private async Task WriteUpToDateAsync(CancellationToken cancellationToken)
@@ -82,7 +132,7 @@ public sealed class MigrateHandler(
     {
         if (!console.Profile.Capabilities.Interactive)
         {
-            streams.Error.WriteLine("Conferma non possibile senza terminale interattivo: usa --yes per applicare le migrazioni.");
+            streams.Error.WriteLine("Conferma non possibile senza terminale interattivo: usa --yes per applicare le migrazioni e gli SQL delle Tipologie.");
             return null;
         }
 

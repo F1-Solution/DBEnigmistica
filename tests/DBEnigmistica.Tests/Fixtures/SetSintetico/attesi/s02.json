@@ -1,0 +1,78 @@
+{
+  "versione_formato": 1,
+  "pagina": {
+    "id": "s02",
+    "impronta": "e9ebec4ccc36f5aa19d2f4cba33a4327f889b5e85bba7e83f10a910ca69b2bbb",
+    "origine": "digitale"
+  },
+  "revisione": {
+    "stato": "corretto",
+    "bozza_da": null,
+    "corretto_da": "agente C, ondata 1.2",
+    "corretto_il": "2026-11-24"
+  },
+  "contenuto_pagina": "giochi",
+  "giochi": [
+    {
+      "id": "g01",
+      "stato_tipologia": "nota",
+      "tipologia": "anagramma",
+      "versione_tipologia": 1,
+      "titolo": "Anagramma",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.1,
+        "larghezza": 0.84,
+        "altezza": 0.12
+      },
+      "dati": {
+        "esposto": "Il treno entra in stazione (5 = 5)",
+        "diagramma": "5 = 5",
+        "prima_parola": null,
+        "soluzione": null,
+        "autore": null
+      }
+    },
+    {
+      "id": "g02",
+      "stato_tipologia": "nota",
+      "tipologia": "sciarada",
+      "versione_tipologia": 1,
+      "titolo": "Sciarada",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.26,
+        "larghezza": 0.84,
+        "altezza": 0.06
+      },
+      "dati": {
+        "esposto": "Il mio primo e' un saluto, il secondo un metallo",
+        "diagramma": "3, 4 = 7",
+        "parti": null,
+        "soluzione": null,
+        "autore": null
+      }
+    },
+    {
+      "id": "g03",
+      "stato_tipologia": "nota",
+      "tipologia": "cambio-di-lettera",
+      "versione_tipologia": 1,
+      "titolo": "Cambio di lettera",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.36,
+        "larghezza": 0.84,
+        "altezza": 0.06
+      },
+      "dati": {
+        "esposto": "MARE - MALE - SALE",
+        "diagramma": "4 = 4",
+        "prima_parola": null,
+        "soluzione": null,
+        "autore": null
+      }
+    }
+  ],
+  "note": "Tre Giochi brevi nello stesso quadro."
+}

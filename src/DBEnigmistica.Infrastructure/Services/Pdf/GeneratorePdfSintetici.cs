@@ -33,8 +33,20 @@ public static class GeneratorePdfSintetici
     /// <summary>Byte che hanno l'intestazione di un PDF ma non ne sono uno.</summary>
     public static byte[] PdfDanneggiato() => Encoding.ASCII.GetBytes("%PDF-1.4\nquesto non e' un PDF valido\n%%EOF\n");
 
-    private static byte[] Costruisci(IReadOnlyList<TipoPaginaSintetica> pagine, bool cifrato)
+    /// <summary>Il documento del Set sintetico "set-sintetico-v1": le pagine s01-s06, con testi inventati.</summary>
+    public static byte[] SetSinteticoV1() =>
+        CostruisciDaContenuti(
+        [
+            ContenutoGriglia(), ContenutoFontStandard(), ContenutoGiochiBreviVerdana(),
+            Contenuto(TipoPaginaSintetica.SoloImmagine), ContenutoRedazionale(), ContenutoAnagrammaEGiocoNuovo()
+        ], cifrato: false);
+
+    private static byte[] Costruisci(IReadOnlyList<TipoPaginaSintetica> pagine, bool cifrato) =>
+        CostruisciDaContenuti([.. pagine.Select(Contenuto)], cifrato);
+
+    private static byte[] CostruisciDaContenuti(IReadOnlyList<string> contenuti, bool cifrato)
     {
+        var pagine = contenuti;
         // Oggetti fissi: 1 catalogo, 2 pagine, 3 risorse, 4-7 font, 8 descrittore Verdana, 9 immagine, 10 cifratura.
         const int primoOggettoPagina = 11;
         var oggetti = new List<byte[]>
@@ -58,7 +70,7 @@ public static class GeneratorePdfSintetici
         for (var i = 0; i < pagine.Count; i++)
         {
             oggetti.Add(Testo($"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {LarghezzaPunti} {AltezzaPunti}] /Resources 3 0 R /Contents {primoOggettoPagina + i * 2 + 1} 0 R >>"));
-            oggetti.Add(Flusso("<<", Encoding.Latin1.GetBytes(Contenuto(pagine[i]))));
+            oggetti.Add(Flusso("<<", Encoding.Latin1.GetBytes(pagine[i])));
         }
 
         return Serializza(oggetti, cifrato);
@@ -179,6 +191,43 @@ public static class GeneratorePdfSintetici
         ];
         for (var i = 0; i < righe.Length; i++)
             s.Append(Riga("F4", 13, 60, 730 - i * 22, righe[i]));
+        return s.ToString();
+    }
+
+    private static string ContenutoGiochiBreviVerdana()
+    {
+        var s = new StringBuilder();
+        s.Append(Riga("F4", 18, 60, 780, "Giochi brevi in Verdana"));
+        s.Append(Riga("F4", 13, 60, 720, "ANAGRAMMA: Il cielo di notte (5 = 5)"));
+        s.Append(Riga("F4", 13, 60, 698, "Una stella cerca il suo posto e lo trova."));
+        s.Append(Riga("F4", 13, 60, 620, "SCIARADA: Il mio primo e' un saluto, il secondo un metallo (3, 4 = 7)"));
+        s.Append(Riga("F4", 13, 60, 598, "Il tutto si vede dopo la pioggia."));
+        return s.ToString();
+    }
+
+    private static string ContenutoRedazionale()
+    {
+        var s = new StringBuilder();
+        s.Append(Riga("F2", 20, 60, 780, "Lettera della redazione"));
+        string[] righe =
+        [
+            "Cari lettori, questo numero di prova non contiene giochi.",
+            "Troverete soltanto un breve saluto della redazione inventata",
+            "e l'invito a tornare nel prossimo numero."
+        ];
+        for (var i = 0; i < righe.Length; i++)
+            s.Append(Riga("F2", 12, 60, 730 - i * 20, righe[i]));
+        return s.ToString();
+    }
+
+    private static string ContenutoAnagrammaEGiocoNuovo()
+    {
+        var s = new StringBuilder();
+        s.Append(Riga("F2", 18, 60, 780, "GIOCHI VARI"));
+        s.Append(Riga("F2", 13, 60, 730, "ANAGRAMMA: Il mare calmo (4 = 4)"));
+        s.Append(Riga("F2", 13, 60, 710, "Una barca lenta torna al porto."));
+        s.Append(Riga("F3", 13, 60, 600, "SCARTO DI PROVA (6/5)"));
+        s.Append(Riga("F3", 12, 60, 580, "Il pescatore lascia la rete e resta a riva."));
         return s.ToString();
     }
 

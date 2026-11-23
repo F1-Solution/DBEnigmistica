@@ -1,0 +1,24 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "cambio-di-lettera",
+  "versione": 1,
+  "famiglia": "gioco-breve",
+  "nome": "Cambio di lettera",
+  "descrizione": "Breve testo in versi o in prosa con un diagramma tra parentesi, per esempio (4 = 4): la soluzione si ottiene dalla prima parola cambiando una sola lettera.",
+  "regole": {
+    "testo": "Il cambio di lettera ha un esposto, un diagramma e una soluzione. L'esposto è un breve testo, in versi o in prosa, con due letture: la prima descrive una parola (la prima parola), la seconda descrive un'altra parola (la soluzione). La soluzione si ottiene dalla prima parola sostituendo una sola lettera con un'altra, nella stessa posizione: le due parole hanno la stessa lunghezza e sono uguali in tutte le altre lettere. Il diagramma dà il numero di lettere della prima parola, il segno = e il numero di lettere della soluzione, per esempio 4 = 4. Le due parole sono diverse, italiane e di uso comune, oppure nomi propri molto noti. Nessuna delle due compare nell'esposto. Esempio inventato: da SALE, cambiando la A con la O, si ottiene SOLE; il diagramma è (4 = 4). Niente volgarità, temi offensivi o persone private.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente B1, ondata 1.2"
+  },
+  "campi": [
+    { "nome": "esposto", "etichetta": "Esposto", "tipo": "testo", "max": 1000, "obbligatorio": true, "ruolo": "esposto" },
+    { "nome": "diagramma", "etichetta": "Diagramma", "descrizione": "Il diagramma tra parentesi, senza parentesi, per esempio 4 = 4.", "tipo": "testo", "max": 100, "obbligatorio": true, "ruolo": "diagramma" },
+    { "nome": "prima_parola", "etichetta": "Prima parola", "descrizione": "La parola della prima lettura, solo se stampata sulla pagina o se la crea il Motore di creazione.", "tipo": "testo", "max": 100 },
+    { "nome": "soluzione", "etichetta": "Soluzione", "descrizione": "La parola della seconda lettura, solo se stampata sulla pagina.", "tipo": "testo", "max": 100, "ruolo": "soluzione" },
+    { "nome": "autore", "etichetta": "Autore", "descrizione": "Firma dell'autore, se stampata.", "tipo": "testo", "max": 100, "indice": true }
+  ],
+  "elenchi": [],
+  "resa": { "modello": "esposto_diagramma" },
+  "validatori": ["diagramma-coerente-con-soluzione", "cambio-di-una-lettera"]
+}

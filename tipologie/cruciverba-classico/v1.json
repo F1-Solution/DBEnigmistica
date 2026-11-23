@@ -1,0 +1,34 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "cruciverba-classico",
+  "versione": 1,
+  "famiglia": "cruciverba",
+  "nome": "Cruciverba classico",
+  "descrizione": "Griglia rettangolare di caselle bianche e nere, con i numeri delle definizioni, seguita dalle definizioni orizzontali e verticali.",
+  "regole": {
+    "testo": "Il cruciverba classico è una griglia rettangolare di caselle bianche e nere. Ogni parola si scrive nelle caselle bianche consecutive di una riga (orizzontale) o di una colonna (verticale), una lettera per casella. Una casella nera interrompe la parola e non contiene lettere. Una parola ha almeno 2 lettere e va da una casella nera, o dal bordo della griglia, fino alla casella nera o al bordo successivo. Ogni casella bianca appartiene ad almeno una parola; le caselle bianche che si incrociano condividono la stessa lettera. Numerazione: si numerano da 1, in ordine di lettura (da sinistra a destra, dall'alto in basso), le caselle bianche in cui inizia una parola orizzontale o verticale; se in una casella iniziano due parole, hanno lo stesso numero. Ogni parola ha una definizione, identificata dal numero e dalla direzione. La definizione è una frase breve che porta alla parola senza contenerla. Il numero di lettere della soluzione è uguale alla lunghezza della parola nella griglia; se la definizione indica un diagramma, per esempio (5), il numero corrisponde alle lettere. Le soluzioni sono parole italiane di uso comune, nomi propri molto noti o sigle diffuse. Nessuna soluzione compare nella propria definizione. Esempio inventato: la definizione \"Il contrario di vuoto\", per una parola di 5 caselle, ha come soluzione PIENO.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente B1, ondata 1.2"
+  },
+  "campi": [
+    { "nome": "righe", "etichetta": "Righe", "tipo": "intero", "obbligatorio": true, "ruolo": "righe" },
+    { "nome": "colonne", "etichetta": "Colonne", "tipo": "intero", "obbligatorio": true, "ruolo": "colonne" },
+    { "nome": "griglia", "etichetta": "Griglia", "descrizione": "Caselle e numeri della griglia: '#' casella nera, lettera o vuoto per la casella bianca.", "tipo": "griglia", "obbligatorio": true, "ruolo": "griglia" },
+    { "nome": "autore", "etichetta": "Autore", "descrizione": "Firma dell'autore, se stampata.", "tipo": "testo", "max": 100, "indice": true }
+  ],
+  "elenchi": [
+    {
+      "nome": "definizioni",
+      "etichetta": "Definizioni",
+      "campi": [
+        { "nome": "numero", "etichetta": "Numero", "tipo": "intero", "obbligatorio": true, "ruolo": "numero" },
+        { "nome": "direzione", "etichetta": "Direzione", "tipo": "enumerazione", "valori": ["orizzontale", "verticale"], "obbligatorio": true, "ruolo": "direzione" },
+        { "nome": "testo", "etichetta": "Definizione", "tipo": "testo", "max": 300, "obbligatorio": true, "ruolo": "definizione" },
+        { "nome": "soluzione", "etichetta": "Soluzione", "descrizione": "Solo se stampata sulla pagina.", "tipo": "testo", "max": 40, "ruolo": "soluzione" }
+      ]
+    }
+  ],
+  "resa": { "modello": "griglia" },
+  "validatori": ["griglia-coerente-con-dimensioni", "numerazione-coerente-con-griglia", "lunghezze-coerenti", "incroci-coerenti"]
+}

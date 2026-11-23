@@ -5,6 +5,7 @@
     <Project Path="src/DBEnigmistica.Console/DBEnigmistica.Console.csproj" />
     <Project Path="src/DBEnigmistica.Domain/DBEnigmistica.Domain.csproj" />
     <Project Path="src/DBEnigmistica.Infrastructure/DBEnigmistica.Infrastructure.csproj" />
+    <Project Path="src/DBEnigmistica.Tipologie/DBEnigmistica.Tipologie.csproj" />
     <Project Path="src/DBEnigmistica.Web/DBEnigmistica.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">

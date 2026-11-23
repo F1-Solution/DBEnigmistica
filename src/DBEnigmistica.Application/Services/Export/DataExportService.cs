@@ -48,13 +48,12 @@ public class DataExportService
         var exportData = games.Select(g => new
         {
             g.Id,
-            g.GameType,
+            g.Tipologia,
             g.Title,
             g.Description,
             g.Difficulty,
-            Position = new { g.PositionX, g.PositionY },
-            BoundingBox = new { Width = g.BoundingBoxWidth, Height = g.BoundingBoxHeight },
-            g.ClassificationConfidence,
+            Riquadro = new { X = g.RiquadroX, Y = g.RiquadroY, Larghezza = g.RiquadroLarghezza, Altezza = g.RiquadroAltezza },
+            ClassificationConfidence = g.Confidenza,
             g.ExtractedDate,
             g.PageId
         }).ToList();
@@ -99,21 +98,21 @@ public class DataExportService
         var csv = new StringBuilder();
 
         csv.AppendLine(CsvFieldFormatter.SeparatorDirective);
-        csv.AppendLine("Id,GameType,Title,Description,Difficulty,PositionX,PositionY,Width,Height,Confidence,ExtractedDate,PageId");
+        csv.AppendLine("Id,Tipologia,Title,Description,Difficulty,X,Y,Larghezza,Altezza,Confidence,ExtractedDate,PageId");
 
         // Rows
         foreach (var game in games)
         {
             csv.AppendLine($"{CsvFieldFormatter.Number(game.Id)}," +
-                          $"{EscapeCsvField(game.GameType.ToString())}," +
+                          $"{EscapeCsvField(game.Tipologia)}," +
                           $"{EscapeCsvField(game.Title)}," +
                           $"{EscapeCsvField(game.Description)}," +
                           $"{EscapeCsvField(game.Difficulty)}," +
-                          $"{CsvFieldFormatter.Number(game.PositionX)}," +
-                          $"{CsvFieldFormatter.Number(game.PositionY)}," +
-                          $"{CsvFieldFormatter.Number(game.BoundingBoxWidth)}," +
-                          $"{CsvFieldFormatter.Number(game.BoundingBoxHeight)}," +
-                          $"{CsvFieldFormatter.Number(game.ClassificationConfidence)}," +
+                          $"{CsvFieldFormatter.Number(game.RiquadroX)}," +
+                          $"{CsvFieldFormatter.Number(game.RiquadroY)}," +
+                          $"{CsvFieldFormatter.Number(game.RiquadroLarghezza)}," +
+                          $"{CsvFieldFormatter.Number(game.RiquadroAltezza)}," +
+                          $"{CsvFieldFormatter.Number(game.Confidenza)}," +
                           $"{CsvFieldFormatter.Date(game.ExtractedDate)}," +
                           $"{CsvFieldFormatter.Number(game.PageId)}");
         }
@@ -143,8 +142,8 @@ public class DataExportService
             var totalGames = withPages.Pages.Sum(p => p.Games.Count);
             var gamesByType = withPages.Pages
                 .SelectMany(p => p.Games)
-                .GroupBy(g => g.GameType)
-                .Select(g => new { GameType = g.Key.ToString(), Count = g.Count() })
+                .GroupBy(g => g.Tipologia)
+                .Select(g => new { Tipologia = g.Key, Count = g.Count() })
                 .ToList();
 
             stats.Add(new

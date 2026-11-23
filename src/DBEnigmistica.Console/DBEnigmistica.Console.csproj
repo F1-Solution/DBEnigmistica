@@ -50,6 +50,8 @@
     <UserSecretsId>d3b1f0a2-5c4e-4b7a-9a1e-6f2c8d9e0b41</UserSecretsId>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- CTJ001 (Corvus, arriva da Tipologie) chiede letterali UTF-8 anche per System.Text.Json: qui i nomi sono letterali normali. -->
+    <NoWarn>$(NoWarn);CTJ001</NoWarn>
   </PropertyGroup>
 
 </Project>

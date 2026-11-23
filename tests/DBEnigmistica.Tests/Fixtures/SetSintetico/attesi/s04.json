@@ -1,0 +1,68 @@
+{
+  "versione_formato": 1,
+  "pagina": {
+    "id": "s04",
+    "impronta": "10565d5167d24337cc2233d6eb289565f9c9f0882c8f85c8214127d7c5bd9009",
+    "origine": "scansione"
+  },
+  "revisione": {
+    "stato": "corretto",
+    "bozza_da": null,
+    "corretto_da": "agente C, ondata 1.2",
+    "corretto_il": "2026-11-24"
+  },
+  "contenuto_pagina": "giochi",
+  "giochi": [
+    {
+      "id": "g01",
+      "stato_tipologia": "nota",
+      "tipologia": "cruciverba-classico",
+      "versione_tipologia": 1,
+      "titolo": "Cruciverba piccolo",
+      "riquadro": {
+        "x": 0.17,
+        "y": 0.2,
+        "larghezza": 0.67,
+        "altezza": 0.47
+      },
+      "dati": {
+        "righe": 5,
+        "colonne": 5,
+        "griglia": {
+          "righe": 5,
+          "colonne": 5,
+          "celle": [
+            "....#",
+            ".....",
+            "..#..",
+            ".....",
+            "#...."
+          ],
+          "numeri": [
+            {
+              "riga": 1,
+              "colonna": 1,
+              "numero": 1
+            },
+            {
+              "riga": 1,
+              "colonna": 2,
+              "numero": 2
+            },
+            {
+              "riga": 2,
+              "colonna": 1,
+              "numero": 3
+            }
+          ]
+        },
+        "autore": null,
+        "definizioni": []
+      },
+      "campi_non_valutati": [
+        "definizioni"
+      ]
+    }
+  ],
+  "note": "Pagina solo immagine, senza testo nativo."
+}

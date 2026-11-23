@@ -1,0 +1,61 @@
+{
+  "versione_formato": 1,
+  "contenuto_pagina": "giochi",
+  "rivista": null,
+  "giochi": [
+    {
+      "stato_tipologia": "nota",
+      "tipologia": "anagramma",
+      "versione_tipologia": 1,
+      "titolo": "Anagramma",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.1,
+        "larghezza": 0.84,
+        "altezza": 0.12
+      },
+      "dati": {
+        "esposto": "Il mare calmo (4 = 4)",
+        "diagramma": "4 = 4",
+        "prima_parola": null,
+        "soluzione": null,
+        "autore": null
+      },
+      "confidenza": {
+        "gioco": 0.95,
+        "tipologia": 0.97,
+        "campi": {
+          "esposto": 0.95,
+          "diagramma": 0.95,
+          "prima_parola": 0.95,
+          "soluzione": 0.95,
+          "autore": 0.95
+        },
+        "elenchi": {}
+      },
+      "avvisi": []
+    },
+    {
+      "stato_tipologia": "proposta",
+      "titolo": "Scarto di prova",
+      "riquadro": {
+        "x": 0.08,
+        "y": 0.28,
+        "larghezza": 0.84,
+        "altezza": 0.1
+      },
+      "tipologia_proposta": {
+        "nome": "Scarto di prova",
+        "famiglia": "gioco-breve",
+        "descrizione": "Una parola perde una lettera e ne diventa un'altra."
+      },
+      "trascrizione": "SCARTO DI PROVA (6/5)\nIl pescatore lascia la rete e resta a riva.",
+      "confidenza": {
+        "gioco": 0.85,
+        "tipologia": 0.6
+      },
+      "avvisi": []
+    }
+  ],
+  "avvisi": []
+}

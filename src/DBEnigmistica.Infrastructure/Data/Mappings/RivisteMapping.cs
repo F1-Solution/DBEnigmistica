@@ -1,5 +1,6 @@
 using DBEnigmistica.Domain.Diritti;
 using DBEnigmistica.Domain.Entities;
+using DBEnigmistica.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace DBEnigmistica.Infrastructure.Data.Mappings;
@@ -13,20 +14,23 @@ internal static class RivisteMapping
     {
         modelBuilder.Entity<Magazine>(entity =>
         {
-            entity.ToTable("magazines", Schema);
+            entity.ToTable("magazines", Schema, t => t.HasCheckConstraint("ck_magazines_impronta", "impronta IS NULL OR octet_length(impronta) = 32"));
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.SourceFilePath).IsRequired().HasMaxLength(500);
             entity.Property(e => e.IssueNumber).HasMaxLength(50);
             entity.Property(e => e.Periodicity).HasConversion<string>();
 
+            entity.Property(e => e.Impronta).HasColumnName("impronta").HasColumnType("bytea");
+
+            entity.HasIndex(e => e.Impronta).IsUnique();
             entity.HasIndex(e => new { e.Title, e.PublicationDate });
             entity.HasIndex(e => e.Year);
         });
 
         modelBuilder.Entity<Page>(entity =>
         {
-            entity.ToTable("pages", Schema);
+            entity.ToTable("pages", Schema, t => t.HasCheckConstraint("ck_pages_impronta", "impronta IS NULL OR octet_length(impronta) = 32"));
             entity.HasKey(e => e.Id);
 
             entity.HasOne(p => p.Magazine)
@@ -34,11 +38,13 @@ internal static class RivisteMapping
                 .HasForeignKey(p => p.MagazineId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            entity.Property(e => e.Impronta).HasColumnName("impronta").HasColumnType("bytea");
+
+            entity.HasIndex(e => e.Impronta).IsUnique();
             entity.HasIndex(e => new { e.MagazineId, e.PageNumber });
         });
 
         ConfiguraGame(modelBuilder);
-        ConfiguraDettagli(modelBuilder);
         ConfiguraSoluzioni(modelBuilder);
     }
 
@@ -62,10 +68,31 @@ internal static class RivisteMapping
         modelBuilder.Entity<Game>(entity =>
         {
             // Origine senza default: un Gioco estratto la dichiara sempre, e il database accetta solo 'rivista'.
-            entity.ToTable("games", Schema,
-                t => t.HasCheckConstraint("ck_games_origine_rivista", "origine = 'rivista'"));
+            entity.ToTable("games", Schema, t =>
+            {
+                t.HasCheckConstraint("ck_games_tipologia", "tipologia ~ '^[a-z][a-z0-9-]{1,60}$'");
+                t.HasCheckConstraint("ck_games_origine_rivista", "origine = 'rivista'");
+                t.HasCheckConstraint("ck_games_stato_tipologia", "stato_tipologia IN ('nota', 'proposta')");
+                t.HasCheckConstraint("ck_games_versione_tipologia", "versione_tipologia > 0");
+                t.HasCheckConstraint("ck_games_riquadro",
+                    "(riquadro_x IS NULL OR riquadro_x BETWEEN 0 AND 1) AND (riquadro_y IS NULL OR riquadro_y BETWEEN 0 AND 1) " +
+                    "AND (riquadro_larghezza IS NULL OR riquadro_larghezza BETWEEN 0 AND 1) AND (riquadro_altezza IS NULL OR riquadro_altezza BETWEEN 0 AND 1)");
+                t.HasCheckConstraint("ck_games_confidenza", "confidenza IS NULL OR confidenza BETWEEN 0 AND 1");
+                t.HasCheckConstraint("ck_games_trascrizione_proposta", "trascrizione_proposta IS NULL OR stato_tipologia = 'proposta'");
+            });
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.GameType).HasConversion<string>();
+            entity.Property(e => e.Tipologia).HasColumnName("tipologia").HasMaxLength(61).IsRequired();
+            entity.Property(e => e.VersioneTipologia).HasColumnName("versione_tipologia");
+            entity.Property(e => e.StatoTipologia).HasColumnName("stato_tipologia").HasMaxLength(10)
+                .HasConversion(v => v == StatoTipologia.Proposta ? "proposta" : "nota",
+                    v => v == "proposta" ? StatoTipologia.Proposta : StatoTipologia.Nota);
+            entity.Property(e => e.RiquadroX).HasColumnName("riquadro_x").HasColumnType("numeric(6,5)");
+            entity.Property(e => e.RiquadroY).HasColumnName("riquadro_y").HasColumnType("numeric(6,5)");
+            entity.Property(e => e.RiquadroLarghezza).HasColumnName("riquadro_larghezza").HasColumnType("numeric(6,5)");
+            entity.Property(e => e.RiquadroAltezza).HasColumnName("riquadro_altezza").HasColumnType("numeric(6,5)");
+            entity.Property(e => e.Confidenza).HasColumnName("confidenza");
+            entity.Property(e => e.Avvisi).HasColumnName("avvisi").HasColumnType("jsonb").IsRequired();
+            entity.Property(e => e.TrascrizioneProposta).HasColumnName("trascrizione_proposta").HasColumnType("text");
             entity.Property(e => e.Title).HasMaxLength(200);
             entity.Property(e => e.Origine)
                 .HasColumnName("origine")
@@ -83,53 +110,9 @@ internal static class RivisteMapping
                 .HasForeignKey(g => g.SolutionPageId)
                 .OnDelete(DeleteBehavior.ClientNoAction);
 
-            entity.HasIndex(e => e.GameType);
+            entity.HasIndex(e => e.Tipologia);
             entity.HasIndex(e => e.PageId);
             entity.HasIndex(e => e.SolutionPageId);
-        });
-    }
-
-    private static void ConfiguraDettagli(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<CrosswordGame>(entity =>
-        {
-            entity.ToTable("crossword_games", Schema);
-            entity.HasKey(e => e.Id);
-            entity.HasOne(cg => cg.Game).WithOne().HasForeignKey<CrosswordGame>(cg => cg.GameId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.GameId).IsUnique();
-        });
-
-        modelBuilder.Entity<RebusGame>(entity =>
-        {
-            entity.ToTable("rebus_games", Schema);
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Key).IsRequired().HasMaxLength(50);
-            entity.HasOne(rg => rg.Game).WithOne().HasForeignKey<RebusGame>(rg => rg.GameId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.GameId).IsUnique();
-        });
-
-        modelBuilder.Entity<LogicGame>(entity =>
-        {
-            entity.ToTable("logic_games", Schema);
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.SubType).HasMaxLength(100);
-            entity.HasOne(lg => lg.Game).WithOne().HasForeignKey<LogicGame>(lg => lg.GameId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.GameId).IsUnique();
-            entity.HasIndex(e => e.SubType);
-        });
-
-        modelBuilder.Entity<AnagramGame>(entity =>
-        {
-            entity.ToTable("anagram_games", Schema);
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Source).IsRequired().HasMaxLength(500);
-            entity.Property(e => e.AnagramType).HasMaxLength(100);
-            entity.HasOne(ag => ag.Game).WithOne().HasForeignKey<AnagramGame>(ag => ag.GameId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.GameId).IsUnique();
         });
     }
 

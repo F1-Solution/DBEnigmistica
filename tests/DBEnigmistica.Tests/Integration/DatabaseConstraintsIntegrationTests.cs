@@ -115,48 +115,6 @@ public class DatabaseConstraintsIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task A_game_can_have_only_one_rebus_detail_row()
-    {
-        var (_, pageIds) = await SeedMagazineWithPagesAsync();
-        var gameId = await SeedGameAsync(pageIds[0]);
-
-        await using (var first = NewContext())
-        {
-            first.RebusGames.Add(new RebusGame { GameId = gameId, Key = "3,5 = 8" });
-            await first.SaveChangesAsync();
-        }
-
-        await using var second = NewContext();
-        second.RebusGames.Add(new RebusGame { GameId = gameId, Key = "1,2 = 3" });
-
-        var save = async () => await second.SaveChangesAsync();
-
-        var exception = (await save.Should().ThrowAsync<DbUpdateException>()).Which;
-        ShouldViolate(exception, PostgresErrorCodes.UniqueViolation);
-    }
-
-    [Fact]
-    public async Task Deleting_a_game_removes_its_rebus_detail_row()
-    {
-        var (_, pageIds) = await SeedMagazineWithPagesAsync();
-        var gameId = await SeedGameAsync(pageIds[0]);
-
-        await using (var first = NewContext())
-        {
-            first.RebusGames.Add(new RebusGame { GameId = gameId, Key = "3,5 = 8" });
-            await first.SaveChangesAsync();
-        }
-
-        await using (var delete = NewContext())
-        {
-            await new GameRepository(delete).DeleteAsync(gameId);
-            await delete.SaveChangesAsync();
-        }
-
-        (await ScalarAsync<long>("SELECT count(*) FROM riviste.rebus_games")).Should().Be(0);
-    }
-
-    [Fact]
     public async Task Schema_lookup_by_name_and_by_table_ignores_case()
     {
         await using (var write = NewContext())

@@ -1,0 +1,12 @@
+# Squawk gira solo sugli SQL generati in tipologie/ (progetto-1.1, sezione 8), non sulle migrazioni EF.
+pg_version = "18"
+assume_in_transaction = true
+excluded_rules = [
+  # ADR 002, punto 4: varchar(max) per i testi; le tabelle sono nuove.
+  "prefer-text-field",
+  # ADR 002: integer per i valori e per gioco_id, come riviste.games.
+  "prefer-bigint-over-int",
+  # dbe migrate imposta i due timeout con SET LOCAL prima di ogni file.
+  "require-lock-timeout",
+  "require-statement-timeout",
+]

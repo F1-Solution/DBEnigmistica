@@ -43,13 +43,13 @@ public class RepositoryIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task Periodicity_and_game_type_are_stored_as_text_in_the_database()
+    public async Task Periodicity_and_tipologia_are_stored_as_text_in_the_database()
     {
         var (_, pageIds) = await SeedMagazineWithPagesAsync(magazine: NewMagazine(periodicity: MagazinePeriodicity.Weekly));
-        await SeedGameAsync(pageIds[0], g => g.GameType = GameType.Rebus);
+        await SeedGameAsync(pageIds[0], g => g.Tipologia = "rebus");
 
         (await ScalarAsync<string>("SELECT \"Periodicity\" FROM riviste.magazines")).Should().Be("Weekly");
-        (await ScalarAsync<string>("SELECT \"GameType\" FROM riviste.games")).Should().Be("Rebus");
+        (await ScalarAsync<string>("SELECT tipologia FROM riviste.games")).Should().Be("rebus");
     }
 
     [Fact]
@@ -181,15 +181,19 @@ public class RepositoryIntegrationTests : IntegrationTestBase
         {
             Origine = Origine.Rivista,
             PageId = pageIds[0],
-            GameType = GameType.Crossword,
+            Tipologia = "cruciverba-classico",
+            VersioneTipologia = 1,
+            StatoTipologia = StatoTipologia.Proposta,
+            TrascrizioneProposta = "Testo inventato",
+            Avvisi = "[\"riquadro incerto\"]",
             Title = "Cruciverba Facile",
             Description = "Un cruciverba semplice",
             Difficulty = "facile",
-            PositionX = 100,
-            PositionY = 200,
-            BoundingBoxWidth = 300,
-            BoundingBoxHeight = 400,
-            ClassificationConfidence = 0.95,
+            RiquadroX = 0.1m,
+            RiquadroY = 0.2m,
+            RiquadroLarghezza = 0.3m,
+            RiquadroAltezza = 0.4m,
+            Confidenza = 0.95,
             ExtractedDate = DateTime.UtcNow
         };
 
@@ -205,12 +209,15 @@ public class RepositoryIntegrationTests : IntegrationTestBase
 
         game.Id.Should().BeGreaterThan(0);
         loaded.Should().NotBeNull();
-        loaded!.GameType.Should().Be(GameType.Crossword);
+        loaded!.Tipologia.Should().Be("cruciverba-classico");
+        loaded.StatoTipologia.Should().Be(StatoTipologia.Proposta);
+        loaded.TrascrizioneProposta.Should().Be("Testo inventato");
+        loaded.Avvisi.Should().Contain("riquadro incerto");
         loaded.Title.Should().Be("Cruciverba Facile");
         loaded.Difficulty.Should().Be("facile");
-        loaded.PositionX.Should().Be(100);
-        loaded.BoundingBoxHeight.Should().Be(400);
-        loaded.ClassificationConfidence.Should().Be(0.95);
+        loaded.RiquadroX.Should().Be(0.1m);
+        loaded.RiquadroAltezza.Should().Be(0.4m);
+        loaded.Confidenza.Should().Be(0.95);
         loaded.HasSolution.Should().BeFalse();
     }
 
@@ -218,9 +225,9 @@ public class RepositoryIntegrationTests : IntegrationTestBase
     public async Task Games_of_a_page_are_ordered_by_vertical_then_horizontal_position()
     {
         var (_, pageIds) = await SeedMagazineWithPagesAsync(pageCount: 2);
-        await SeedGameAsync(pageIds[0], g => { g.Title = "basso"; g.PositionY = 500; g.PositionX = 0; });
-        await SeedGameAsync(pageIds[0], g => { g.Title = "alto-destra"; g.PositionY = 10; g.PositionX = 300; });
-        await SeedGameAsync(pageIds[0], g => { g.Title = "alto-sinistra"; g.PositionY = 10; g.PositionX = 5; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "basso"; g.RiquadroY = 0.9m; g.RiquadroX = 0m; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "alto-destra"; g.RiquadroY = 0.1m; g.RiquadroX = 0.6m; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "alto-sinistra"; g.RiquadroY = 0.1m; g.RiquadroX = 0.05m; });
         await SeedGameAsync(pageIds[1], g => g.Title = "altra pagina");
 
         await using var read = NewContext();
@@ -230,14 +237,14 @@ public class RepositoryIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task Games_of_a_type_are_returned_with_their_page_and_magazine()
+    public async Task Games_of_a_tipologia_are_returned_with_their_page_and_magazine()
     {
         var (_, pageIds) = await SeedMagazineWithPagesAsync();
-        await SeedGameAsync(pageIds[0], g => { g.GameType = GameType.Rebus; g.Title = "rebus"; });
-        await SeedGameAsync(pageIds[0], g => { g.GameType = GameType.Crossword; g.Title = "cruciverba"; });
+        await SeedGameAsync(pageIds[0], g => { g.Tipologia = "rebus"; g.Title = "rebus"; });
+        await SeedGameAsync(pageIds[0], g => { g.Tipologia = "cruciverba-classico"; g.Title = "cruciverba"; });
 
         await using var read = NewContext();
-        var games = (await new GameRepository(read).GetByGameTypeAsync(GameType.Rebus)).ToList();
+        var games = (await new GameRepository(read).GetByTipologiaAsync("rebus")).ToList();
 
         var game = games.Should().ContainSingle().Subject;
         game.Title.Should().Be("rebus");
@@ -250,9 +257,9 @@ public class RepositoryIntegrationTests : IntegrationTestBase
     {
         var (magazineId, pageIds) = await SeedMagazineWithPagesAsync(pageCount: 2);
         var (_, otherPageIds) = await SeedMagazineWithPagesAsync();
-        await SeedGameAsync(pageIds[1], g => { g.Title = "pagina 2"; g.PositionY = 0; });
-        await SeedGameAsync(pageIds[0], g => { g.Title = "pagina 1 sotto"; g.PositionY = 300; });
-        await SeedGameAsync(pageIds[0], g => { g.Title = "pagina 1 sopra"; g.PositionY = 10; });
+        await SeedGameAsync(pageIds[1], g => { g.Title = "pagina 2"; g.RiquadroY = 0m; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "pagina 1 sotto"; g.RiquadroY = 0.6m; });
+        await SeedGameAsync(pageIds[0], g => { g.Title = "pagina 1 sopra"; g.RiquadroY = 0.1m; });
         await SeedGameAsync(otherPageIds[0], g => g.Title = "altra rivista");
 
         await using var read = NewContext();

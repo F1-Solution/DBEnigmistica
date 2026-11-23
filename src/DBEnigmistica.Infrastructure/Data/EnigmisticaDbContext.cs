@@ -20,10 +20,6 @@ public class EnigmisticaDbContext : DbContext
     public DbSet<Magazine> Magazines => Set<Magazine>();
     public DbSet<Page> Pages => Set<Page>();
     public DbSet<Game> Games => Set<Game>();
-    public DbSet<CrosswordGame> CrosswordGames => Set<CrosswordGame>();
-    public DbSet<RebusGame> RebusGames => Set<RebusGame>();
-    public DbSet<LogicGame> LogicGames => Set<LogicGame>();
-    public DbSet<AnagramGame> AnagramGames => Set<AnagramGame>();
     public DbSet<GameSolution> GameSolutions => Set<GameSolution>();
 
     // Schema tipologie

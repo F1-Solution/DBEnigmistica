@@ -61,7 +61,7 @@ public class CliEndToEndTests : IntegrationTestBase
         var list = await CliAsync("list-games");
 
         migrate.Code.Should().Be(0, migrate.Error);
-        migrate.Output.Should().Contain("Nessuna migrazione da applicare");
+        migrate.Output.Should().Contain("Migrazioni da applicare:").And.NotContain("Database già aggiornato");
         list.Code.Should().Be(0, list.Error);
         (migrate.Output + migrate.Error + list.Output + list.Error).Should().NotContain("Service provider not available");
     }

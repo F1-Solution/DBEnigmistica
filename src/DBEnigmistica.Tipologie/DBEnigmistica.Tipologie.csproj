@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Corvus.Text.Json.Validator" PrivateAssets="analyzers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Meta-schema, involucro della risposta, descrittori e SQL generato viaggiano come risorse: migrate funziona anche nell'immagine. -->
+    <EmbeddedResource Include="..\..\tipologie\_meta\descrittore.schema.json" LogicalName="tipologie/_meta/descrittore.schema.json" />
+    <EmbeddedResource Include="..\..\tipologie\_meta\risposta-pagina.schema.json" LogicalName="tipologie/_meta/risposta-pagina.schema.json" />
+    <EmbeddedResource Include="..\..\tipologie\*\v*.json" LogicalName="tipologie/%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\tipologie\*\v*.sql" LogicalName="tipologie/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- CTJ001 (Corvus) chiede letterali UTF-8 anche per System.Text.Json: qui i nomi sono letterali normali. -->
+    <NoWarn>$(NoWarn);CTJ001</NoWarn>
+  </PropertyGroup>
+
+</Project>

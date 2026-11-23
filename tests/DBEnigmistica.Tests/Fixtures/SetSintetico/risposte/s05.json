@@ -1,0 +1,40 @@
+{
+  "versione_formato": 1,
+  "contenuto_pagina": "altro",
+  "rivista": null,
+  "giochi": [
+    {
+      "stato_tipologia": "nota",
+      "tipologia": "anagramma",
+      "versione_tipologia": 1,
+      "titolo": "Anagramma inventato",
+      "riquadro": {
+        "x": 0.1,
+        "y": 0.2,
+        "larghezza": 0.8,
+        "altezza": 0.1
+      },
+      "dati": {
+        "esposto": "Un gioco che sulla pagina non c'e'",
+        "diagramma": "3 = 3",
+        "prima_parola": null,
+        "soluzione": null,
+        "autore": null
+      },
+      "confidenza": {
+        "gioco": 0.95,
+        "tipologia": 0.97,
+        "campi": {
+          "esposto": 0.95,
+          "diagramma": 0.95,
+          "prima_parola": 0.95,
+          "soluzione": 0.95,
+          "autore": 0.95
+        },
+        "elenchi": {}
+      },
+      "avvisi": []
+    }
+  ],
+  "avvisi": []
+}

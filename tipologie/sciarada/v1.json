@@ -1,0 +1,24 @@
+{
+  "$schema": "../_meta/descrittore.schema.json",
+  "id": "sciarada",
+  "versione": 1,
+  "famiglia": "gioco-breve",
+  "nome": "Sciarada",
+  "descrizione": "Breve testo in versi o in prosa con un diagramma tra parentesi, per esempio (3 3 = 6): la soluzione è una parola formata da due o più parole unite, ciascuna descritta dall'esposto.",
+  "regole": {
+    "testo": "La sciarada ha un esposto, un diagramma e una soluzione. L'esposto descrive due o più parole, dette parti, e la parola intera che si ottiene unendole in ordine, una dopo l'altra, senza cambiare né togliere lettere. La soluzione è la parola intera. Il diagramma dà il numero di lettere di ogni parte, il segno = e il numero di lettere della parola intera, per esempio 3 3 = 6. La somma delle lettere delle parti è uguale alle lettere della parola intera. Le parti e la parola intera sono italiane di uso comune, oppure nomi propri molto noti. Nessuna parte e nessuna soluzione compare nell'esposto. Esempio inventato: AGO e STO, unite, danno AGOSTO; il diagramma è (3 3 = 6). Niente volgarità, temi offensivi o persone private.",
+    "versione": 1,
+    "stato": "bozza",
+    "scritte_da": "agente B1, ondata 1.2"
+  },
+  "campi": [
+    { "nome": "esposto", "etichetta": "Esposto", "tipo": "testo", "max": 1000, "obbligatorio": true, "ruolo": "esposto" },
+    { "nome": "diagramma", "etichetta": "Diagramma", "descrizione": "Lettere di ogni parte, il segno =, lettere della parola intera; senza parentesi, per esempio 3 3 = 6.", "tipo": "testo", "max": 100, "obbligatorio": true, "ruolo": "diagramma" },
+    { "nome": "parti", "etichetta": "Parti", "descrizione": "Le parti in ordine, separate da uno spazio, solo se stampate sulla pagina o se le crea il Motore di creazione.", "tipo": "testo", "max": 100 },
+    { "nome": "soluzione", "etichetta": "Soluzione", "descrizione": "La parola intera, solo se stampata sulla pagina.", "tipo": "testo", "max": 100, "ruolo": "soluzione" },
+    { "nome": "autore", "etichetta": "Autore", "descrizione": "Firma dell'autore, se stampata.", "tipo": "testo", "max": 100, "indice": true }
+  ],
+  "elenchi": [],
+  "resa": { "modello": "esposto_diagramma" },
+  "validatori": ["diagramma-coerente-con-soluzione", "sciarada-parti-coerenti"]
+}

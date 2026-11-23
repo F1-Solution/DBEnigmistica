@@ -126,7 +126,7 @@ JSON Schema non li esprime. Li fa il caricatore della 1.2 (A), dopo la validazio
 File prodotti: `tipologie/<id>/v<n>.riviste.sql` e `tipologie/<id>/v<n>.catalogo.sql`. Stesse strutture nei due schemi; cambiano solo il riferimento al nucleo e il tipo della chiave.
 
 **Nomi.**
-- `<base>` = `gioco_` + `id` con `-` sostituito da `_`. Esempio: `cruciverba-classico` → `gioco_cruciverba_classico`.
+- `<base>` = `gioco_` + `id` con `-` sostituito da `_`, poi `_v` + versione del descrittore. Esempio: `cruciverba-classico` v1 → `gioco_cruciverba_classico_v1`. Decisione D7 del 23/11/2026, in `docs/ondata-1-2-decisioni-d7.md`.
 - Tabella 1:1: `<schema>."<base>"`.
 - Tabella figlia di un elenco: `<schema>."<base>__<elenco>"` (doppio trattino basso: un id non contiene `--`, quindi il nome non è ambiguo).
 - Vincoli e indici: `pk_<tabella>`, `fk_<tabella>__gioco`, `ck_<tabella>__<colonna>`, `ix_<tabella>__<colonna>`.
@@ -156,30 +156,30 @@ Esempio, dal descrittore `esempi/descrittore/valido-esempio-cruciverba.v1.json`,
 ```sql
 -- Generato da dbe types generate: esempio-cruciverba v1, schema riviste. Non modificare a mano.
 
-CREATE TABLE riviste."gioco_esempio_cruciverba" (
+CREATE TABLE riviste."gioco_esempio_cruciverba_v1" (
     "gioco_id" integer NOT NULL,
     "righe" integer NOT NULL,
     "colonne" integer NOT NULL,
     "griglia" jsonb NOT NULL,
     "autore" varchar(100),
-    CONSTRAINT "pk_gioco_esempio_cruciverba" PRIMARY KEY ("gioco_id"),
-    CONSTRAINT "fk_gioco_esempio_cruciverba__gioco" FOREIGN KEY ("gioco_id") REFERENCES riviste."games" ("Id") ON DELETE CASCADE
+    CONSTRAINT "pk_gioco_esempio_cruciverba_v1" PRIMARY KEY ("gioco_id"),
+    CONSTRAINT "fk_gioco_esempio_cruciverba_v1__gioco" FOREIGN KEY ("gioco_id") REFERENCES riviste."games" ("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE riviste."gioco_esempio_cruciverba__definizioni" (
+CREATE TABLE riviste."gioco_esempio_cruciverba_v1__definizioni" (
     "gioco_id" integer NOT NULL,
     "posizione" integer NOT NULL,
     "numero" integer NOT NULL,
     "direzione" text NOT NULL,
     "testo" varchar(300) NOT NULL,
     "soluzione" varchar(40),
-    CONSTRAINT "pk_gioco_esempio_cruciverba__definizioni" PRIMARY KEY ("gioco_id", "posizione"),
-    CONSTRAINT "fk_gioco_esempio_cruciverba__definizioni__gioco" FOREIGN KEY ("gioco_id") REFERENCES riviste."gioco_esempio_cruciverba" ("gioco_id") ON DELETE CASCADE,
-    CONSTRAINT "ck_gioco_esempio_cruciverba__definizioni__posizione" CHECK ("posizione" >= 0),
-    CONSTRAINT "ck_gioco_esempio_cruciverba__definizioni__direzione" CHECK ("direzione" IN ('orizzontale', 'verticale'))
+    CONSTRAINT "pk_gioco_esempio_cruciverba_v1__definizioni" PRIMARY KEY ("gioco_id", "posizione"),
+    CONSTRAINT "fk_gioco_esempio_cruciverba_v1__definizioni__gioco" FOREIGN KEY ("gioco_id") REFERENCES riviste."gioco_esempio_cruciverba_v1" ("gioco_id") ON DELETE CASCADE,
+    CONSTRAINT "ck_gioco_esempio_cruciverba_v1__definizioni__posizione" CHECK ("posizione" >= 0),
+    CONSTRAINT "ck_gioco_esempio_cruciverba_v1__definizioni__direzione" CHECK ("direzione" IN ('orizzontale', 'verticale'))
 );
 
-CREATE INDEX "ix_gioco_esempio_cruciverba__autore" ON riviste."gioco_esempio_cruciverba" ("autore");
+CREATE INDEX "ix_gioco_esempio_cruciverba_v1__autore" ON riviste."gioco_esempio_cruciverba_v1" ("autore");
 ```
 
 `dbe migrate` esegue ogni file in una transazione, dopo le migrazioni EF, con `SET LOCAL lock_timeout` e `SET LOCAL statement_timeout` impostati dal programma prima del file (sezione 8). Il valore di `griglia` in `jsonb` è l'oggetto della sezione 3.2, senza modifiche.

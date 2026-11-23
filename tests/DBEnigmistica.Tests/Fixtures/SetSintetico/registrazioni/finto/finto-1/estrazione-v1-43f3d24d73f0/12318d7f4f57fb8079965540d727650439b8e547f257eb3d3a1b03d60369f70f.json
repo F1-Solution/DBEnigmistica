@@ -1,0 +1,24 @@
+{
+  "versione_formato": 1,
+  "chiave": {
+    "impronta_pagina": "12318d7f4f57fb8079965540d727650439b8e547f257eb3d3a1b03d60369f70f",
+    "versione_prompt": "estrazione-v1-43f3d24d73f0",
+    "fornitore": "finto",
+    "modello": "finto-1"
+  },
+  "registrata_il": "2026-11-24T00:00:00.000000Z",
+  "dpi": 200,
+  "esito": "riuscita",
+  "risposta_grezza": "{\u0022type\u0022:\u0022result\u0022,\u0022is_error\u0022:false,\u0022result\u0022:\u0022\u0022,\u0022structured_output\u0022:{\u0022versione_formato\u0022:1,\u0022contenuto_pagina\u0022:\u0022giochi\u0022,\u0022rivista\u0022:null,\u0022giochi\u0022:[{\u0022stato_tipologia\u0022:\u0022nota\u0022,\u0022tipologia\u0022:\u0022anagramma\u0022,\u0022versione_tipologia\u0022:1,\u0022titolo\u0022:\u0022Anagramma\u0022,\u0022riquadro\u0022:{\u0022x\u0022:0.08,\u0022y\u0022:0.1,\u0022larghezza\u0022:0.84,\u0022altezza\u0022:0.12},\u0022dati\u0022:{\u0022esposto\u0022:\u0022Il mare calmo (4 = 4)\u0022,\u0022diagramma\u0022:\u00224 = 4\u0022,\u0022prima_parola\u0022:null,\u0022soluzione\u0022:null,\u0022autore\u0022:null},\u0022confidenza\u0022:{\u0022gioco\u0022:0.95,\u0022tipologia\u0022:0.97,\u0022campi\u0022:{\u0022esposto\u0022:0.95,\u0022diagramma\u0022:0.95,\u0022prima_parola\u0022:0.95,\u0022soluzione\u0022:0.95,\u0022autore\u0022:0.95},\u0022elenchi\u0022:{}},\u0022avvisi\u0022:[]},{\u0022stato_tipologia\u0022:\u0022proposta\u0022,\u0022titolo\u0022:\u0022Scarto di prova\u0022,\u0022riquadro\u0022:{\u0022x\u0022:0.08,\u0022y\u0022:0.28,\u0022larghezza\u0022:0.84,\u0022altezza\u0022:0.1},\u0022tipologia_proposta\u0022:{\u0022nome\u0022:\u0022Scarto di prova\u0022,\u0022famiglia\u0022:\u0022gioco-breve\u0022,\u0022descrizione\u0022:\u0022Una parola perde una lettera e ne diventa un\\u0027altra.\u0022},\u0022trascrizione\u0022:\u0022SCARTO DI PROVA (6/5)\\nIl pescatore lascia la rete e resta a riva.\u0022,\u0022confidenza\u0022:{\u0022gioco\u0022:0.85,\u0022tipologia\u0022:0.6},\u0022avvisi\u0022:[]}],\u0022avvisi\u0022:[]}}",
+  "risposta_sha256": "663001ea446c1a930743831889d3e3aae1b098407e01052ec5b7e7ec455a78b2",
+  "metadati": {
+    "durata_ms": 0,
+    "token_ingresso": null,
+    "token_uscita": null,
+    "token_cache_creazione": null,
+    "token_cache_lettura": null,
+    "costo": null,
+    "costo_valuta": null,
+    "costo_tipo": null
+  }
+}

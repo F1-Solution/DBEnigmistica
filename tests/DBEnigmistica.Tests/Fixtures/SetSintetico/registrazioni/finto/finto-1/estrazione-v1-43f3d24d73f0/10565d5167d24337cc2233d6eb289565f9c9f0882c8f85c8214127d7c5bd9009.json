@@ -1,0 +1,24 @@
+{
+  "versione_formato": 1,
+  "chiave": {
+    "impronta_pagina": "10565d5167d24337cc2233d6eb289565f9c9f0882c8f85c8214127d7c5bd9009",
+    "versione_prompt": "estrazione-v1-43f3d24d73f0",
+    "fornitore": "finto",
+    "modello": "finto-1"
+  },
+  "registrata_il": "2026-11-24T00:00:00.000000Z",
+  "dpi": 200,
+  "esito": "riuscita",
+  "risposta_grezza": "{\u0022type\u0022:\u0022result\u0022,\u0022is_error\u0022:false,\u0022result\u0022:\u0022\u0022,\u0022structured_output\u0022:{\u0022versione_formato\u0022:1,\u0022contenuto_pagina\u0022:\u0022giochi\u0022,\u0022rivista\u0022:null,\u0022giochi\u0022:[{\u0022stato_tipologia\u0022:\u0022nota\u0022,\u0022tipologia\u0022:\u0022cruciverba-classico\u0022,\u0022versione_tipologia\u0022:1,\u0022titolo\u0022:\u0022Cruciverba piccolo\u0022,\u0022riquadro\u0022:{\u0022x\u0022:0.17,\u0022y\u0022:0.2,\u0022larghezza\u0022:0.67,\u0022altezza\u0022:0.47},\u0022dati\u0022:{\u0022righe\u0022:5,\u0022colonne\u0022:5,\u0022griglia\u0022:{\u0022righe\u0022:5,\u0022colonne\u0022:5,\u0022celle\u0022:[\u0022....#\u0022,\u0022.....\u0022,\u0022..#..\u0022,\u0022.....\u0022,\u0022#....\u0022],\u0022numeri\u0022:[{\u0022riga\u0022:1,\u0022colonna\u0022:1,\u0022numero\u0022:1},{\u0022riga\u0022:1,\u0022colonna\u0022:2,\u0022numero\u0022:2},{\u0022riga\u0022:2,\u0022colonna\u0022:1,\u0022numero\u0022:3}]},\u0022autore\u0022:null,\u0022definizioni\u0022:[]},\u0022confidenza\u0022:{\u0022gioco\u0022:0.95,\u0022tipologia\u0022:0.97,\u0022campi\u0022:{\u0022righe\u0022:0.95,\u0022colonne\u0022:0.95,\u0022griglia\u0022:0.95,\u0022autore\u0022:0.95},\u0022elenchi\u0022:{\u0022definizioni\u0022:0.95}},\u0022avvisi\u0022:[]}],\u0022avvisi\u0022:[]}}",
+  "risposta_sha256": "3e35fef31923423dcabde7eafc5df683139bd55a5b62f0a95d8db7c03e87466f",
+  "metadati": {
+    "durata_ms": 0,
+    "token_ingresso": null,
+    "token_uscita": null,
+    "token_cache_creazione": null,
+    "token_cache_lettura": null,
+    "costo": null,
+    "costo_valuta": null,
+    "costo_tipo": null
+  }
+}
