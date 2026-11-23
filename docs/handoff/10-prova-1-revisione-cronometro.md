@@ -38,7 +38,7 @@ AVVERTENZA: Nessun candidato va pubblicato. I candidati accettati restano bozze.
 
 ## Cosa ti serve
 
-- Il prototipo in esecuzione su `http://127.0.0.1:8080`.
+- Il prototipo in esecuzione su `http://127.0.0.1:5180`.
 - I brief del file 06.
 - Un file di note per gli attriti.
 
@@ -47,7 +47,7 @@ AVVERTENZA: Nessun candidato va pubblicato. I candidati accettati restano bozze.
 1. Scegli una sessione di almeno 45 minuti, fuori dagli orari di sviluppo.
    Risultato: Hai una sessione pianificata.
 
-2. Avvia il prototipo. Apri `http://127.0.0.1:8080`.
+2. Avvia il prototipo. Apri `http://127.0.0.1:5180`.
    Risultato: Compare la schermata "Nuovo candidato".
 
 3. Per una famiglia, scegli la Tipologia. Inserisci tema, vincoli e difficoltà dal brief. Premi *Genera*.

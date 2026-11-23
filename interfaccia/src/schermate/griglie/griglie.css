@@ -1,0 +1,23 @@
+.gr-blocco { display: inline-block; margin: 0.5rem 0 1rem; }
+.gr-riga-indizi { display: flex; align-items: flex-start; }
+.gr-griglia { display: grid; gap: 0; width: max-content; }
+.gr-cella {
+  width: var(--gr-cella, 36px); height: var(--gr-cella, 36px); padding: 0; box-sizing: border-box;
+  font: inherit; font-size: 1rem; text-align: center; background: var(--gr-sfondo, #fff); color: inherit;
+  border: 1px solid var(--gr-bordo, #888); cursor: pointer;
+}
+.gr-cella:focus-visible, .gr-segno:focus-visible { outline: 3px solid var(--gr-fuoco, #0b57d0); outline-offset: -2px; position: relative; }
+.gr-piena { background: var(--gr-piena, #222); }
+.gr-bordo-destro { border-right: 3px solid var(--gr-bordo-forte, #222); }
+.gr-bordo-sotto { border-bottom: 3px solid var(--gr-bordo-forte, #222); }
+.gr-segno { width: var(--gr-segno, 28px); height: var(--gr-cella, 36px); padding: 0; font: inherit; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.gr-indizi { display: grid; font-size: 0.875rem; }
+.gr-indizi-colonne { margin-left: var(--gr-margine-righe, 5rem); align-items: end; text-align: center; }
+.gr-indizi-colonne > span { display: flex; flex-direction: column; }
+.gr-indizi-righe { display: flex; flex-direction: column; width: var(--gr-margine-righe, 5rem); text-align: right; padding-right: 0.5rem; box-sizing: border-box; }
+.gr-indizi-righe > span { height: var(--gr-cella, 36px); line-height: var(--gr-cella, 36px); white-space: nowrap; }
+.gr-controlli { margin: 0.5rem 0; padding-left: 1.25rem; }
+.gr-controlli-vuoto { color: var(--gr-ok, #1a6b2e); }
+.gr-campo { display: block; margin: 0.5rem 0; }
+.gr-campo textarea, .gr-campo input[type="text"] { display: block; width: 100%; max-width: 40rem; font: inherit; box-sizing: border-box; }
+.gr-voce { border: 1px solid var(--gr-bordo, #888); padding: 0.5rem 0.75rem; margin: 0.5rem 0; }

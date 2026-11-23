@@ -17,6 +17,8 @@ public static class HandlerRegistration
         services.AddScoped<EvalExtractionHandler>();
         services.AddScoped<EvalSinteticoHandler>();
         services.AddScoped<EvalDraftHandler>();
+        services.AddScoped<EvalReviewTimeHandler>();
+        services.AddScoped(_ => new DBEnigmistica.Application.Valutazione.TempiRevisione.ServizioTempiRevisione());
         services.AddScoped<TypesGenerateHandler>();
         services.AddSingleton<DBEnigmistica.Application.Valutazione.IGeneratorePdfSet, GeneratorePdfSetSintetico>();
         services.AddScoped<ExportGamesHandler>();

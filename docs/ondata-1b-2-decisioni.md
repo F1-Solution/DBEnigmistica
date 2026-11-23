@@ -62,3 +62,54 @@ Con `DalVivoAbilitato = false` e senza Registrazioni in modalità riproduci, `db
 - `1.1-prova`: prova entro il 13/12/2026.
 - Regole v0 e brief corretti: entro il 3/1/2027.
 - Tutte le regole dei nove descrittori sono ancora in bozza (`regole.stato = bozza`). Il compilatore del prompt le rifiuta fuori dai test, quindi nessuna generazione AI vera parte prima dell'approvazione.
+
+## Decisioni dopo la revisione (23/11/2026)
+
+### D1b.2-5. Licenze delle dipendenze di sviluppo
+
+**Decisione.** Sono ammesse come eccezione, solo per strumenti di sviluppo e build: MPL-2.0 (lightningcss), BlueOak-1.0.0 (minimatch, lru-cache) e CC-BY-4.0 (caniuse-lite). Le dipendenze servite nelle pagine restano MIT, Apache-2.0, BSD o ISC.
+
+**Opzioni scartate.**
+- *Sostituire le dipendenze con licenze permissive.* Richiede modifiche alla toolchain senza un beneficio per il prodotto.
+- *Rimandare la questione alla fase 2.* Lascerebbe la CI con una verifica delle licenze non superata.
+
+### D1b.2-6. Validatore del rebus
+
+**Decisione.** Il controllo `diagramma-coerente-con-soluzione` si adatta al diagramma del rebus, che contiene solo le lunghezze e non il segno `=`. Il descrittore non cambia.
+
+**Opzioni scartate.**
+- *Togliere il validatore dal descrittore v0.* Perde il controllo di coerenza che vale per le altre Tipologie.
+- *Lasciare il falso allarme.* Blocca rebus corretti.
+
+### D1b.2-7. Registrazioni sintetiche per il collaudo del 7/12
+
+**Decisione.** Il collaudo usa Registrazioni sintetiche per le quattro famiglie con AI: crittografia sinonimica e perifrastica, anagramma, rebus e cruciverba. Ogni famiglia ha il suo brief fisso, elencato in `.planning/phases/1b/brief-collaudo-1b.2.md`.
+
+**Opzioni scartate.**
+- *Collaudare solo i giochi logici.* Lascerebbe fuori il flusso di generazione con AI.
+- *Un solo brief comune.* Non copre le differenze tra le famiglie.
+
+### D1b.2-8. Regole in bozza nella riproduzione
+
+**Decisione.** Le regole in bozza sono ammesse solo in modalità riproduci, con l'avviso "regole in bozza" a schermo. Dal vivo restano bloccate. Con l'interruttore dal vivo spento non parte nessuna chiamata.
+
+**Opzioni scartate.**
+- *Collaudo ridotto, senza famiglie con AI.* Non verifica il flusso di generazione.
+- *Candidati inseriti direttamente nel database.* Aggira il percorso di generazione e di revisione.
+
+### D1b.2-9. Limite di tempo della verifica dopo una modifica
+
+**Decisione.** La verifica dopo una modifica deve restare sotto 200 ms per il sudoku e sotto 500 ms per futoshiki e nonogramma.
+
+**Opzioni scartate.**
+- *Mediana a 200 ms per tutti i giochi fuori dalla copertura.* Non tiene conto dei giochi più pesanti.
+- *Nessun limite nei test.* Lascia passare regressioni di prestazione.
+
+### D1b.2-10. Prova manuale dell'archivio win-x64
+
+**Decisione.** `publish.yml` può essere lanciato a mano (workflow_dispatch) sul ramo dell'ondata, per provare l'archivio win-x64.
+
+**Opzioni scartate.**
+- *Solo il controllo equivalente in `ci.yml`.* Non produce l'archivio da provare sul PC.
+
+**Nota.** Gli aggiornamenti di React 19.3 ed ESLint sono rimandati a dopo il 30/11, per la regola delle due settimane.

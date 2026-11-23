@@ -4,6 +4,7 @@ using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Tests.Unit.Creazione;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
 
 namespace DBEnigmistica.Tests.Integration.Prototipo;
@@ -165,6 +166,126 @@ public class PrototipoIntegrationTests(PostgresFixture fixture) : PrototipoTestB
 
         await s.Revisione.RegistraEsitoAsync(tre[0].Id, new EsitoRichiesto("accettato"));
         (await s.Revisione.ProssimoAsync("crittografia-breve"))!.Id.Should().Be(tre[1].Id);
+    }
+
+    [Fact]
+    public async Task ConInterruttoreSpento_GenerareConAiSiRifiutaSenzaCreareNulla()
+    {
+        const string messaggio = "Le chiamate dal vivo sono disattivate (prova).";
+        await using var s = Servizi(new FornitoreAiCreazioneDisattivato(messaggio));
+
+        var azione = () => s.Genera.EseguiAsync(BriefCrittografia());
+
+        (await azione.Should().ThrowAsync<RichiestaNonValidaException>()).Which.Errori.Should().Contain(messaggio);
+        (await s.Repository.BriefDellaTipologiaAsync("crittografia-breve")).Should().BeEmpty("il rifiuto avviene prima di creare un candidato");
+    }
+
+    [Fact]
+    public async Task RegoleInBozza_InRiproduzione_LaGenerazioneFunziona()
+    {
+        var finto = new FornitoreAiCreazioneInRiproduzione(new FornitoreCreazioneFinto().Riuscita(RispostaCrittografia()));
+        await using var s = Servizi(finto, consentiBozza: false);
+
+        var esito = await s.Genera.EseguiAsync(BriefCrittografia());
+
+        esito.Valido!.Stato.Should().Be(StatoCandidato.DaRivedere);
+    }
+
+    [Fact]
+    public async Task RegoleInBozza_DalVivo_SiRifiutanoSenzaChiamate()
+    {
+        var finto = new FornitoreCreazioneFinto().Riuscita(RispostaCrittografia());
+        await using var s = Servizi(finto, consentiBozza: false);
+
+        var azione = () => s.Genera.EseguiAsync(BriefCrittografia());
+
+        (await azione.Should().ThrowAsync<RichiestaNonValidaException>()).Which.Errori.Should().Contain(e => e.Contains("bozza", StringComparison.Ordinal));
+        finto.Richieste.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task InterruttoreSpento_ConRegoleApprovate_RifiutaComunqueSenzaChiamate()
+    {
+        var approvato = Descrittore("crittografia-breve") with { Regole = Descrittore("crittografia-breve").Regole with { Approvata = true, ApprovateIl = "2026-12-01" } };
+        await using var s = Servizi(new FornitoreAiCreazioneDisattivato("spento"), new CatalogoInMemoria(approvato), consentiBozza: false);
+
+        var azione = () => s.Genera.EseguiAsync(BriefCrittografia());
+
+        (await azione.Should().ThrowAsync<RichiestaNonValidaException>()).Which.Errori.Should().Contain("spento");
+    }
+
+    [Fact]
+    public async Task ConInterruttoreSpento_IlSudokuSiGeneraEIlCandidatoSiRivede()
+    {
+        await using var s = Servizi(new FornitoreAiCreazioneDisattivato("spento"));
+
+        var esito = await s.Genera.EseguiAsync(FileDelRepository.Esempio("brief", "valido-sudoku.json"));
+        var prossimo = await s.Revisione.ProssimoAsync("sudoku");
+
+        esito.Valido!.Modo.Should().Be("algoritmo");
+        prossimo!.Id.Should().Be(esito.Valido.Id);
+    }
+
+    [Fact]
+    public async Task ReviewTime_LeggeICandidatiDalDatabaseConIlRuoloDelPrototipo()
+    {
+        var finto = new FornitoreCreazioneFinto().Riuscita(RispostaCrittografia()).Riuscita(RispostaCrittografia());
+        await using var s = Servizi(finto);
+        var primo = (await s.Genera.EseguiAsync(BriefCrittografia())).Valido!;
+        await s.Genera.EseguiAsync(BriefCrittografia());
+        await s.Revisione.RegistraEsitoAsync(primo.Id, new EsitoRichiesto("accettato", TempoAttivoMs: 600_000));
+        var configurazione = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:DefaultConnection"] = ConnectionString }).Build();
+
+        var candidati = await new DBEnigmistica.Infrastructure.Prototipo.LettoreCandidatiRapporto(configurazione).LeggiAsync();
+        var rapporto = DBEnigmistica.Application.Valutazione.TempiRevisione.CalcolatoreTempiRevisione.Calcola(candidati, DateTimeOffset.UnixEpoch);
+
+        var g = rapporto.Gruppi.Single(x => x.Gruppo == "crittografia_breve");
+        g.Validi.Should().Be(2);
+        g.Rivisti.Should().Be(1);
+        g.Minuti.Mediana.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task SalvaTempo_SalvaTempoEUltimaAttivitaESoloInCrescita()
+    {
+        var finto = new FornitoreCreazioneFinto().Riuscita(RispostaCrittografia());
+        await using var s = Servizi(finto);
+        var c = (await s.Genera.EseguiAsync(BriefCrittografia())).Valido!;
+        await s.Revisione.ProssimoAsync("crittografia-breve");
+        var t1 = new DateTime(2026, 11, 24, 10, 0, 0, DateTimeKind.Utc);
+
+        var salvato = await s.Revisione.SalvaTempoAsync(c.Id, 160_000, t1);
+        var uguale = await s.Revisione.SalvaTempoAsync(c.Id, 160_000, t1.AddSeconds(15));
+        var indietro = () => s.Revisione.SalvaTempoAsync(c.Id, 159_999, t1.AddSeconds(30));
+        var negativo = () => s.Revisione.SalvaTempoAsync(c.Id, -1, t1);
+
+        salvato.TempoAttivoMs.Should().Be(160_000);
+        salvato.UltimaAttivitaIl.Should().Be(t1);
+        uguale.UltimaAttivitaIl.Should().Be(t1.AddSeconds(15));
+        await indietro.Should().ThrowAsync<RichiestaNonValidaException>().WithMessage("*non può diminuire*");
+        await negativo.Should().ThrowAsync<RichiestaNonValidaException>();
+        (await s.Repository.TrovaAsync(c.Id))!.TempoAttivoMs.Should().Be(160_000);
+        (await EventiAsync()).Should().NotContain(e => e.Tipo == "esito_revisione", "il salvataggio periodico non scrive nel registro");
+    }
+
+    [Fact]
+    public async Task SalvaTempo_SuUnCandidatoCheNonELProssimoODopoLEsito_DaConflitto()
+    {
+        var finto = new FornitoreCreazioneFinto().Riuscita(RispostaCrittografia()).Riuscita(RispostaCrittografia());
+        await using var s = Servizi(finto);
+        var primo = (await s.Genera.EseguiAsync(BriefCrittografia())).Valido!;
+        var secondo = (await s.Genera.EseguiAsync(BriefCrittografia())).Valido!;
+        var adesso = DateTime.UtcNow;
+
+        var saltaAlSecondo = () => s.Revisione.SalvaTempoAsync(secondo.Id, 1000, adesso);
+        var sconosciuto = () => s.Revisione.SalvaTempoAsync(Guid.NewGuid(), 1000, adesso);
+        await saltaAlSecondo.Should().ThrowAsync<ConflittoCreazioneException>();
+        await sconosciuto.Should().ThrowAsync<NonTrovatoCreazioneException>();
+
+        await s.Revisione.RegistraEsitoAsync(primo.Id, new EsitoRichiesto("accettato", TempoAttivoMs: 5000));
+        var dopoLEsito = () => s.Revisione.SalvaTempoAsync(primo.Id, 6000, adesso);
+        await dopoLEsito.Should().ThrowAsync<ConflittoCreazioneException>();
     }
 
     [Fact]

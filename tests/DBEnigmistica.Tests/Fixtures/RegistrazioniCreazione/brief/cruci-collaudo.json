@@ -1,0 +1,16 @@
+{
+  "versione_formato": 1,
+  "tipologia": "cruciverba-classico",
+  "versione_tipologia": 1,
+  "famiglia": "cruciverba",
+  "tema": null,
+  "vincoli": [
+    "Definizioni brevi, al massimo 8 parole"
+  ],
+  "difficolta": 2,
+  "dimensioni": {
+    "righe": 9,
+    "colonne": 9
+  },
+  "sottotipo": null
+}

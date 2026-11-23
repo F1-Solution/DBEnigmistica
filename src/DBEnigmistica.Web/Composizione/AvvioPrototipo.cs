@@ -79,7 +79,7 @@ public static class AvvioPrototipo
             throw new OptionsValidationException(Options.DefaultName, typeof(FornitoreAiOptions), [MessaggioRuolo]);
     }
 
-    /// <summary>Errori di configurazione: stringa di connessione, modello e Fornitore AI di creazione, cartella dei descrittori.</summary>
+    /// <summary>Errori di configurazione: stringa di connessione, Fornitore AI di creazione se serve, cartella dei descrittori.</summary>
     public static IReadOnlyList<string> Verifica(IConfiguration configurazione, IAmbienteFornitoreAi ambiente)
     {
         var errori = new List<string>();
@@ -88,12 +88,11 @@ public static class AvvioPrototipo
 
         var opzioni = new FornitoreAiOptions();
         configurazione.GetSection(FornitoreAiOptions.SectionName).Bind(opzioni);
-        errori.AddRange(ValidatoreOpzioniCreazione.Valida(opzioni, ambiente));
 
-        // Fuori dalla riproduzione delle Registrazioni la generazione chiama il Fornitore AI dal vivo.
+        // D1b.2-3: con l'interruttore spento e senza riproduzione l'AI non serve (Genera con AI si rifiuta), quindi nessuna configurazione da chiedere.
         var riproduce = opzioni.Creazione.Registrazioni.Modalita?.Trim() == RegistrazioniOptions.ModalitaRiproduci;
-        if (!opzioni.DalVivoAbilitato && !riproduce)
-            errori.Add(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+        if (opzioni.DalVivoAbilitato || riproduce)
+            errori.AddRange(ValidatoreOpzioniCreazione.Valida(opzioni, ambiente));
 
         var cartella = DependencyInjectionPrototipo.CartellaTipologie(configurazione);
         if (!Directory.Exists(cartella))

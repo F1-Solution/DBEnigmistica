@@ -74,16 +74,22 @@ public class RegistrazioniConfigurazioneTests
         return scope.ServiceProvider.GetRequiredService<T>();
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void D8_ConChiaveDalVivoSpenta_LaCreazioneDelFornitoreDalVivoLanciaIlMessaggioDiDisattivazione(bool creazione)
+    [Fact]
+    public void D8_ConChiaveDalVivoSpenta_IlFornitoreDiEstrazioneLanciaIlMessaggioDiDisattivazione()
     {
-        var risolvi = () => creazione
-            ? (object)RisolviServizio<IFornitoreAiCreazione>(("FornitoreAi:DalVivoAbilitato", "false"))
-            : RisolviServizio<IFornitoreAiEstrazione>(("FornitoreAi:DalVivoAbilitato", "false"));
+        var risolvi = () => RisolviServizio<IFornitoreAiEstrazione>(("FornitoreAi:DalVivoAbilitato", "false"));
 
         risolvi.Should().Throw<OptionsValidationException>().Which.Failures.Should().Contain(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+    }
+
+    [Fact]
+    public void D8_ConChiaveDalVivoSpenta_IlFornitoreDiCreazioneRifiutaSenzaLanciareAllaCostruzione()
+    {
+        // D1b.2-3: il prototipo parte; solo la generazione con AI si rifiuta.
+        var fornitore = RisolviServizio<IFornitoreAiCreazione>(("FornitoreAi:DalVivoAbilitato", "false"));
+
+        fornitore.Should().BeAssignableTo<DBEnigmistica.Application.Creazione.IFornitoreAiDisattivato>()
+            .Which.Messaggio.Should().Be(FornitoreAiOptions.MessaggioDalVivoDisattivato);
     }
 
     [Theory]

@@ -3,7 +3,7 @@ using DBEnigmistica.Tipologie.Modello;
 
 namespace DBEnigmistica.Tipologie.Validatori;
 
-/// <summary>Il diagramma ha un solo segno =, e i numeri dopo il segno sono le lettere delle parole della soluzione.</summary>
+/// <summary>Il diagramma ha un solo segno =, e i numeri dopo il segno sono le lettere delle parole della soluzione; nel rebus il diagramma è solo l'elenco di queste lunghezze.</summary>
 public sealed class DiagrammaCoerenteConSoluzioneValidatore : ValidatoreStrutturaleBase
 {
     public override NomeValidatore Nome => NomeValidatore.DiagrammaCoerenteConSoluzione;
@@ -16,7 +16,10 @@ public sealed class DiagrammaCoerenteConSoluzioneValidatore : ValidatoreStruttur
         var testo = LetturaDati.Testo(dati, nomeDiagramma);
         if (string.IsNullOrWhiteSpace(testo))
             return;
-        if (!DiagrammaLetto.TryLeggi(testo, out var diagramma, out var errore))
+        var rebus = descrittore.Famiglia == FamigliaTipologia.Rebus;
+        DiagrammaLetto? diagramma;
+        string errore;
+        if (!(rebus ? DiagrammaLetto.TryLeggiSoluzione(testo, out diagramma, out errore) : DiagrammaLetto.TryLeggi(testo, out diagramma, out errore)))
         {
             problemi.Add(new ProblemaValidazione(nomeDiagramma, errore));
             return;
@@ -27,6 +30,8 @@ public sealed class DiagrammaCoerenteConSoluzioneValidatore : ValidatoreStruttur
             return;
         var lunghezze = parole.Select(p => p.Length).ToList();
         if (!lunghezze.SequenceEqual(diagramma!.Destra))
-            problemi.Add(new ProblemaValidazione(nomeDiagramma, $"Dopo il segno = il diagramma indica {string.Join(' ', diagramma.Destra)} ma le parole della soluzione hanno {string.Join(' ', lunghezze)} lettere."));
+            problemi.Add(new ProblemaValidazione(nomeDiagramma, rebus
+                ? $"Il diagramma indica {string.Join(' ', diagramma.Destra)} ma le parole della soluzione hanno {string.Join(' ', lunghezze)} lettere."
+                : $"Dopo il segno = il diagramma indica {string.Join(' ', diagramma.Destra)} ma le parole della soluzione hanno {string.Join(' ', lunghezze)} lettere."));
     }
 }

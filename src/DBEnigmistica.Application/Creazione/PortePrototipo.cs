@@ -7,6 +7,9 @@ public interface ICatalogoTipologie
 {
     /// <summary>Il descrittore della versione indicata, o <c>null</c> se non esiste.</summary>
     Task<DescrittoreTipologia?> TrovaAsync(string id, int versione, CancellationToken cancellationToken = default);
+
+    /// <summary>Tutti i descrittori, di ogni versione, in ordine di id e di versione.</summary>
+    Task<IReadOnlyList<DescrittoreTipologia>> ElencaAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>Risultato di un generatore algoritmico: contenuto valido per lo schema, seme e versione del generatore.</summary>

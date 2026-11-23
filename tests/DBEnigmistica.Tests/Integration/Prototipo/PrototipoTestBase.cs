@@ -17,6 +17,9 @@ public sealed class CatalogoInMemoria(params DescrittoreTipologia[] descrittori)
 {
     public Task<DescrittoreTipologia?> TrovaAsync(string id, int versione, CancellationToken cancellationToken = default) =>
         Task.FromResult(descrittori.FirstOrDefault(d => d.Id == id && d.Versione == versione));
+
+    public Task<IReadOnlyList<DescrittoreTipologia>> ElencaAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<DescrittoreTipologia>>([.. descrittori.OrderBy(d => d.Id, StringComparer.Ordinal).ThenBy(d => d.Versione)]);
 }
 
 /// <summary>Fornitore di creazione finto: restituisce le risposte preparate in ordine, senza alcuna chiamata, e ricorda le richieste.</summary>

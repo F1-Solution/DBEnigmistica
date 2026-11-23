@@ -25,7 +25,8 @@ jobs:
   build-test:
     name: Build e test
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # 30 minuti: ai 20 di prima si aggiungono Node, Chromium e il test nel browser.
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -37,6 +38,13 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Setup Node 24 (LTS)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: interfaccia/.nvmrc
+          cache: npm
+          cache-dependency-path: interfaccia/package-lock.json
+
       - name: Cache NuGet
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -44,6 +52,27 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/Directory.Build.props') }}
           restore-keys: |
             nuget-${{ runner.os }}-
+
+      # L'interfaccia si costruisce prima della compilazione .NET: l'host la copia in wwwroot e il test nel browser la serve.
+      - name: Interfaccia, installazione (npm ci)
+        working-directory: interfaccia
+        run: npm ci
+
+      - name: Interfaccia, lint
+        working-directory: interfaccia
+        run: npm run lint
+
+      - name: Interfaccia, controllo dei tipi
+        working-directory: interfaccia
+        run: npm run typecheck
+
+      - name: Interfaccia, test (Vitest)
+        working-directory: interfaccia
+        run: npm test
+
+      - name: Interfaccia, costruzione
+        working-directory: interfaccia
+        run: npm run build
 
       - name: Ripristino
         run: dotnet restore "$SOLUTION"
@@ -53,11 +82,11 @@ jobs:
         run: dotnet format "$SOLUTION" --verify-no-changes --no-restore
 
       - name: Compilazione (Release, avvisi come errori)
-        run: dotnet build "$SOLUTION" --configuration Release --no-restore -warnaserror -consoleLoggerParameters:Summary -v:minimal
+        run: dotnet build "$SOLUTION" --configuration Release --no-restore -warnaserror -p:RichiediInterfaccia=true -consoleLoggerParameters:Summary -v:minimal
 
       # L'SQL registrato in tipologie/ deve coincidere con quello generato dai descrittori (le versioni 0 non hanno SQL).
       - name: SQL delle Tipologie allineato (types generate --check)
-        run: dotnet run --project src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release --no-build -- types generate --check
+        run: dotnet run --project src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release --no-build --no-launch-profile -- types generate --check
 
       # Squawk fissato per versione e checksum (progetto-1.1, sezione 8): controlla solo gli SQL generati, con .squawk.toml.
       - name: Squawk sugli SQL delle Tipologie
@@ -75,7 +104,7 @@ jobs:
       - name: Regressione sull'estrazione (Set sintetico)
         run: |
           status=0
-          dotnet run --project src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release --no-build -- \
+          dotnet run --project src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release --no-build --no-launch-profile -- \
             eval extraction --replay --set tests/DBEnigmistica.Tests/Fixtures/SetSintetico \
             --output "$RUNNER_TEMP/regressione-sintetica" || status=$?
           if [ -f "$RUNNER_TEMP/regressione-sintetica/rapporto.md" ]; then cat "$RUNNER_TEMP/regressione-sintetica/rapporto.md" >> "$GITHUB_STEP_SUMMARY"; fi
@@ -90,24 +119,57 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      # La pubblicazione autonoma deve portare l'host del prototipo e i descrittori (l'immagine Docker no: IncludePrototipo=false).
+      # Rapporto dei tempi di revisione sui 30 candidati sintetici (nessun database, nessuna chiamata AI): confronta, non decide.
+      - name: Rapporto review-time (candidati sintetici)
+        run: |
+          dotnet run --project src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release --no-build --no-launch-profile -- \
+            eval review-time --candidati tests/DBEnigmistica.Tests/Fixtures/CandidatiSintetici/candidati.json \
+            --output "$RUNNER_TEMP/review-time-sintetico"
+          cat "$RUNNER_TEMP/review-time-sintetico/review-time.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rapporto review-time
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: review-time-sintetico
+          path: ${{ runner.temp }}/review-time-sintetico
+          if-no-files-found: warn
+          retention-days: 14
+
+      # La pubblicazione autonoma deve portare l'host del prototipo, l'interfaccia costruita e i descrittori (l'immagine Docker no: IncludePrototipo=false).
       - name: Pubblicazione di controllo (prototipo)
         run: |
           set -euo pipefail
           dotnet publish src/DBEnigmistica.Console/DBEnigmistica.Console.csproj --configuration Release \
-            --runtime linux-x64 --self-contained true --output "$RUNNER_TEMP/pub-prototipo"
+            --runtime linux-x64 --self-contained true -p:RichiediInterfaccia=true --output "$RUNNER_TEMP/pub-prototipo"
           test -f "$RUNNER_TEMP/pub-prototipo/DBEnigmistica.Web.dll"
+          test -f "$RUNNER_TEMP/pub-prototipo/wwwroot/index.html"
           test -f "$RUNNER_TEMP/pub-prototipo/Microsoft.AspNetCore.dll"
           for id in crittografia-breve rebus sudoku futoshiki nonogramma; do test -f "$RUNNER_TEMP/pub-prototipo/tipologie/$id/v0.json"; done
+
+      # Solo Chromium, con le librerie di sistema: il test nel browser (Playwright per .NET) non usa altri browser.
+      - name: Cache dei browser di Playwright
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+
+      - name: Installa Chromium (Playwright)
+        run: pwsh tests/DBEnigmistica.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
       # I test d'integrazione usano Testcontainers (postgres:18-alpine): il Docker dei runner ubuntu basta.
       - name: Test con copertura
         run: >
           dotnet test "$SOLUTION" --configuration Release --no-build
+          --filter "Category!=Temporizzato&Category!=Strumento"
           --collect:"XPlat Code Coverage"
           --logger "trx;LogFileName=test-results.trx"
           --logger "console;verbosity=normal"
           --results-directory "$RUNNER_TEMP/test-results"
+
+      # I test dei tempi girano senza copertura, che li rallenta.
+      - name: Test dei tempi
+        run: dotnet test "$SOLUTION" --configuration Release --no-build --filter "Category=Temporizzato"
 
       # Copertura delle righe di Domain, Application e Tipologie: minimo 80% (ROADMAP, fase 0, criterio 11).
       - name: Soglia di copertura
@@ -229,6 +291,16 @@ jobs:
 
       - name: Ripristino
         run: dotnet restore "$SOLUTION"
+
+      - name: Setup Node 24 (LTS)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: interfaccia/.nvmrc
+
+      # Solo il lockfile: nessuna installazione, il controllo non esegue script dei pacchetti.
+      - name: Pacchetti npm vulnerabili (livello high o superiore)
+        working-directory: interfaccia
+        run: npm audit --package-lock-only --audit-level=high
 
       - name: Pacchetti vulnerabili (anche transitivi)
         shell: bash

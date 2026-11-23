@@ -11,6 +11,7 @@ public class ValidatoriGiochiBreviTests
     private static readonly Descrittore Anagramma = Descrittore("anagramma");
     private static readonly Descrittore Cambio = Descrittore("cambio-di-lettera");
     private static readonly Descrittore Sciarada = Descrittore("sciarada");
+    private static readonly Descrittore Rebus = Descrittore("rebus", 0);
 
     // --- diagramma-coerente-con-soluzione ---
 
@@ -32,6 +33,24 @@ public class ValidatoriGiochiBreviTests
     [InlineData("= 4", "cena")]
     public void Diagramma_NonCoerente_NonValido(string diagramma, string soluzione) =>
         new DiagrammaCoerenteConSoluzioneValidatore().Valida(Anagramma, Breve(diagramma, null, soluzione)).Problemi.Should().Contain(p => p.Percorso == "diagramma");
+
+    // Il diagramma del rebus è solo l'elenco delle lunghezze delle parole della soluzione, senza segno =.
+    [Theory]
+    [InlineData("2 5 1 6", "ma tenda e uccisi")]
+    [InlineData("(6 4)", "strana idea")]
+    public void Rebus_ConLunghezzeCoerenti_EValido(string diagramma, string soluzione) =>
+        new DiagrammaCoerenteConSoluzioneValidatore().Valida(Rebus, Breve(diagramma, null, soluzione)).EValido.Should().BeTrue();
+
+    [Theory]
+    [InlineData("6 5", "strana idea")]
+    [InlineData("6 4 1", "strana idea")]
+    [InlineData("a b", "strana idea")]
+    public void Rebus_ConLunghezzeNonCoerenti_NonValido(string diagramma, string soluzione) =>
+        new DiagrammaCoerenteConSoluzioneValidatore().Valida(Rebus, Breve(diagramma, null, soluzione)).Problemi.Should().Contain(p => p.Percorso == "diagramma");
+
+    [Fact]
+    public void Rebus_ConSegnoUguale_NonEUnDiagrammaDelRebus() =>
+        new DiagrammaCoerenteConSoluzioneValidatore().Valida(Rebus, Breve("6 = 4", null, "strana idea")).Problemi.Should().Contain(p => p.Percorso == "diagramma");
 
     [Fact]
     public void Diagramma_SoluzioneNonStampata_ControllaSoloLaForma()

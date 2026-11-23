@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using DBEnigmistica.AI.Configuration;
 using DBEnigmistica.Application.Creazione;
 using DBEnigmistica.Application.FornitoreAi;
 using DBEnigmistica.Tests.Unit.Creazione;
@@ -135,6 +136,142 @@ public class ApiPrototipoTests(PostgresFixture fixture) : PrototipoTestBase(fixt
 
         (await host.Client.PostAsync("/api/prototipo/tipologie/crittografia-breve/prossimo", Corpo("{}"))).StatusCode.Should().Be(HttpStatusCode.NoContent);
         (await VerificaRegistroAsync()).Integra.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Api_Tempo_SalvaRifiutaIlTempoMinoreEIlCandidatoNonProssimo()
+    {
+        var adesso = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", System.Globalization.CultureInfo.InvariantCulture);
+        await using var host = await AvviaAsync(f => f.Riuscita(RispostaCrittografia()).Riuscita(RispostaCrittografia()));
+        var id1 = (await LeggiAsync(await host.Client.PostAsync("/api/prototipo/candidati", Corpo(BriefCrittografia())))).GetProperty("valido"u8).GetGuid();
+        var id2 = (await LeggiAsync(await host.Client.PostAsync("/api/prototipo/candidati", Corpo(BriefCrittografia())))).GetProperty("valido"u8).GetGuid();
+        await host.Client.PostAsync("/api/prototipo/tipologie/crittografia-breve/prossimo", Corpo("{}"));
+
+        var salvato = await host.Client.PutAsync($"/api/prototipo/candidati/{id1}/tempo", Corpo("{\"tempoAttivoMs\":15000,\"ultimaAttivitaIl\":\"{adesso}\"}".Replace("{adesso}", adesso)));
+        salvato.StatusCode.Should().Be(HttpStatusCode.OK);
+        var corpo = await LeggiAsync(salvato);
+        corpo.GetProperty("tempoAttivoMs"u8).GetInt64().Should().Be(15000);
+        corpo.GetProperty("ultimaAttivitaIl"u8).GetString().Should().StartWith(adesso[..19]);
+
+        var minore = await host.Client.PutAsync($"/api/prototipo/candidati/{id1}/tempo", Corpo("{\"tempoAttivoMs\":14999,\"ultimaAttivitaIl\":\"{adesso}\"}".Replace("{adesso}", adesso)));
+        minore.StatusCode.Should().Be((HttpStatusCode)422);
+
+        var altro = await host.Client.PutAsync($"/api/prototipo/candidati/{id2}/tempo", Corpo("{\"tempoAttivoMs\":1,\"ultimaAttivitaIl\":\"{adesso}\"}".Replace("{adesso}", adesso)));
+        altro.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        (await host.Client.PutAsync($"/api/prototipo/candidati/{id1}/tempo", Corpo("{}"))).StatusCode.Should().Be((HttpStatusCode)422);
+        (await host.Client.PutAsync($"/api/prototipo/candidati/{id1}/tempo", Corpo("{\"tempoAttivoMs\":\"x\",\"ultimaAttivitaIl\":\"ieri\"}"))).StatusCode.Should().Be((HttpStatusCode)422);
+        (await host.Client.PutAsync($"/api/prototipo/candidati/{Guid.NewGuid()}/tempo", Corpo("{\"tempoAttivoMs\":1,\"ultimaAttivitaIl\":\"{adesso}\"}".Replace("{adesso}", adesso)))).StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Theory]
+    [InlineData("{\"tempoAttivoMs\":1000,\"ultimaAttivitaIl\":\"2026-12-01T10:00:15\"}")]
+    [InlineData("{\"tempoAttivoMs\":-1,\"ultimaAttivitaIl\":\"2026-12-01T10:00:15Z\"}")]
+    [InlineData("{\"tempoAttivoMs\":1000,\"ultimaAttivitaIl\":\"2999-01-01T00:00:00Z\"}")]
+    public async Task Api_Tempo_RifiutaDataSenzaFusoOrarioTempoNegativoEDataNelFuturo(string corpo)
+    {
+        await using var host = await AvviaAsync(f => f.Riuscita(RispostaCrittografia()));
+        var id = (await LeggiAsync(await host.Client.PostAsync("/api/prototipo/candidati", Corpo(BriefCrittografia())))).GetProperty("valido"u8).GetGuid();
+        await host.Client.PostAsync("/api/prototipo/tipologie/crittografia-breve/prossimo", Corpo("{}"));
+
+        var risposta = await host.Client.PutAsync($"/api/prototipo/candidati/{id}/tempo", Corpo(corpo));
+
+        risposta.StatusCode.Should().Be((HttpStatusCode)422);
+    }
+
+    private async Task<(WebApplication App, HttpClient Client)> AvviaConAsync(IFornitoreAiCreazione fornitore, params DescrittoreTipologia[] catalogo)
+    {
+        var configurazione = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["ConnectionStrings:DefaultConnection"] = ConnectionString,
+            ["Prototipo:Porta"] = "0",
+        }).Build();
+        var app = PrototipoHost.Crea(configurazione, servizi =>
+        {
+            servizi.AddSingleton(fornitore);
+            servizi.AddSingleton<ICatalogoTipologie>(new CatalogoInMemoria(catalogo));
+        });
+        await app.StartAsync();
+        return (app, new HttpClient { BaseAddress = new Uri(PrototipoHost.Indirizzi(app).Single()) });
+    }
+
+    private static async Task<JsonElement> TipologiaAsync(HttpClient client, string id)
+    {
+        var elenco = (await LeggiAsync(await client.GetAsync("/api/prototipo/tipologie"))).GetProperty("tipologie"u8);
+        return elenco.EnumerateArray().Single(t => t.GetProperty("id"u8).GetString() == id);
+    }
+
+    [Fact]
+    public async Task Api_Tipologie_ConInterruttoreSpento_SpiegaIlMotivoConIlMessaggioDiD8()
+    {
+        var (app, client) = await AvviaConAsync(
+            new FornitoreAiCreazioneDisattivato(FornitoreAiOptions.MessaggioDalVivoDisattivato), Approvato("crittografia-breve"), Approvato("sudoku"));
+        using var _ = client;
+        await using var __ = app;
+
+        var critto = await TipologiaAsync(client, "crittografia-breve");
+        var sudoku = await TipologiaAsync(client, "sudoku");
+
+        critto.GetProperty("generazioneConsentita"u8).GetBoolean().Should().BeFalse();
+        critto.GetProperty("motivoGenerazioneNonConsentita"u8).GetString().Should().Be(FornitoreAiOptions.MessaggioDalVivoDisattivato);
+        sudoku.GetProperty("generazioneConsentita"u8).GetBoolean().Should().BeTrue();
+        sudoku.GetProperty("motivoGenerazioneNonConsentita"u8).ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task Api_Tipologie_ConRegoleInBozza_SpiegaIlMotivo_ConRegoleApprovateNonHaMotivo()
+    {
+        var (app, client) = await AvviaConAsync(new FornitoreCreazioneFinto(), Descrittore("crittografia-breve"), Approvato("sudoku"));
+        using var _ = client;
+        await using var __ = app;
+
+        var critto = await TipologiaAsync(client, "crittografia-breve");
+
+        critto.GetProperty("generazioneConsentita"u8).GetBoolean().Should().BeFalse();
+        critto.GetProperty("motivoGenerazioneNonConsentita"u8).GetString().Should().StartWith("Regole in bozza");
+    }
+
+    private sealed class FornitoreSenzaRegistrazione : IFornitoreAiCreazione, IFornitoreAiInRiproduzione
+    {
+        public string IdFornitore => "claude-code";
+
+        public string Modello => "modello-finto";
+
+        public Task<RispostaCreazione> CreaAsync(RichiestaCreazione richiesta, CancellationToken cancellationToken = default) =>
+            throw new RegistrazioneMancanteException(new ChiaveRegistrazione(richiesta.ImprontaRichiesta, richiesta.VersionePrompt, IdFornitore, Modello));
+    }
+
+    [Fact]
+    public async Task Api_RegistrazioneMancante_Da422ConUnMessaggioChiaro()
+    {
+        var (app, client) = await AvviaConAsync(new FornitoreSenzaRegistrazione(), Approvato("crittografia-breve"));
+        using var _ = client;
+        await using var __ = app;
+
+        var risposta = await client.PostAsync("/api/prototipo/candidati", Corpo(BriefCrittografia()));
+
+        risposta.StatusCode.Should().Be((HttpStatusCode)422);
+        var errori = (await LeggiAsync(risposta)).GetProperty("errori"u8).EnumerateArray().Select(e => e.GetString()).ToList();
+        errori.Should().ContainSingle().Which.Should().Be("Nessuna Registrazione per questo brief: usa uno dei brief del collaudo.");
+    }
+
+    [Fact]
+    public async Task Api_Tipologie_ElencaLeTipologieConICampiDelBrief()
+    {
+        await using var host = await AvviaAsync(_ => { });
+
+        var risposta = await host.Client.GetAsync("/api/prototipo/tipologie");
+
+        risposta.StatusCode.Should().Be(HttpStatusCode.OK);
+        var tipologie = (await LeggiAsync(risposta)).GetProperty("tipologie"u8).EnumerateArray().ToList();
+        tipologie.Select(t => t.GetProperty("id"u8).GetString()).Should().BeEquivalentTo(["crittografia-breve", "sudoku"]);
+        var critto = tipologie.Single(t => t.GetProperty("id"u8).GetString() == "crittografia-breve");
+        critto.GetProperty("modo"u8).GetString().Should().Be("ai");
+        critto.GetProperty("statoRegole"u8).GetString().Should().Be("approvata");
+        critto.GetProperty("generazioneConsentita"u8).GetBoolean().Should().BeTrue();
+        tipologie.Single(t => t.GetProperty("id"u8).GetString() == "sudoku").GetProperty("generazioneConsentita"u8).GetBoolean().Should().BeTrue();
+        critto.GetProperty("campiBrief"u8).EnumerateArray().Select(c => c.GetProperty("nome"u8).GetString())
+            .Should().Contain(["tema", "sottotipo", "vincoli", "difficolta"]);
     }
 
     [Fact]

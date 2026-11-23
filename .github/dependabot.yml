@@ -27,6 +27,18 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
 
+  - package-ecosystem: npm
+    directory: "/interfaccia"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    # Versioni esatte in package.json: Dependabot propone l'aggiornamento esatto e basta, anche per i salti maggiori da rivedere.
+    versioning-strategy: increase
+    groups:
+      interfaccia-minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

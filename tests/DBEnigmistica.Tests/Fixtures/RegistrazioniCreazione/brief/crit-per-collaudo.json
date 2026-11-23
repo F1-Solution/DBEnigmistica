@@ -1,0 +1,11 @@
+{
+  "versione_formato": 1,
+  "tipologia": "crittografia-breve",
+  "versione_tipologia": 0,
+  "famiglia": "crittografia",
+  "tema": null,
+  "vincoli": [],
+  "difficolta": 3,
+  "dimensioni": null,
+  "sottotipo": "perifrastica"
+}

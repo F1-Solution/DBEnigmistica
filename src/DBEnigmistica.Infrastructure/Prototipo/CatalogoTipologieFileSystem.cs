@@ -22,6 +22,36 @@ public sealed partial class CatalogoTipologieFileSystem(string cartella) : ICata
             : throw new FormatException($"Il file {id}/v{versione}.json descrive un'altra Tipologia o versione.");
     }
 
+    public async Task<IReadOnlyList<DescrittoreTipologia>> ElencaAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Directory.Exists(cartella))
+            return [];
+
+        var trovati = new List<DescrittoreTipologia>();
+        foreach (var cartellaId in Directory.EnumerateDirectories(cartella).Order(StringComparer.Ordinal))
+        {
+            var id = Path.GetFileName(cartellaId);
+            if (!FormaId().IsMatch(id))
+                continue;
+
+            foreach (var file in Directory.EnumerateFiles(cartellaId, "v*.json"))
+            {
+                var corrispondenza = FormaFile().Match(Path.GetFileName(file));
+                if (!corrispondenza.Success)
+                    continue;
+
+                var versione = int.Parse(corrispondenza.Groups["n"].Value, System.Globalization.CultureInfo.InvariantCulture);
+                if (await TrovaAsync(id, versione, cancellationToken) is { } descrittore)
+                    trovati.Add(descrittore);
+            }
+        }
+
+        return [.. trovati.OrderBy(d => d.Id, StringComparer.Ordinal).ThenBy(d => d.Versione)];
+    }
+
+    [GeneratedRegex(@"^v(?<n>[0-9]{1,3})\.json$")]
+    private static partial Regex FormaFile();
+
     [GeneratedRegex("^[a-z][a-z0-9]*(-[a-z0-9]+)*$")]
     private static partial Regex FormaId();
 }

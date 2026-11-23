@@ -1,0 +1,26 @@
+{
+  "versione_formato": 1,
+  "uso": "creazione",
+  "chiave": {
+    "impronta_richiesta": "ef1ee8851e5bfcd553c42107df842cddef75ba8b999905227e0c00ec009383fb",
+    "versione_prompt": "creazione-v1-01e6038512f0",
+    "fornitore": "claude-code",
+    "modello": "claude-opus-5-5"
+  },
+  "registrata_il": "2026-12-01T09:00:00.000000Z",
+  "tipologia": "anagramma",
+  "versione_tipologia": 1,
+  "esito": "riuscita",
+  "risposta_grezza": "{\u0022type\u0022:\u0022result\u0022,\u0022subtype\u0022:\u0022success\u0022,\u0022is_error\u0022:false,\u0022result\u0022:\u0022\u0022,\u0022structured_output\u0022:{\u0022versione_formato\u0022:1,\u0022tipologia\u0022:\u0022anagramma\u0022,\u0022versione_tipologia\u0022:1,\u0022titolo\u0022:\u0022Sulla riva\u0022,\u0022dati\u0022:{\u0022esposto\u0022:\u0022Si stende all\\u0027orizzonte, azzurra e profonda;\\nrimescolata, d\\u00E0 il colore ai tetti e ai vasi.\u0022,\u0022diagramma\u0022:\u00224 = 4\u0022,\u0022prima_parola\u0022:\u0022mare\u0022,\u0022soluzione\u0022:\u0022rame\u0022,\u0022autore\u0022:null},\u0022avvisi\u0022:[\u0022Esempio inventato per il collaudo.\u0022]},\u0022total_cost_usd\u0022:0,\u0022usage\u0022:{\u0022input_tokens\u0022:0,\u0022output_tokens\u0022:0}}",
+  "risposta_sha256": "84a7a305ced3bbdf4982ed79700980fe8dfd71450ac1d6aae5eab2687860a2be",
+  "metadati": {
+    "durata_ms": 1000,
+    "token_ingresso": null,
+    "token_uscita": null,
+    "token_cache_creazione": null,
+    "token_cache_lettura": null,
+    "costo": null,
+    "costo_valuta": null,
+    "costo_tipo": null
+  }
+}
